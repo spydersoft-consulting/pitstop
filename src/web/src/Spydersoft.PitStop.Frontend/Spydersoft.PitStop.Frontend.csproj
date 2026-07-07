@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<UserSecretsId>a1b2c3d4-e5f6-7890-abcd-ef1234567890</UserSecretsId>
+		<SpaRoot>..\pitstop-ui</SpaRoot>
+		<SpaProxyLaunchCommand>yarn dev</SpaProxyLaunchCommand>
+		<SpaProxyServerUrl>https://localhost:3000</SpaProxyServerUrl>
+		<BuildCommand>yarn build</BuildCommand>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="OidcProxy.Net.OpenIdConnect" />
+		<PackageReference Include="Spydersoft.Platform.Hosting" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\pitstop-ui\pitstop-ui.esproj">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
+	</ItemGroup>
+
+</Project>

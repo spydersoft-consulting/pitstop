@@ -1,0 +1,191 @@
+# PitStop API — Sample Requests
+#
+# Set these variables to match your local environment.
+# VS Code REST Client: override in .vscode/settings.json under "rest-client.environmentVariables"
+# JetBrains HTTP Client: create http-client.env.json in the same directory
+#
+# Required: obtain your token endpoint from OIDC discovery:
+#   GET https://auth.mattgerega.net/.well-known/openid-configuration → "token_endpoint"
+
+@baseUrl        = http://localhost:8080
+@tokenEndpoint  = https://auth.mattgerega.net/connect/token
+@clientId       = pitstop-dev-client
+@clientSecret   = ItsAFerrari!
+
+# After running the token request below, copy the access_token value here,
+# or use the @name / response variable approach supported by your HTTP client.
+@bearerToken    = <paste-access-token-here>
+
+@vehicleId      = 1
+@fillUpId       = 1
+
+
+### ─── AUTH ──────────────────────────────────────────────────────────────────
+
+# @name tokenRequest
+# Obtain a token using client_credentials.  Requires a confidential client
+# registered in auth.mattgerega.net — see infrastructure.md for setup steps.
+POST {{tokenEndpoint}}
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{clientId}}&client_secret={{clientSecret}}&scope=pitstop:read%20pitstop:write
+
+# After this runs, set @bearerToken above to: {{tokenRequest.response.body.access_token}}
+
+
+### ─── VEHICLES ──────────────────────────────────────────────────────────────
+
+### List all vehicles
+GET {{baseUrl}}/api/v1/vehicles
+Authorization: Bearer {{bearerToken}}
+Accept: application/json
+
+###
+
+### Get a single vehicle
+GET {{baseUrl}}/api/v1/vehicles/{{vehicleId}}
+Authorization: Bearer {{bearerToken}}
+Accept: application/json
+
+###
+
+### Create a vehicle
+POST {{baseUrl}}/api/v1/vehicles
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "name": "2021 Bronco",
+  "year": 2021,
+  "make": "Ford",
+  "model": "Bronco",
+  "trim": "Badlands",
+  "initialOdometer": 0,
+  "startDate": "2021-08-01"
+}
+
+###
+
+### Update a vehicle
+PUT {{baseUrl}}/api/v1/vehicles/{{vehicleId}}
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "name": "2021 Bronco",
+  "year": 2021,
+  "make": "Ford",
+  "model": "Bronco",
+  "trim": "Badlands"
+}
+
+###
+
+### Delete a vehicle (soft-delete)
+DELETE {{baseUrl}}/api/v1/vehicles/{{vehicleId}}
+Authorization: Bearer {{bearerToken}}
+
+
+### ─── FILL-UPS ───────────────────────────────────────────────────────────────
+
+### List fill-ups (paginated, most recent first)
+GET {{baseUrl}}/api/v1/vehicles/{{vehicleId}}/fillups?page=1&pageSize=20
+Authorization: Bearer {{bearerToken}}
+Accept: application/json
+
+###
+
+### List fill-ups — filtered by date range
+GET {{baseUrl}}/api/v1/vehicles/{{vehicleId}}/fillups?from=2024-01-01&to=2024-12-31&orderBy=filledAt&order=asc
+Authorization: Bearer {{bearerToken}}
+Accept: application/json
+
+###
+
+### Get a single fill-up
+GET {{baseUrl}}/api/v1/vehicles/{{vehicleId}}/fillups/{{fillUpId}}
+Authorization: Bearer {{bearerToken}}
+Accept: application/json
+
+###
+
+### Create a fill-up
+POST {{baseUrl}}/api/v1/vehicles/{{vehicleId}}/fillups
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "filledAt": "2024-11-15T14:30:00Z",
+  "odometerReading": 12450,
+  "gallonsAdded": 12.3,
+  "pricePerGallon": 3.49,
+  "totalCost": 42.93,
+  "isFullFillUp": true,
+  "stationName": "QuikTrip",
+  "stationAddress": "1234 Main St, Anytown, TX 75001",
+  "latitude": 32.7767,
+  "longitude": -96.797,
+  "notes": "Regular 87"
+}
+
+###
+
+### Update a fill-up
+PUT {{baseUrl}}/api/v1/vehicles/{{vehicleId}}/fillups/{{fillUpId}}
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "filledAt": "2024-11-15T14:30:00Z",
+  "odometerReading": 12450,
+  "gallonsAdded": 12.3,
+  "pricePerGallon": 3.49,
+  "totalCost": 42.93,
+  "isFullFillUp": true,
+  "stationName": "QuikTrip",
+  "stationAddress": "1234 Main St, Anytown, TX 75001",
+  "latitude": 32.7767,
+  "longitude": -96.797,
+  "notes": "Regular 87 — corrected odometer"
+}
+
+###
+
+### Delete a fill-up
+DELETE {{baseUrl}}/api/v1/vehicles/{{vehicleId}}/fillups/{{fillUpId}}
+Authorization: Bearer {{bearerToken}}
+
+
+### ─── ANALYTICS ──────────────────────────────────────────────────────────────
+
+### Summary (total spend, MPG averages, cost per mile, etc.)
+GET {{baseUrl}}/api/v1/vehicles/{{vehicleId}}/analytics/summary
+Authorization: Bearer {{bearerToken}}
+Accept: application/json
+
+###
+
+### MPG over time (data points for charting)
+GET {{baseUrl}}/api/v1/vehicles/{{vehicleId}}/analytics/mpg
+Authorization: Bearer {{bearerToken}}
+Accept: application/json
+
+###
+
+### Monthly spend breakdown
+GET {{baseUrl}}/api/v1/vehicles/{{vehicleId}}/analytics/spend
+Authorization: Bearer {{bearerToken}}
+Accept: application/json
+
+
+### ─── HEALTH ─────────────────────────────────────────────────────────────────
+
+### Liveness
+GET {{baseUrl}}/health/live
+
+###
+
+### Readiness (includes DB check)
+GET {{baseUrl}}/health/ready
+
+###

@@ -1,0 +1,73 @@
+## Build Pipeline - Build, publish container image
+## NOTE: does not yet publish the combined OCI chart (charts/pitstop) — that job
+## template doesn't exist in azure-devops-templates yet. See charts/pitstop/README.md
+## and the migration playbook (Part 1) for what still needs wiring up.
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      endpoint: spydersoft-gh
+      name: spydersoft-consulting/azure-devops-templates
+    - repository: helmfileconfig
+      type: github
+      endpoint: spydersoft-gh
+      name: spydersoft-consulting/pitstop-helm-config
+
+trigger:
+  tags:
+    include:
+    - "*"
+  branches:
+    include:
+      - main
+      - feature/*
+  paths:
+    include:
+      - src/api/*
+    exclude:
+      - src/api/README.md
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/api/*
+
+extends:
+  template: pipelines/build-api/v1.yml@templates
+  parameters:
+    gitVersionSpec: '6.0.x'
+    buildProject: src/api/Spydersoft.PitStop.slnx
+    publishProject: src/api/src/Spydersoft.PitStop.Api/Spydersoft.PitStop.Api.csproj
+    netCoreVersion: '10.0.x'
+    artifactName: pitStopApi
+    artifactZipName: Spydersoft.PitStop.Api
+    containerRegistryName: github-spydersoft-docker
+    dockerFilePath: src/api/src/Spydersoft.PitStop.Api/Dockerfile
+    dockerImageName: spydersoft-consulting/pitstop-data-api
+    imageTagVariableName: data_api
+    helmfileRepoName: helmfileconfig
+    externalFeedCredentials: SpydersoftGithub
+    #if it's a PR or build from main, don't update helmfile config or build/publish docker image
+    ${{ if or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'main')) }}:
+      updateHelmConfig: false
+      buildAndPublishDockerImage: false
+      executeSonar: true
+    ${{ else }}:
+      updateHelmConfig: true
+      buildAndPublishDockerImage: true
+      executeSonar: false
+
+    sonarEndpointName: sonarcloud-spydersoft
+    sonarProjectKey: spydersoft-consulting_pitstop-api
+    sonarProjectName: pitstop
+    sonarExtraProperties: |
+      sonar.exclusions=**/Migrations/**/*
+      sonar.scanner.scanAll=false
+      sonar.coverage.exclusions=**/Program.cs
+    executeTests: true
+    testProjects: '**/*.UnitTests/*.csproj'
+    useSonarCloud: true
+    sonarCloudOrganization: spydersoft-consulting

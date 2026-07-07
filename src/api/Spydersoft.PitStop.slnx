@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Spydersoft.PitStop.Api/Spydersoft.PitStop.Api.csproj" />
+    <Project Path="src/Spydersoft.PitStop.Api.UnitTests/Spydersoft.PitStop.Api.UnitTests.csproj" />
+    <Project Path="src/Spydersoft.PitStop.AppHost/Spydersoft.PitStop.AppHost.csproj" />
+    <Project Path="src/Spydersoft.PitStop.Contracts/Spydersoft.PitStop.Contracts.csproj" />
+    <Project Path="src/Spydersoft.PitStop.Data/Spydersoft.PitStop.Data.csproj" />
+    <Project Path="src/Spydersoft.PitStop.DataSeeder/Spydersoft.PitStop.DataSeeder.csproj" />
+  </Folder>
+</Solution>

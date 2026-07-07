@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch AppHost",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-apphost",
+            "program": "${workspaceFolder}/src/Spydersoft.PitStop.AppHost/bin/Debug/net10.0/Spydersoft.PitStop.AppHost.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Spydersoft.PitStop.AppHost",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "DOTNET_ENVIRONMENT": "Development"
+            },
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "Login to the dashboard at (https?://\\S+)"
+            }
+        }
+    ]
+}

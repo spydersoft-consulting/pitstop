@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Spydersoft.PitStop.Web.AppHost/Spydersoft.PitStop.Web.AppHost.csproj" />
+  <Project Path="src/Spydersoft.PitStop.Frontend/Spydersoft.PitStop.Frontend.csproj" />
+</Solution>

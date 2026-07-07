@@ -1,0 +1,59 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.bak
+*.orig
+*.tmp
+*.nupkg
+*~
+~*
+_ReSharper*/
+**/.vs/
+**/.vscode/
+**/TestResults/
+**/[Oo]utput/
+**/[Pp]ublish[Oo]utput/
+[Ll]ogs/
+[Dd]ebug-buildlog*.txt
+*.sln.cache
+*.pidb
+*.usertasks
+*.userprefs
+*.vspscc
+*.vssscc
+*.GhostDoc.xml
+*.code-workspace
+
+# NuGet
+packages/
+NuGet.exe
+**/NuGetPackages/
+
+# Secrets / local config
+appsettings.Local.json
+.env
+.env.local
+.env.*.local
+# HTTP client env files (developer-local tokens / client secrets)
+http-client.env.json
+http-client.private.env.json
+
+# Node / Yarn
+node_modules/
+.yarn/*
+!.yarn/releases
+!.yarn/patches
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+tests/api-integration/.auth/
+
+# Misc
+*.zip
+*.tgz
+*.code-workspace
