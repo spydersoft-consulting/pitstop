@@ -1,6 +1,6 @@
 apiVersion: v2
 name: pitstop
-description: PitStop — Fuel consumption tracking system (app controllers: data-api, web)
+description: "PitStop — Fuel consumption tracking system (app controllers: data-api, web)"
 
 type: application
 
