@@ -1,0 +1,120 @@
+## Build Pipeline - builds both solutions, publishes both images, and
+## publishes the combined pitstop OCI chart, all from one build number.
+## Replaces the earlier pipeline-api.yml/pipeline-web.yml/pipeline-chart.yml
+## split: api and web are tightly coupled (one repo, one release cadence),
+## so one atomic build/publish avoids the chart-versioning-vs-image-tagging
+## mismatch a path-scoped split would otherwise create.
+##
+## NOTE: merging into build-multi-container means api's and web's C# code
+## now report to a single combined SonarCloud project (sonarProjectKey
+## below) instead of the two separate projects they used to have
+## (spydersoft-consulting_pitstop-api / spydersoft-consulting_pitstop-web-bff).
+## That SonarCloud project must exist (or be created) before executeSonar
+## runs successfully — this pipeline does not provision it.
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      endpoint: spydersoft-gh
+      name: spydersoft-consulting/azure-devops-templates
+    - repository: helmfileconfig
+      type: github
+      endpoint: spydersoft-gh
+      name: spydersoft-consulting/pitstop-helm-config
+
+trigger:
+  tags:
+    include:
+    - "*"
+  branches:
+    include:
+      - main
+      - feature/*
+  paths:
+    exclude:
+      - README.md
+
+pr:
+  branches:
+    include:
+      - main
+
+extends:
+  template: pipelines/build-multi-container/v1.yml@templates
+  parameters:
+    gitVersionSpec: "6.0.x"
+    netCoreVersion: "10.0.x"
+    externalFeedCredentials: SpydersoftGithub
+
+    buildProject: |
+      src/api/Spydersoft.PitStop.slnx
+      src/web/Spydersoft.PitStop.Web.slnx
+
+    publishProjects:
+      - name: data-api
+        project: src/api/src/Spydersoft.PitStop.Api/Spydersoft.PitStop.Api.csproj
+        artifactName: pitStopApi
+      - name: web
+        project: src/web/src/Spydersoft.PitStop.Frontend/Spydersoft.PitStop.Frontend.csproj
+        artifactName: pitstop-web
+
+    executeTests: true
+    testProjects: "**/*.UnitTests/*.csproj"
+
+    sonarProjectKey: spydersoft-consulting_pitstop
+    sonarProjectName: pitstop
+    useSonarCloud: true
+    sonarCloudOrganization: spydersoft-consulting
+    sonarEndpointName: sonarcloud-spydersoft
+    sonarExtraProperties: |
+      sonar.exclusions=**/Migrations/**/*
+      sonar.scanner.scanAll=false
+      sonar.coverage.exclusions=**/Program.cs
+
+    uiEnabled: true
+    uiSourceDirectory: src/web/src/pitstop-ui
+    uiNodeVersion: "24.x"
+    uiUseYarn2: true
+    uiCodeCoverageFile: src/web/src/pitstop-ui/output/coverage/cobertura-coverage.xml
+    uiUnitTestFile: src/web/src/pitstop-ui/output/test/junit.xml
+    uiSonarEndpointName: sonarcloud-spydersoft
+    uiUseSonarCloud: true
+    uiSonarCloudOrganization: spydersoft-consulting
+    uiSonarConfigFile: src/web/react-sonar-project.properties
+
+    containerRegistryName: github-spydersoft-docker
+    dockerImages:
+      - name: data_api
+        dockerImageName: spydersoft-consulting/pitstop-data-api
+        dockerFilePath: src/api/src/Spydersoft.PitStop.Api/Dockerfile
+        artifactName: pitStopApi
+        artifactZipName: Spydersoft.PitStop.Api
+      - name: web
+        dockerImageName: spydersoft-consulting/pitstop-web
+        dockerFilePath: src/web/Dockerfile
+        artifactName: pitstop-web
+        artifactZipName: Spydersoft.PitStop.Frontend
+
+    helmCharts:
+      - name: pitstop
+        chartPath: charts/pitstop
+
+    helmfileRepoName: helmfileconfig
+    updateHelmConfigDependsOn:
+      - docker_publish
+      - chart_publish
+
+    # if it's a PR or build from main, don't publish anything - just build/test/scan
+    ${{ if or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'main')) }}:
+      buildAndPublishDockerImages: false
+      buildAndPublishHelmCharts: false
+      updateHelmConfig: false
+      executeSonar: true
+      uiExecuteSonar: true
+    ${{ else }}:
+      buildAndPublishDockerImages: true
+      buildAndPublishHelmCharts: true
+      updateHelmConfig: true
+      executeSonar: false
+      uiExecuteSonar: false
+      helmTagsCollection: "data_api=$(build.buildnumber),pitstop_web=$(build.buildnumber),chart_version=$(build.buildnumber)"

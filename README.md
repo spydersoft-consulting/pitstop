@@ -5,4 +5,4 @@ Fuel consumption tracking system. Monorepo combining the API (`src/api`) and web
 - `src/api` — .NET API (formerly `pitstop-api`).
 - `src/web` — .NET/React web frontend (formerly `pitstop-web`).
 - `charts/pitstop` — combined app chart (`data-api` + `web` controllers). See `charts/pitstop/README.md` for the secrets contract. Backing infrastructure (Postgres, `ExternalSecret`s) is owned by `pitstop-helm-config`, not this chart.
-- `.devops/pipeline-api.yml`, `.devops/pipeline-web.yml` — independent build/publish pipelines, each path-scoped to its own `src/*` subtree.
+- `.devops/pipeline-ci.yml` — single build/publish pipeline (extends `pipelines/build-multi-container/v1.yml`): builds both solutions, publishes both container images and the combined chart, and bumps all three tags in `pitstop-helm-config` atomically from one build number.
