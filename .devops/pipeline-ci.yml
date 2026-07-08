@@ -29,7 +29,6 @@ trigger:
   branches:
     include:
       - main
-      - feature/*
   paths:
     exclude:
       - README.md
@@ -103,17 +102,32 @@ extends:
       - docker_publish
       - chart_publish
 
-    # if it's a PR or build from main, don't publish anything - just build/test/scan
-    ${{ if or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'main')) }}:
+    # Three build shapes:
+    #  - PR: build/test/sonar only, no publish, no helm-config update.
+    #  - main: beta build (GitVersion tags X.Y.Z-beta.<n> per GitVersion.yml's
+    #    `main` branch config) -> publish images+chart, update helm-config's
+    #    test environment. Still runs sonar since this is a real build path,
+    #    not just a skip case.
+    #  - anything else (a tag push): release build -> publish images+chart,
+    #    update helm-config's stage environment. No sonar re-analysis (mirrors
+    #    the prior convention of not re-scanning release/tag builds).
+    ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+      updateHelmConfig: false
       buildAndPublishDockerImages: false
       buildAndPublishHelmCharts: false
-      updateHelmConfig: false
+      executeSonar: true
+      uiExecuteSonar: true
+    ${{ elseif eq(variables['Build.SourceBranchName'], 'main') }}:
+      updateHelmConfig: true
+      buildAndPublishDockerImages: true
+      buildAndPublishHelmCharts: true
       executeSonar: true
       uiExecuteSonar: true
     ${{ else }}:
+      updateHelmConfig: true
       buildAndPublishDockerImages: true
       buildAndPublishHelmCharts: true
-      updateHelmConfig: true
       executeSonar: false
       uiExecuteSonar: false
-      helmTagsCollection: "data_api=$(build.buildnumber),pitstop_web=$(build.buildnumber),chart_version=$(build.buildnumber)"
+
+    helmTagsCollection: "data_api=$(build.buildnumber),pitstop_web=$(build.buildnumber),chart_version=$(build.buildnumber)"
