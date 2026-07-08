@@ -50,6 +50,17 @@ controllers:
           repository: ghcr.io/spydersoft-consulting/pitstop-web
           pullPolicy: IfNotPresent
           tag: latest
+        # web's BFF reverse-proxies to data-api's Service within this same
+        # release/namespace. Both controllers live in one release, so bjw-s
+        # names the Service "<fullname>-data-api" -- computed here via the
+        # same helper the chart itself uses, rather than hardcoded, so a
+        # release rename can't silently break this like it did when
+        # data-api moved out of its own standalone "data-api"-named release
+        # (where the Service happened to collapse to a bare "data-api") and
+        # into this combined chart.
+        env:
+          - name: OidcProxySettings__ReverseProxy__Clusters__pitstopApi__Destinations__destination1__Address
+            value: 'http://{{ include "pitstop.fullname" . }}-data-api/'
         probes:
           liveness:
             enabled: true
