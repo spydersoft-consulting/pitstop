@@ -46,9 +46,7 @@ extends:
     netCoreVersion: "10.0.x"
     externalFeedCredentials: SpydersoftGithub
 
-    buildProject: |
-      src/api/Spydersoft.PitStop.slnx
-      src/web/Spydersoft.PitStop.Web.slnx
+    buildProject: Spydersoft.PitStop.slnx
 
     publishProjects:
       - name: data-api
