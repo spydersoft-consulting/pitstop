@@ -25,7 +25,7 @@ resources:
 trigger:
   tags:
     include:
-    - "*"
+      - "*"
   branches:
     include:
       - main
@@ -45,6 +45,7 @@ extends:
     gitVersionSpec: "6.0.x"
     netCoreVersion: "10.0.x"
     externalFeedCredentials: SpydersoftGithub
+    nugetConfigPath: "$(Build.SourcesDirectory)/src/nuget.config"
 
     buildProject: Spydersoft.PitStop.slnx
 
