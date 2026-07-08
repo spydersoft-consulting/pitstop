@@ -5,8 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.2.2" />
-    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.2.2" />
     <PackageVersion Include="OidcProxy.Net.OpenIdConnect" Version="5.4.1" />
     <PackageVersion Include="Spydersoft.Platform.Hosting" Version="2.3.0" />
   </ItemGroup>

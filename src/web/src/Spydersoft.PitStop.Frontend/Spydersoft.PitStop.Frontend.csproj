@@ -6,20 +6,38 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<InvariantGlobalization>true</InvariantGlobalization>
 		<UserSecretsId>a1b2c3d4-e5f6-7890-abcd-ef1234567890</UserSecretsId>
-		<SpaRoot>..\pitstop-ui</SpaRoot>
-		<SpaProxyLaunchCommand>yarn dev</SpaProxyLaunchCommand>
-		<SpaProxyServerUrl>https://localhost:3000</SpaProxyServerUrl>
-		<BuildCommand>yarn build</BuildCommand>
+		<SpaRoot>..\pitstop-ui\</SpaRoot>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="OidcProxy.Net.OpenIdConnect" />
 		<PackageReference Include="Spydersoft.Platform.Hosting" />
 	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\pitstop-ui\pitstop-ui.esproj">
-			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-		</ProjectReference>
-	</ItemGroup>
+
+	<!--
+	Replaces the old pitstop-ui.esproj ProjectReference (the JS project
+	system's build integration). esproj is deprecated/poorly supported;
+	build the SPA directly with yarn instead and fold its output into this
+	project's own build/publish output.
+	-->
+	<Target Name="BuildSpa" BeforeTargets="Build">
+		<Exec Command="yarn install" WorkingDirectory="$(SpaRoot)" Condition="!Exists('$(SpaRoot)node_modules')" />
+		<Exec Command="yarn build" WorkingDirectory="$(SpaRoot)" />
+	</Target>
+
+	<!--
+	A "no build" publish (used by CI) skips the Build target above, so this
+	depends on BuildSpa having already run earlier in the same job/workspace
+	(via `dotnet build`) and left dist/ on disk; see pipeline-ci.yml.
+	-->
+	<Target Name="PublishSpa" AfterTargets="ComputeFilesToPublish">
+		<ItemGroup>
+			<SpaDistFiles Include="$(SpaRoot)dist\**" />
+			<ResolvedFileToPublish Include="@(SpaDistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+				<RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+		</ItemGroup>
+	</Target>
 
 </Project>

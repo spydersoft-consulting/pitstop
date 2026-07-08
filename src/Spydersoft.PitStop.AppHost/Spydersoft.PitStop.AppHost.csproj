@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Sdk Name="Aspire.AppHost.Sdk" Version="13.3.5" />
 
@@ -14,11 +14,13 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Spydersoft.PitStop.Api\Spydersoft.PitStop.Api.csproj" />
-    <ProjectReference Include="..\Spydersoft.PitStop.DataSeeder\Spydersoft.PitStop.DataSeeder.csproj" />
+    <ProjectReference Include="..\api\src\Spydersoft.PitStop.Api\Spydersoft.PitStop.Api.csproj" />
+    <ProjectReference Include="..\api\src\Spydersoft.PitStop.DataSeeder\Spydersoft.PitStop.DataSeeder.csproj" />
+    <ProjectReference Include="..\web\src\Spydersoft.PitStop.Frontend\Spydersoft.PitStop.Frontend.csproj" />
   </ItemGroup>
 
 </Project>
