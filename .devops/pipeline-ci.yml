@@ -108,9 +108,12 @@ extends:
     #    `main` branch config) -> publish images+chart, update helm-config's
     #    test environment. Still runs sonar since this is a real build path,
     #    not just a skip case.
-    #  - anything else (a tag push): release build -> publish images+chart,
-    #    update helm-config's stage environment. No sonar re-analysis (mirrors
-    #    the prior convention of not re-scanning release/tag builds).
+    #  - anything else (a tag push): release build (unlabeled X.Y.Z) ->
+    #    publish images+chart, ALSO update helm-config's test environment --
+    #    helm-config's own process-cicd.ps1/feature.yml decide from there
+    #    whether to auto-promote to stage (gated on the version being
+    #    unlabeled, not on which branch built it). No sonar re-analysis
+    #    (mirrors the prior convention of not re-scanning release/tag builds).
     ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
       updateHelmConfig: false
       buildAndPublishDockerImages: false
