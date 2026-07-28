@@ -1,15 +1,21 @@
-﻿using Spydersoft.PitStop.Api;
+using Spydersoft.PitStop.Api;
 using Spydersoft.PitStop.Api.Services;
 using Spydersoft.PitStop.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Spydersoft.Platform.Hosting.StartupExtensions;
+using Spydersoft.Platform.Hosting.Telemetry;
 using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddSpydersoftTelemetry(typeof(Program).Assembly)
+builder.AddSpydersoftTelemetry(typeof(Program).Assembly,
+    new ConfigurationFunctions
+    {
+        // Kubernetes probes hit these every few seconds; they add nothing but noise to traces.
+        AspNetFilterFunction = context => !IsHealthCheckPath(context.Request.Path.Value)
+    })
        .AddSpydersoftSerilog(true);
 
 var healthCheckOptions = builder.AddSpydersoftHealthChecks();
@@ -63,9 +69,14 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseSpydersoftRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.UseSpydersoftHealthChecks(healthCheckOptions);
 
 await app.RunAsync();
+
+static bool IsHealthCheckPath(string? path) =>
+    string.Equals(path, "/livez", StringComparison.OrdinalIgnoreCase) ||
+    string.Equals(path, "/readyz", StringComparison.OrdinalIgnoreCase);
