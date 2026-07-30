@@ -164,6 +164,15 @@ stages:
       nodeVersion: "24.x"
       externalFeedCredentials: SpydersoftGithub
       setupSteps:
+        # UseNode@1 (used by this template to set up Node) mis-resolves "24.x" to a
+        # stale cached Node on ubuntu-latest, which breaks corepack -- same failure
+        # mode identity_server's pipeline hit on its self-hosted agent. Force the
+        # PATH back to Node 24.x with NodeTool@0, which resolves correctly here.
+        - task: NodeTool@0
+          displayName: "Force Node 24.x (UseNode@1 workaround)"
+          inputs:
+            versionSpec: "24.x"
+
         # AppHost always spins up pitstop-ui (AddViteApp) alongside whichever
         # suite is under test, so its workspace deps need to be in place first
         # -- root install covers it since it's a yarn workspace member.

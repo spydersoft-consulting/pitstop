@@ -1,10 +1,12 @@
+const string TestingEnvironmentName = "Testing";
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // --- Data API + Postgres ---
 
 var postgres = builder.AddPostgres("postgres", port: 8100);
 
-if (builder.Environment.EnvironmentName != "Testing")
+if (builder.Environment.EnvironmentName != TestingEnvironmentName)
 {
     postgres.WithDataVolume();
 }
@@ -20,12 +22,12 @@ var api = builder.AddProject<Projects.Spydersoft_PitStop_Api>("api")
     .WithReference(db)
     .WaitFor(db);
 
-if (builder.Environment.EnvironmentName == "Testing")
+if (builder.Environment.EnvironmentName == TestingEnvironmentName)
 {
     var testKey = builder.Configuration["Auth:TestKey"]
         ?? "jRv3YFPH/19t9t5CgsEFgAkykfW5bQhHmceMprLgzlQ=";
 
-    api.WithEnvironment("DOTNET_ENVIRONMENT", "Testing")
+    api.WithEnvironment("DOTNET_ENVIRONMENT", TestingEnvironmentName)
        .WithEnvironment("Auth__TestKey", testKey);
 
     builder.AddProject<Projects.Spydersoft_PitStop_DataSeeder>("data-seeder")
@@ -39,7 +41,7 @@ if (builder.Environment.EnvironmentName == "Testing")
 string clientId, clientSecret, authority;
 IResourceBuilder<ContainerResource>? mockOidc = null;
 
-if (builder.Environment.EnvironmentName == "Testing")
+if (builder.Environment.EnvironmentName == TestingEnvironmentName)
 {
     const string mockClientId = "pitstop-web-test";
     const string mockClientSecret = "pitstop-web-test-secret";
@@ -47,7 +49,9 @@ if (builder.Environment.EnvironmentName == "Testing")
     mockOidc = builder.AddContainer("mock-oidc", "ghcr.io/soluto/oidc-server-mock", "latest")
         .WithHttpEndpoint(port: 8200, targetPort: 80, name: "http", isProxied: false)
         .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
-        .WithEnvironment("ASPNETCORE_URLS", "http://+:80")
+        // This binds the mock IdP container's own internal listener, reachable only from
+        // localhost within the Testing environment -- not a production endpoint.
+        .WithEnvironment("ASPNETCORE_URLS", "http://+:80") // NOSONAR
         .WithEnvironment("CLIENTS_CONFIGURATION_INLINE", MockOidcClientsJson(mockClientId, mockClientSecret))
         .WithEnvironment("USERS_CONFIGURATION_INLINE", MockOidcUsersJson())
         .WithEnvironment("API_SCOPES_INLINE", MockOidcApiScopesJson())

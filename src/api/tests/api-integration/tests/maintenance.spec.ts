@@ -6,8 +6,8 @@ import type {
   UpdateMaintenanceLogRequest,
   MaintenanceLogListResponse,
   LocationDto,
-  CreateLocationRequest,
 } from "./types";
+import { uniqueName, createLocation } from "./location-helpers";
 
 let vehicleId: number;
 
@@ -183,20 +183,6 @@ test("CreateMaintenanceLog_ComputedTotalCost_PrefersExplicitTotal", async ({ req
 
   expect(dto.computedTotalCost).toBe(50);
 });
-
-function uniqueName(prefix = "Maint-Loc"): string {
-  return `${prefix}-${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
-}
-
-async function createLocation(
-  request: import("@playwright/test").APIRequestContext,
-  overrides: Partial<CreateLocationRequest> = {},
-): Promise<LocationDto> {
-  const response = await request.post("/api/v1/locations", {
-    data: { name: uniqueName(), ...overrides },
-  });
-  return response.json();
-}
 
 test("CreateMaintenanceLog_WithLocationId_AttachesAndIncrementsUseCount", async ({ request }) => {
   const loc = await createLocation(request);

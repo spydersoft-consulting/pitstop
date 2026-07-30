@@ -1,11 +1,9 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Spydersoft.PitStop.Api.Controllers;
 using Spydersoft.PitStop.Api.Services;
+using Spydersoft.PitStop.Api.UnitTests.Support;
 using Spydersoft.PitStop.Contracts.FillUps;
 using Spydersoft.PitStop.Contracts.Locations;
 using Spydersoft.PitStop.Data;
@@ -16,7 +14,7 @@ namespace Spydersoft.PitStop.Api.UnitTests.Controllers;
 [TestFixture]
 public class FillUpsControllerTests
 {
-    private const string TestUserId = "test-user";
+    private const string TestUserId = TestDataHelpers.TestUserId;
 
     private PitStopDbContext _db = null!;
     private FillUpService _fillUpService = null!;
@@ -44,54 +42,19 @@ public class FillUpsControllerTests
     [TearDown]
     public void TearDown() => _db.Dispose();
 
-    private static ControllerContext BuildControllerContext(string? subClaim)
-    {
-        var identity = subClaim is null
-            ? new ClaimsIdentity()
-            : new ClaimsIdentity([new Claim(JwtRegisteredClaimNames.Sub, subClaim)], "Test");
+    private static ControllerContext BuildControllerContext(string? subClaim) =>
+        TestDataHelpers.BuildControllerContext(subClaim);
 
-        return new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
-        };
-    }
+    private Task<Vehicle> CreateVehicleAsync(string ownerId = TestUserId) =>
+        TestDataHelpers.CreateVehicleAsync(_db, ownerId);
 
-    private async Task<Vehicle> CreateVehicleAsync(string ownerId = TestUserId)
-    {
-        var vehicle = new Vehicle
-        {
-            OwnerId = ownerId,
-            Name = "Test Bronco",
-            Year = 2024,
-            Make = "Ford",
-            Model = "Bronco",
-            StartDate = new DateOnly(2024, 1, 1)
-        };
-        _db.Vehicles.Add(vehicle);
-        await _db.SaveChangesAsync();
-        return vehicle;
-    }
-
-    private async Task<Location> CreateLocationAsync(
+    private Task<Location> CreateLocationAsync(
         string name = "Costco",
         string? address = null,
         string ownerId = TestUserId,
         int useCount = 0,
-        DateTimeOffset? lastUsedAt = null)
-    {
-        var location = new Location
-        {
-            OwnerId = ownerId,
-            Name = name,
-            Address = address,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UseCount = useCount,
-            LastUsedAt = lastUsedAt,
-        };
-        _db.Locations.Add(location);
-        await _db.SaveChangesAsync();
-        return location;
-    }
+        DateTimeOffset? lastUsedAt = null) =>
+        TestDataHelpers.CreateLocationAsync(_db, name, address, ownerId, useCount, lastUsedAt);
 
     private static CreateFillUpRequest TestFillUpRequest(decimal odometer = 1000m) => new()
     {
