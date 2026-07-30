@@ -36,10 +36,39 @@ if (builder.Environment.EnvironmentName == "Testing")
 
 // --- Web frontend (BFF + Vite UI) ---
 
-var clientId = builder.Configuration["OidcProxy:ClientId"]
-    ?? throw new InvalidOperationException("OidcProxy:ClientId is not set in user secrets.");
-var clientSecret = builder.Configuration["OidcProxy:ClientSecret"]
-    ?? throw new InvalidOperationException("OidcProxy:ClientSecret is not set in user secrets.");
+string clientId, clientSecret, authority;
+IResourceBuilder<ContainerResource>? mockOidc = null;
+
+if (builder.Environment.EnvironmentName == "Testing")
+{
+    const string mockClientId = "pitstop-web-test";
+    const string mockClientSecret = "pitstop-web-test-secret";
+
+    mockOidc = builder.AddContainer("mock-oidc", "ghcr.io/soluto/oidc-server-mock", "latest")
+        .WithHttpEndpoint(port: 8200, targetPort: 80, name: "http", isProxied: false)
+        .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
+        .WithEnvironment("ASPNETCORE_URLS", "http://+:80")
+        .WithEnvironment("CLIENTS_CONFIGURATION_INLINE", MockOidcClientsJson(mockClientId, mockClientSecret))
+        .WithEnvironment("USERS_CONFIGURATION_INLINE", MockOidcUsersJson())
+        .WithEnvironment("API_SCOPES_INLINE", MockOidcApiScopesJson())
+        // Duende IdentityServer's default idsrv/idsrv.session cookies use SameSite=None, which
+        // browsers require to be paired with Secure — but this mock runs over plain http (see the
+        // AlwaysRedirectToHttps note below), so those cookies get silently dropped and login loops
+        // forever. Relax to Lax, which plain top-level redirect navigations satisfy.
+        .WithEnvironment("SERVER_OPTIONS_INLINE", MockOidcServerOptionsJson());
+
+    clientId = mockClientId;
+    clientSecret = mockClientSecret;
+    authority = "http://localhost:8200";
+}
+else
+{
+    clientId = builder.Configuration["OidcProxy:ClientId"]
+        ?? throw new InvalidOperationException("OidcProxy:ClientId is not set in user secrets.");
+    clientSecret = builder.Configuration["OidcProxy:ClientSecret"]
+        ?? throw new InvalidOperationException("OidcProxy:ClientSecret is not set in user secrets.");
+    authority = "https://auth.mattgerega.net";
+}
 
 var dataApiUrl = builder.Configuration["Services:DataApiUrl"] ?? "https://localhost:8081/";
 var auditApiUrl = builder.Configuration["Services:AuditApiUrl"] ?? "https://localhost:8082/";
@@ -51,10 +80,11 @@ builder.AddViteApp("pitstop-ui", "../web/src/pitstop-ui")
     .WithYarn()
     .WithEndpoint("http", e => { e.Port = 5200; e.IsProxied = false; e.UriScheme = "https"; });
 
-builder.AddProject<Projects.Spydersoft_PitStop_Frontend>("web")
+var web = builder.AddProject<Projects.Spydersoft_PitStop_Frontend>("web")
     .WithEndpoint("http", e => { e.Port = 9080; e.TargetPort = 9080; e.IsProxied = false; })
     .WithEndpoint("https", e => { e.Port = 9081; e.TargetPort = 9081; e.IsProxied = false; })
     .WithEnvironment("ASPNETCORE_CONTENTROOT", frontendProjectDir)
+    .WithEnvironment("OidcProxySettings__Oidc__Authority", authority)
     .WithEnvironment("OidcProxySettings__Oidc__ClientId", clientId)
     .WithEnvironment("OidcProxySettings__Oidc__ClientSecret", clientSecret)
     .WithEnvironment("Telemetry__Log__Type", "otlp")
@@ -68,4 +98,59 @@ builder.AddProject<Projects.Spydersoft_PitStop_Frontend>("web")
         auditApiUrl)
     .WithHttpHealthCheck("/livez", endpointName: "http");
 
+if (mockOidc is not null)
+{
+    // OidcProxy.Net always rewrites its own redirect_uri to https unless told otherwise. The web
+    // project's https endpoint isn't reachable under this Aspire/Testing setup (see comment in
+    // playwright.config.ts), so keep the http scheme it can actually reach.
+    web.WithEnvironment("OidcProxySettings__AlwaysRedirectToHttps", "false");
+    web.WaitFor(mockOidc);
+}
+
 await builder.Build().RunAsync();
+
+static string MockOidcClientsJson(string clientId, string clientSecret) => $$"""
+[
+  {
+    "ClientId": "{{clientId}}",
+    "ClientSecrets": ["{{clientSecret}}"],
+    "AllowedGrantTypes": ["authorization_code"],
+    "AllowedScopes": ["openid", "profile", "email", "pitstop:read", "pitstop:write"],
+    "RedirectUris": ["http://localhost:9080/.auth/login/callback"],
+    "PostLogoutRedirectUris": ["http://localhost:9080/"],
+    "RequireConsent": false,
+    "RequirePkce": false,
+    "AllowOfflineAccess": true
+  }
+]
+""";
+
+static string MockOidcUsersJson() => """
+[
+  {
+    "SubjectId": "1",
+    "Username": "testuser",
+    "Password": "Test123!",
+    "Claims": [
+      { "Type": "name", "Value": "Test User" },
+      { "Type": "email", "Value": "testuser@example.com" }
+    ]
+  }
+]
+""";
+
+static string MockOidcApiScopesJson() => """
+[
+  { "Name": "pitstop:read", "DisplayName": "Read PitStop data" },
+  { "Name": "pitstop:write", "DisplayName": "Write PitStop data" }
+]
+""";
+
+static string MockOidcServerOptionsJson() => """
+{
+  "Authentication": {
+    "CookieSameSiteMode": "Lax",
+    "CheckSessionCookieSameSiteMode": "Lax"
+  }
+}
+""";

@@ -3,10 +3,10 @@ import { execSync } from "node:child_process";
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 
-const authDir = path.join(__dirname, ".auth");
+const authDir = path.join(import.meta.dirname, ".auth");
 const tokenFile = path.join(authDir, "token.json");
-const seederProject = path.resolve(__dirname, "../../src/Spydersoft.PitStop.DataSeeder");
-const appHostProject = path.resolve(__dirname, "../../../Spydersoft.PitStop.AppHost");
+const seederProject = path.resolve(import.meta.dirname, "../../src/Spydersoft.PitStop.DataSeeder");
+const appHostProject = path.resolve(import.meta.dirname, "../../../Spydersoft.PitStop.AppHost");
 const baseUrl = process.env.PITSTOP_BASE_URL ?? "http://localhost:8080";
 
 function getToken(): string {
