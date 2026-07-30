@@ -1,6 +1,7 @@
 {
   "name": "pitstop-api-integration",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test --ui",
