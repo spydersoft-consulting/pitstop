@@ -36,13 +36,21 @@ async function createVehicle(page: Page, name: string): Promise<{ id: number }> 
 }
 
 async function gotoAndWaitForApp(page: Page, url: string) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    await page.goto(url);
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const navResponse = await page.goto(url);
     try {
-      await page.getByText("PITSTOP").waitFor({ timeout: 15_000 });
+      await page.getByText("PITSTOP").waitFor({ timeout: 20_000 });
       return;
     } catch {
-      if (attempt === 3) throw new Error(`App shell never rendered at ${url} after 3 attempts`);
+      // TEMP DEBUG: this has failed persistently in CI even across reload retries -- capture
+      // the navigation response status, the resulting URL, and a raw HTML snippet so we can
+      // tell whether the server ever served the SPA shell at all versus it failing to mount.
+      console.log(
+        `[debug] gotoAndWaitForApp(${url}) attempt ${attempt} failed: ` +
+          `navStatus=${navResponse?.status()} finalUrl=${page.url()}`,
+      );
+      console.log(`[debug] html snippet: ${(await page.content()).slice(0, 1500)}`);
+      if (attempt === 2) throw new Error(`App shell never rendered at ${url} after 2 attempts`);
     }
   }
 }
@@ -55,7 +63,7 @@ test.beforeEach(async ({ page }) => {
   // (vehicle creation, an extra vehicle-selection step, and a full CRUD cycle) -- give it
   // headroom so a slower CI agent doesn't trip the timeout mid-flow. Set here (as early as
   // possible in beforeEach) so it covers the rest of this hook too, not just the test body.
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
 
   await login(page);
 
