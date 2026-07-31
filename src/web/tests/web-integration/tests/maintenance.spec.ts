@@ -26,6 +26,15 @@ test.beforeEach(async ({ page }) => {
   // possible in beforeEach) so it covers the rest of this hook too, not just the test body.
   test.setTimeout(60_000);
 
+  // TEMP DEBUG: CI keeps timing out waiting for the just-created vehicle to show up on
+  // /vehicles even though the same flow passes locally. Surface browser console/page errors
+  // and the raw API state so the next CI run's log shows what's actually happening.
+  page.on("console", (msg) => console.log(`[browser console:${msg.type()}] ${msg.text()}`));
+  page.on("pageerror", (err) => console.log(`[browser pageerror] ${err.stack ?? err.message}`));
+  page.on("requestfailed", (req) =>
+    console.log(`[browser requestfailed] ${req.method()} ${req.url()} -- ${req.failure()?.errorText}`),
+  );
+
   await login(page);
 
   vehicleName = `Maintenance E2E Vehicle ${crypto.randomUUID().replace(/-/g, "")}`;
@@ -38,6 +47,7 @@ test.beforeEach(async ({ page }) => {
       startDate: "2024-01-01",
     },
   });
+  console.log(`[debug] create vehicle response: ${response.status()} ${await response.text()}`);
   const vehicle = await response.json();
   vehicleId = vehicle.id;
 
@@ -46,6 +56,11 @@ test.beforeEach(async ({ page }) => {
   // explicitly by its unique name, then navigate via the nav link (client-side route
   // change) rather than a second full page load.
   await page.goto("/vehicles");
+
+  const listResponse = await page.request.get("/pitstop/api/v1/Vehicles");
+  console.log(`[debug] GET /Vehicles after goto: ${listResponse.status()} ${await listResponse.text()}`);
+  console.log(`[debug] page body text: ${(await page.locator("body").innerText()).slice(0, 2000)}`);
+
   await page.getByText(vehicleName).click();
   await page.getByRole("link", { name: "Maintenance" }).click();
   await expect(page).toHaveURL(/\/maintenance$/);
