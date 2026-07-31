@@ -20,6 +20,12 @@ let vehicleId: number;
 let vehicleName: string;
 
 test.beforeEach(async ({ page }) => {
+  // This flow does more setup/navigation than the default 30s test timeout budgets for
+  // (vehicle creation, an extra vehicle-selection step, and a full CRUD cycle) -- give it
+  // headroom so a slower CI agent doesn't trip the timeout mid-flow. Set here (as early as
+  // possible in beforeEach) so it covers the rest of this hook too, not just the test body.
+  test.setTimeout(60_000);
+
   await login(page);
 
   vehicleName = `Maintenance E2E Vehicle ${crypto.randomUUID().replace(/-/g, "")}`;
@@ -35,12 +41,14 @@ test.beforeEach(async ({ page }) => {
   const vehicle = await response.json();
   vehicleId = vehicle.id;
 
-  // The environment may already contain other (e.g. seeded) vehicles, so app-mount
-  // auto-selection can land on a vehicle other than the one just created. Select the
-  // newly-created vehicle explicitly by its unique name before navigating to /maintenance.
+  // The environment may already contain other vehicles, so app-mount auto-selection can
+  // land on a vehicle other than the one just created. Select the newly-created vehicle
+  // explicitly by its unique name, then navigate via the nav link (client-side route
+  // change) rather than a second full page load.
   await page.goto("/vehicles");
   await page.getByText(vehicleName).click();
-  await page.goto("/maintenance");
+  await page.getByRole("link", { name: "Maintenance" }).click();
+  await expect(page).toHaveURL(/\/maintenance$/);
 });
 
 test.afterEach(async ({ page }) => {
