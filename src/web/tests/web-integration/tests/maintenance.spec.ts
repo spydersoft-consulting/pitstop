@@ -16,6 +16,37 @@ async function selectDropdownOption(page: Page, testId: string, optionText: stri
   await page.getByRole("option", { name: optionText, exact: true }).click();
 }
 
+// The freshly-booted Testing stack (Postgres + mock OIDC + API + BFF + Vite dev server, all
+// cold-starting together) can be transiently flaky in CI for the first few requests -- a 502
+// from the reverse proxy while a backend is still warming up, or a page load that resolves
+// before the SPA has actually mounted. Both have been observed in CI (a 502 with an empty body
+// on vehicle creation, and a blank page body after `goto` that never recovered within the test
+// timeout). Retry each of those two operations a few times before giving up for real.
+async function createVehicle(page: Page, name: string): Promise<{ id: number }> {
+  let lastStatus = 0;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const response = await page.request.post("/pitstop/api/v1/Vehicles", {
+      data: { name, year: 2024, make: "Ford", model: "Bronco", startDate: "2024-01-01" },
+    });
+    if (response.ok()) return response.json();
+    lastStatus = response.status();
+    await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+  }
+  throw new Error(`Failed to create vehicle "${name}" after 3 attempts (last status: ${lastStatus})`);
+}
+
+async function gotoAndWaitForApp(page: Page, url: string) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    await page.goto(url);
+    try {
+      await page.getByText("PITSTOP").waitFor({ timeout: 15_000 });
+      return;
+    } catch {
+      if (attempt === 3) throw new Error(`App shell never rendered at ${url} after 3 attempts`);
+    }
+  }
+}
+
 let vehicleId: number;
 let vehicleName: string;
 
@@ -26,41 +57,17 @@ test.beforeEach(async ({ page }) => {
   // possible in beforeEach) so it covers the rest of this hook too, not just the test body.
   test.setTimeout(60_000);
 
-  // TEMP DEBUG: CI keeps timing out waiting for the just-created vehicle to show up on
-  // /vehicles even though the same flow passes locally. Surface browser console/page errors
-  // and the raw API state so the next CI run's log shows what's actually happening.
-  page.on("console", (msg) => console.log(`[browser console:${msg.type()}] ${msg.text()}`));
-  page.on("pageerror", (err) => console.log(`[browser pageerror] ${err.stack ?? err.message}`));
-  page.on("requestfailed", (req) =>
-    console.log(`[browser requestfailed] ${req.method()} ${req.url()} -- ${req.failure()?.errorText}`),
-  );
-
   await login(page);
 
   vehicleName = `Maintenance E2E Vehicle ${crypto.randomUUID().replace(/-/g, "")}`;
-  const response = await page.request.post("/pitstop/api/v1/Vehicles", {
-    data: {
-      name: vehicleName,
-      year: 2024,
-      make: "Ford",
-      model: "Bronco",
-      startDate: "2024-01-01",
-    },
-  });
-  console.log(`[debug] create vehicle response: ${response.status()} ${await response.text()}`);
-  const vehicle = await response.json();
+  const vehicle = await createVehicle(page, vehicleName);
   vehicleId = vehicle.id;
 
   // The environment may already contain other vehicles, so app-mount auto-selection can
   // land on a vehicle other than the one just created. Select the newly-created vehicle
   // explicitly by its unique name, then navigate via the nav link (client-side route
   // change) rather than a second full page load.
-  await page.goto("/vehicles");
-
-  const listResponse = await page.request.get("/pitstop/api/v1/Vehicles");
-  console.log(`[debug] GET /Vehicles after goto: ${listResponse.status()} ${await listResponse.text()}`);
-  console.log(`[debug] page body text: ${(await page.locator("body").innerText()).slice(0, 2000)}`);
-
+  await gotoAndWaitForApp(page, "/vehicles");
   await page.getByText(vehicleName).click();
   await page.getByRole("link", { name: "Maintenance" }).click();
   await expect(page).toHaveURL(/\/maintenance$/);
