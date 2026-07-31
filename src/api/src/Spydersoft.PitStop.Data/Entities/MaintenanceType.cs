@@ -15,4 +15,5 @@ public enum MaintenanceType
     Coolant = 10,
     TransmissionFluid = 11,
     Other = 12,
+    Recall = 13,
 }

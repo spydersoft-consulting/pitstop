@@ -15,7 +15,7 @@ public class CreateMaintenanceLogRequest
     [Range(0, double.MaxValue)]
     public decimal OdometerReading { get; set; }
 
-    /// <summary>Valid values: OilChange, TireRotation, AirFilter, CabinFilter, BrakePads, BrakeFluid, SparkPlugs, Battery, WiperBlades, WasherFluid, Coolant, TransmissionFluid, Other.</summary>
+    /// <summary>Valid values: OilChange, TireRotation, AirFilter, CabinFilter, BrakePads, BrakeFluid, SparkPlugs, Battery, WiperBlades, WasherFluid, Coolant, TransmissionFluid, Other, Recall.</summary>
     [Required]
     public string ServiceType { get; set; } = string.Empty;
 
@@ -25,6 +25,8 @@ public class CreateMaintenanceLogRequest
     /// <summary>Valid values: Self, Shop.</summary>
     [Required]
     public string PerformedBy { get; set; } = string.Empty;
+
+    public bool IsWarrantyWork { get; set; }
 
     /// <summary>Attach an existing location owned by the caller. Mutually exclusive with <see cref="Location"/>.</summary>
     public int? LocationId { get; set; }
@@ -40,11 +42,6 @@ public class CreateMaintenanceLogRequest
 
     [Range(0, double.MaxValue)]
     public decimal? TotalCost { get; set; }
-
-    [Range(0, double.MaxValue)]
-    public decimal? NextServiceOdometer { get; set; }
-
-    public DateOnly? NextServiceDate { get; set; }
 
     [MaxLength(1000)]
     public string? Notes { get; set; }

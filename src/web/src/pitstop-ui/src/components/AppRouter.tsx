@@ -5,6 +5,9 @@ import { Dashboard } from "./Dashboard/Dashboard";
 import { FillUpHistory } from "./FillUpHistory/FillUpHistory";
 import { AddFillUp } from "./FillUpHistory/AddFillUp";
 import { EditFillUp } from "./FillUpHistory/EditFillUp";
+import { MaintenanceLogHistory } from "./MaintenanceLog/MaintenanceLogHistory";
+import { AddMaintenanceLog } from "./MaintenanceLog/AddMaintenanceLog";
+import { EditMaintenanceLog } from "./MaintenanceLog/EditMaintenanceLog";
 import { Analytics } from "./Analytics/Analytics";
 import { Vehicles } from "./Vehicles/Vehicles";
 import { AddVehicle } from "./Vehicles/AddVehicle";
@@ -13,6 +16,7 @@ import { Landing } from "./Landing/Landing";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchVehicles } from "../store/slices/vehicleSlice";
 import { fetchFillUps } from "../store/slices/fillUpSlice";
+import { fetchMaintenanceLogs } from "../store/slices/maintenanceLogSlice";
 import { fetchLocations } from "../store/slices/locationSlice";
 import { Locations } from "./Locations/Locations";
 import { useAuth } from "../context";
@@ -32,6 +36,7 @@ export const AppRouter: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && selectedVehicleId != null) {
       void dispatch(fetchFillUps(selectedVehicleId));
+      void dispatch(fetchMaintenanceLogs(selectedVehicleId));
     }
   }, [dispatch, isAuthenticated, selectedVehicleId]);
 
@@ -47,6 +52,9 @@ export const AppRouter: React.FC = () => {
           <Route path="/fill-ups" element={<FillUpHistory />} />
           <Route path="/fill-ups/new" element={<AddFillUp />} />
           <Route path="/fill-ups/:id/edit" element={<EditFillUp />} />
+          <Route path="/maintenance" element={<MaintenanceLogHistory />} />
+          <Route path="/maintenance/new" element={<AddMaintenanceLog />} />
+          <Route path="/maintenance/:id/edit" element={<EditMaintenanceLog />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/vehicles/new" element={<AddVehicle />} />

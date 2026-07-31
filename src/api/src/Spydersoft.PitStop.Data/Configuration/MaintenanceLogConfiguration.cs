@@ -17,7 +17,6 @@ public class MaintenanceLogConfiguration : IEntityTypeConfiguration<MaintenanceL
         builder.Property(m => m.PartsCost).HasPrecision(8, 2);
         builder.Property(m => m.LaborCost).HasPrecision(8, 2);
         builder.Property(m => m.TotalCost).HasPrecision(8, 2);
-        builder.Property(m => m.NextServiceOdometer).HasPrecision(10, 1);
 
         builder.Property(m => m.Description).HasMaxLength(200);
         builder.Property(m => m.Notes).HasMaxLength(1000);

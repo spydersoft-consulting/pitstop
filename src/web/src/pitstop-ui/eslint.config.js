@@ -1,24 +1,23 @@
 // @ts-check
-import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
-import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import { sharedTypeScriptConfig } from "../../../../eslint.shared.mjs";
 
 export default tseslint.config(
   {
+    // A bare `ignores` entry (no `files`/other keys) is a *global* ignore -- it excludes these
+    // paths even when explicitly passed on the CLI (e.g. by lint-staged), unlike an `ignores` field
+    // nested inside a rule block, which only scopes that one block. Codegen output shouldn't be
+    // held to hand-written lint rules at all.
+    ignores: ["**/build/**/*", "**/dist/**/*", "**/output/**/*", "**/coverage/**/*", "src/api/generated/**/*"],
+  },
+  ...sharedTypeScriptConfig({
+    tsconfigRootDir: import.meta.dirname,
     files: ["**/*.ts", "**/*.tsx"],
-    ignores: [
-      "**/build/**/*",
-      "**/dist/**/*",
-      "**/output/**/*",
-      "**/coverage/**/*",
-    ],
-    extends: [
-      eslint.configs.recommended,
-      ...tseslint.configs.recommended,
-      ...tseslint.configs.stylistic,
-    ],
+  }),
+  {
+    files: ["**/*.ts", "**/*.tsx"],
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
@@ -26,10 +25,7 @@ export default tseslint.config(
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-inferrable-types": "off",
     },
   },
@@ -39,5 +35,4 @@ export default tseslint.config(
       "react-refresh/only-export-components": "off",
     },
   },
-  eslintPluginPrettierRecommended,
 );

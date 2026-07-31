@@ -194,11 +194,10 @@ public class MaintenanceLogsController(
         log.ServiceType = serviceType;
         log.Description = request.Description;
         log.PerformedBy = performedBy;
+        log.IsWarrantyWork = request.IsWarrantyWork;
         log.PartsCost = request.PartsCost;
         log.LaborCost = request.LaborCost;
         log.TotalCost = request.TotalCost;
-        log.NextServiceOdometer = request.NextServiceOdometer;
-        log.NextServiceDate = request.NextServiceDate;
         log.Notes = request.Notes;
     }
 
@@ -209,11 +208,10 @@ public class MaintenanceLogsController(
         log.ServiceType = serviceType;
         log.Description = request.Description;
         log.PerformedBy = performedBy;
+        log.IsWarrantyWork = request.IsWarrantyWork;
         log.PartsCost = request.PartsCost;
         log.LaborCost = request.LaborCost;
         log.TotalCost = request.TotalCost;
-        log.NextServiceOdometer = request.NextServiceOdometer;
-        log.NextServiceDate = request.NextServiceDate;
         log.Notes = request.Notes;
     }
 
@@ -226,6 +224,7 @@ public class MaintenanceLogsController(
         ServiceType = m.ServiceType.ToString(),
         Description = m.Description,
         PerformedBy = m.PerformedBy.ToString(),
+        IsWarrantyWork = m.IsWarrantyWork,
         Location = m.Location is null ? null : new LocationSummaryDto
         {
             Id = m.Location.Id,
@@ -235,8 +234,6 @@ public class MaintenanceLogsController(
         PartsCost = m.PartsCost,
         LaborCost = m.LaborCost,
         TotalCost = m.TotalCost,
-        NextServiceOdometer = m.NextServiceOdometer,
-        NextServiceDate = m.NextServiceDate,
         Notes = m.Notes,
         ComputedTotalCost = m.TotalCost ?? (m.PartsCost.HasValue || m.LaborCost.HasValue
             ? (m.PartsCost ?? 0) + (m.LaborCost ?? 0)

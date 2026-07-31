@@ -160,19 +160,15 @@ namespace Spydersoft.PitStop.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsWarrantyWork")
+                        .HasColumnType("boolean");
+
                     b.Property<decimal?>("LaborCost")
                         .HasPrecision(8, 2)
                         .HasColumnType("numeric(8,2)");
 
                     b.Property<int?>("LocationId")
                         .HasColumnType("integer");
-
-                    b.Property<DateOnly?>("NextServiceDate")
-                        .HasColumnType("date");
-
-                    b.Property<decimal?>("NextServiceOdometer")
-                        .HasPrecision(10, 1)
-                        .HasColumnType("numeric(10,1)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)

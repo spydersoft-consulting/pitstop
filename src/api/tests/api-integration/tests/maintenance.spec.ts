@@ -52,6 +52,17 @@ test("CreateMaintenanceLog_Returns201", async ({ request }) => {
   expect(dto.performedBy).toBe("Self");
 });
 
+test("CreateMaintenanceLog_WithRecallTypeAndWarrantyFlag_Returns201", async ({ request }) => {
+  const response = await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
+    data: testLog(1500, { serviceType: "Recall", isWarrantyWork: true }),
+  });
+
+  expect(response.status()).toBe(201);
+  const dto: MaintenanceLogDto = await response.json();
+  expect(dto.serviceType).toBe("Recall");
+  expect(dto.isWarrantyWork).toBe(true);
+});
+
 test("GetMaintenanceLog_ById_ReturnsExpectedFields", async ({ request }) => {
   const created: MaintenanceLogDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, { data: testLog(2000) })

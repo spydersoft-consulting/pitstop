@@ -10,19 +10,11 @@ import type {
 } from "axios";
 
 import type { Auth } from "../core/auth.gen";
-import type {
-  ServerSentEventsOptions,
-  ServerSentEventsResult,
-} from "../core/serverSentEvents.gen";
-import type {
-  Client as CoreClient,
-  Config as CoreConfig,
-} from "../core/types.gen";
+import type { ServerSentEventsOptions, ServerSentEventsResult } from "../core/serverSentEvents.gen";
+import type { Client as CoreClient, Config as CoreConfig } from "../core/types.gen";
 
 export interface Config<T extends ClientOptions = ClientOptions>
-  extends
-    Omit<CreateAxiosDefaults, "auth" | "baseURL" | "headers" | "method">,
-    CoreConfig {
+  extends Omit<CreateAxiosDefaults, "auth" | "baseURL" | "headers" | "method">, CoreConfig {
   /**
    * Axios implementation. You can use this option to provide either an
    * `AxiosStatic` or an `AxiosInstance`.
@@ -42,16 +34,7 @@ export interface Config<T extends ClientOptions = ClientOptions>
    */
   headers?:
     | AxiosRequestHeaders
-    | Record<
-        string,
-        | string
-        | number
-        | boolean
-        | (string | number | boolean)[]
-        | null
-        | undefined
-        | unknown
-      >;
+    | Record<string, string | number | boolean | (string | number | boolean)[] | null | undefined | unknown>;
   /**
    * Throw an error instead of returning it in the response?
    *
@@ -60,23 +43,14 @@ export interface Config<T extends ClientOptions = ClientOptions>
   throwOnError?: T["throwOnError"];
 }
 
-export interface RequestOptions<
-  TData = unknown,
-  ThrowOnError extends boolean = boolean,
-  Url extends string = string,
->
+export interface RequestOptions<TData = unknown, ThrowOnError extends boolean = boolean, Url extends string = string>
   extends
     Config<{
       throwOnError: ThrowOnError;
     }>,
     Pick<
       ServerSentEventsOptions<TData>,
-      | "onRequest"
-      | "onSseError"
-      | "onSseEvent"
-      | "sseDefaultRetryDelay"
-      | "sseMaxRetryAttempts"
-      | "sseMaxRetryDelay"
+      "onRequest" | "onSseError" | "onSseEvent" | "sseDefaultRetryDelay" | "sseMaxRetryAttempts" | "sseMaxRetryDelay"
     > {
   /**
    * Any body that you want to add to your request.
@@ -103,48 +77,31 @@ export type RequestResult<
   TError = unknown,
   ThrowOnError extends boolean = boolean,
 > = ThrowOnError extends true
-  ? Promise<
-      AxiosResponse<
-        TData extends Record<string, unknown> ? TData[keyof TData] : TData
-      >
-    >
+  ? Promise<AxiosResponse<TData extends Record<string, unknown> ? TData[keyof TData] : TData>>
   : Promise<
-      | (AxiosResponse<
-          TData extends Record<string, unknown> ? TData[keyof TData] : TData
-        > & {
+      | (AxiosResponse<TData extends Record<string, unknown> ? TData[keyof TData] : TData> & {
           error: undefined;
         })
-      | (AxiosError<
-          TError extends Record<string, unknown> ? TError[keyof TError] : TError
-        > & {
+      | (AxiosError<TError extends Record<string, unknown> ? TError[keyof TError] : TError> & {
           data: undefined;
-          error: TError extends Record<string, unknown>
-            ? TError[keyof TError]
-            : TError;
+          error: TError extends Record<string, unknown> ? TError[keyof TError] : TError;
         })
     >;
 
-type MethodFn = <
-  TData = unknown,
-  TError = unknown,
-  ThrowOnError extends boolean = false,
->(
+type MethodFn = <TData = unknown, TError = unknown, ThrowOnError extends boolean = false>(
   options: Omit<RequestOptions<TData, ThrowOnError>, "method">,
 ) => RequestResult<TData, TError, ThrowOnError>;
 
 type SseFn = <
   TData = unknown,
-  TError = unknown,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _TError = unknown,
   ThrowOnError extends boolean = false,
 >(
   options: Omit<RequestOptions<never, ThrowOnError>, "method">,
-) => Promise<ServerSentEventsResult<TData, TError>>;
+) => Promise<ServerSentEventsResult<TData>>;
 
-type RequestFn = <
-  TData = unknown,
-  TError = unknown,
-  ThrowOnError extends boolean = false,
->(
+type RequestFn = <TData = unknown, TError = unknown, ThrowOnError extends boolean = false>(
   options: Omit<RequestOptions<TData, ThrowOnError>, "method"> &
     Pick<Required<RequestOptions<TData, ThrowOnError>>, "method">,
 ) => RequestResult<TData, TError, ThrowOnError>;
@@ -156,20 +113,10 @@ type BuildUrlFn = <
     url: string;
   },
 >(
-  options: TData &
-    Pick<
-      RequestOptions<unknown, boolean>,
-      "axios" | "baseURL" | "paramsSerializer" | "querySerializer"
-    >,
+  options: TData & Pick<RequestOptions<unknown, boolean>, "axios" | "baseURL" | "paramsSerializer" | "querySerializer">,
 ) => string;
 
-export type Client = CoreClient<
-  RequestFn,
-  Config,
-  MethodFn,
-  BuildUrlFn,
-  SseFn
-> & {
+export type Client = CoreClient<RequestFn, Config, MethodFn, BuildUrlFn, SseFn> & {
   instance: AxiosInstance;
 };
 
@@ -199,8 +146,5 @@ export type Options<
   TData extends TDataShape = TDataShape,
   ThrowOnError extends boolean = boolean,
   TResponse = unknown,
-> = OmitKeys<
-  RequestOptions<TResponse, ThrowOnError>,
-  "body" | "path" | "query" | "url"
-> &
+> = OmitKeys<RequestOptions<TResponse, ThrowOnError>, "body" | "path" | "query" | "url"> &
   ([TData] extends [never] ? unknown : Omit<TData, "url">);

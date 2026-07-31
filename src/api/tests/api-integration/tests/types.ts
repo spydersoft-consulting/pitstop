@@ -143,6 +143,7 @@ export interface MaintenanceLogDto {
   serviceType: string;
   description?: string | null;
   performedBy: string;
+  isWarrantyWork?: boolean;
   location?: LocationSummaryDto | null;
   partsCost?: number | null;
   laborCost?: number | null;
@@ -159,6 +160,7 @@ export interface CreateMaintenanceLogRequest {
   serviceType: string;
   description?: string;
   performedBy: string;
+  isWarrantyWork?: boolean;
   locationId?: number;
   location?: CreateLocationRequest;
   partsCost?: number;

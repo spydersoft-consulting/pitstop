@@ -64,19 +64,19 @@ export default defineConfig({
   server: {
     proxy: {
       "^/pitstop": {
-        target: "https://localhost:9081/",
+        target: "https://127.0.0.1:9081/",
         secure: false,
       },
       "^/.auth": {
-        target: "https://localhost:9081/",
+        target: "https://127.0.0.1:9081/",
         secure: false,
       },
       "^/livez": {
-        target: "https://localhost:9081/",
+        target: "https://127.0.0.1:9081/",
         secure: false,
       },
       "^/readyz": {
-        target: "https://localhost:9081/",
+        target: "https://127.0.0.1:9081/",
         secure: false,
       },
     },

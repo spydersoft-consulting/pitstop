@@ -29,12 +29,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         if (builder.Environment.IsEnvironment("Testing"))
         {
             var testKey = builder.Configuration["Auth:TestKey"]!;
+            // The mock OIDC container (see AppHost) is treated as a real Authority here rather than
+            // bypassed -- tokens it issues (from the browser-driven BFF login flow) are validated the
+            // same way a real IdP's would be: issuer + signature checked via its discovery document.
+            // The symmetric TestKey is kept as an additional trusted signer alongside that, since
+            // DataSeeder mints its own tokens directly (no OIDC round-trip) for the API integration
+            // suite; those tokens carry a matching "iss" so they validate against the same issuer.
+            var mockOidcAuthority = builder.Configuration["Auth:MockOidcAuthority"] ?? "http://localhost:8200";
+            options.Authority = mockOidcAuthority;
+            options.RequireHttpsMetadata = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = false,
                 ValidateAudience = false,
                 ValidateLifetime = false,
-                IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(testKey))
+                IssuerSigningKeys = [new SymmetricSecurityKey(Convert.FromBase64String(testKey))]
             };
         }
         else

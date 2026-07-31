@@ -24,12 +24,11 @@ namespace Spydersoft.PitStop.Data.Migrations
                     ServiceType = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     PerformedBy = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    IsWarrantyWork = table.Column<bool>(type: "boolean", nullable: false),
                     LocationId = table.Column<int>(type: "integer", nullable: true),
                     PartsCost = table.Column<decimal>(type: "numeric(8,2)", precision: 8, scale: 2, nullable: true),
                     LaborCost = table.Column<decimal>(type: "numeric(8,2)", precision: 8, scale: 2, nullable: true),
                     TotalCost = table.Column<decimal>(type: "numeric(8,2)", precision: 8, scale: 2, nullable: true),
-                    NextServiceOdometer = table.Column<decimal>(type: "numeric(10,1)", precision: 10, scale: 1, nullable: true),
-                    NextServiceDate = table.Column<DateOnly>(type: "date", nullable: true),
                     Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },

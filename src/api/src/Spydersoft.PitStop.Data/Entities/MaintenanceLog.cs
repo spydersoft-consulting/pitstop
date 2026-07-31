@@ -11,6 +11,7 @@ public class MaintenanceLog
     public MaintenanceType ServiceType { get; set; }
     public string? Description { get; set; }
     public ServicePerformedBy PerformedBy { get; set; }
+    public bool IsWarrantyWork { get; set; }
 
     public int? LocationId { get; set; }
     public Location? Location { get; set; }
@@ -18,9 +19,6 @@ public class MaintenanceLog
     public decimal? PartsCost { get; set; }
     public decimal? LaborCost { get; set; }
     public decimal? TotalCost { get; set; }
-
-    public decimal? NextServiceOdometer { get; set; }
-    public DateOnly? NextServiceDate { get; set; }
 
     public string? Notes { get; set; }
 

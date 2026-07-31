@@ -241,6 +241,22 @@ public class MaintenanceLogsControllerTests
     }
 
     [Test]
+    public async Task Create_PersistsRecallServiceTypeAndWarrantyFlag()
+    {
+        var v = await CreateVehicleAsync();
+
+        var request = TestRequest();
+        request.ServiceType = "Recall";
+        request.IsWarrantyWork = true;
+
+        var result = await _controller.Create(v.Id, request, CancellationToken.None);
+
+        var dto = (MaintenanceLogDto)((CreatedAtActionResult)result.Result!).Value!;
+        Assert.That(dto.ServiceType, Is.EqualTo("Recall"));
+        Assert.That(dto.IsWarrantyWork, Is.True);
+    }
+
+    [Test]
     public async Task GetById_ComputesTotalCost_FromPartsAndLabor()
     {
         var v = await CreateVehicleAsync();
