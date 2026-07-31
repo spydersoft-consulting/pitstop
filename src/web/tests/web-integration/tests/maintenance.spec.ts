@@ -17,13 +17,15 @@ async function selectDropdownOption(page: Page, testId: string, optionText: stri
 }
 
 let vehicleId: number;
+let vehicleName: string;
 
 test.beforeEach(async ({ page }) => {
   await login(page);
 
+  vehicleName = `Maintenance E2E Vehicle ${crypto.randomUUID().replace(/-/g, "")}`;
   const response = await page.request.post("/pitstop/api/v1/Vehicles", {
     data: {
-      name: `Maintenance E2E Vehicle ${crypto.randomUUID().replace(/-/g, "")}`,
+      name: vehicleName,
       year: 2024,
       make: "Ford",
       model: "Bronco",
@@ -33,8 +35,11 @@ test.beforeEach(async ({ page }) => {
   const vehicle = await response.json();
   vehicleId = vehicle.id;
 
-  // Vehicles fetch (and auto-select of the only vehicle) happens on app mount, so a fresh
-  // navigation is needed for the newly-created vehicle to become the selected one.
+  // The environment may already contain other (e.g. seeded) vehicles, so app-mount
+  // auto-selection can land on a vehicle other than the one just created. Select the
+  // newly-created vehicle explicitly by its unique name before navigating to /maintenance.
+  await page.goto("/vehicles");
+  await page.getByText(vehicleName).click();
   await page.goto("/maintenance");
 });
 
