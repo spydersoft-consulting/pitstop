@@ -27,32 +27,24 @@
 
 	<!--
 	`dotnet run`/`dotnet build` only trigger BuildSpa (dist/ on disk). MapFallbackToFile in
-	Program.cs needs wwwroot/index.html, which used to only get populated by PublishSpa below
-	(a publish-only target), leaving wwwroot empty for anything driven by `dotnet run`
-	(notably the Playwright suites' AppHost webServer): every deep-linked SPA route 404'd
-	with an empty body on a clean checkout. It only worked locally by accident, riding on a
-	leftover wwwroot/ from an earlier `dotnet publish` in the same working tree.
+	Program.cs needs wwwroot/index.html, which used to only get populated by a publish-only
+	target, leaving wwwroot empty for anything driven by `dotnet run` (notably the Playwright
+	suites' AppHost webServer): every deep-linked SPA route 404'd with an empty body on a clean
+	checkout. It only worked locally by accident, riding on a leftover wwwroot/ from an earlier
+	`dotnet publish` in the same working tree.
+
+	Copying into the physical wwwroot/ here means the Web SDK's own default
+	`Content Include="wwwroot/**"` item now picks these files up for publish automatically:
+	a separate publish-time target that also injected dist/** into wwwroot would double up and
+	fail with NETSDK1152 (duplicate publish output files), so this replaces that target rather
+	than sitting alongside it. CI's "no build" publish step relies on this Build-time copy having
+	already happened earlier in the same job (via `dotnet build`); see pipeline-ci.yml.
 	-->
 	<Target Name="CopySpaToWwwroot" AfterTargets="Build">
 		<ItemGroup>
 			<SpaBuildFiles Include="$(SpaRoot)dist\**" />
 		</ItemGroup>
 		<Copy SourceFiles="@(SpaBuildFiles)" DestinationFolder="$(MSBuildProjectDirectory)\wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
-	</Target>
-
-	<!--
-	A "no build" publish (used by CI) skips the Build target above, so this
-	depends on BuildSpa having already run earlier in the same job/workspace
-	(via `dotnet build`) and left dist/ on disk; see pipeline-ci.yml.
-	-->
-	<Target Name="PublishSpa" AfterTargets="ComputeFilesToPublish">
-		<ItemGroup>
-			<SpaDistFiles Include="$(SpaRoot)dist\**" />
-			<ResolvedFileToPublish Include="@(SpaDistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
-				<RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
-				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-			</ResolvedFileToPublish>
-		</ItemGroup>
 	</Target>
 
 </Project>
