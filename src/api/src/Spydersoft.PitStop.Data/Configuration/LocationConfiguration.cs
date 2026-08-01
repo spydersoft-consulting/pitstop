@@ -26,5 +26,10 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                .WithOne(f => f.Location!)
                .HasForeignKey(f => f.LocationId)
                .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasMany(l => l.MaintenanceLogs)
+               .WithOne(m => m.Location!)
+               .HasForeignKey(m => m.LocationId)
+               .OnDelete(DeleteBehavior.SetNull);
     }
 }

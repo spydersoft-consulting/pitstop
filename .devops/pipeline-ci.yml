@@ -38,100 +38,159 @@ pr:
     include:
       - main
 
-extends:
-  template: pipelines/build-multi-container/v1.yml@templates
-  parameters:
-    vmImage: ubuntu-latest
-    gitVersionSpec: "6.0.x"
-    netCoreVersion: "10.0.x"
-    externalFeedCredentials: SpydersoftGithub
-    nugetConfigPath: "$(Build.SourcesDirectory)/src/nuget.config"
+# Composed from two stage templates: the multi-container build/publish stages
+# and the Playwright integration/E2E stage (run after Build). Composition (not
+# `extends`) is what lets a single pipeline pull in both templates -- see
+# identity_server's pipeline-ci.yml for the sibling example this mirrors.
+stages:
+  - template: pipelines/build-multi-container/v1.yml@templates
+    parameters:
+      vmImage: ubuntu-latest
+      gitVersionSpec: "6.0.x"
+      netCoreVersion: "10.0.x"
+      externalFeedCredentials: SpydersoftGithub
+      nugetConfigPath: "$(Build.SourcesDirectory)/src/nuget.config"
 
-    buildProject: Spydersoft.PitStop.slnx
+      buildProject: Spydersoft.PitStop.slnx
 
-    publishProjects:
-      - name: data-api
-        project: src/api/src/Spydersoft.PitStop.Api/Spydersoft.PitStop.Api.csproj
-        artifactName: pitStopApi
-      - name: web
-        project: src/web/src/Spydersoft.PitStop.Frontend/Spydersoft.PitStop.Frontend.csproj
-        artifactName: pitstop-web
+      publishProjects:
+        - name: data-api
+          project: src/api/src/Spydersoft.PitStop.Api/Spydersoft.PitStop.Api.csproj
+          artifactName: pitStopApi
+        - name: web
+          project: src/web/src/Spydersoft.PitStop.Frontend/Spydersoft.PitStop.Frontend.csproj
+          artifactName: pitstop-web
 
-    executeTests: true
-    testProjects: "**/*.UnitTests/*.csproj"
+      executeTests: true
+      testProjects: "**/*.UnitTests/*.csproj"
 
-    sonarProjectKey: spydersoft-consulting_pitstop
-    sonarProjectName: pitstop
-    useSonarCloud: true
-    sonarCloudOrganization: spydersoft-consulting
-    sonarEndpointName: sonarcloud-spydersoft
-    sonarExtraProperties: |
-      sonar.exclusions=**/Migrations/**/*
-      sonar.scanner.scanAll=false
-      sonar.coverage.exclusions=**/Program.cs
+      sonarProjectKey: spydersoft-consulting_pitstop
+      sonarProjectName: pitstop
+      useSonarCloud: true
+      sonarCloudOrganization: spydersoft-consulting
+      sonarEndpointName: sonarcloud-spydersoft
+      sonarExtraProperties: |
+        sonar.exclusions=**/Migrations/**/*
+        sonar.scanner.scanAll=false
+        sonar.coverage.exclusions=**/Program.cs
 
-    uiEnabled: true
-    uiSourceDirectory: src/web/src/pitstop-ui
-    uiNodeVersion: "24.x"
-    uiUseYarn2: true
-    uiCodeCoverageFile: src/web/src/pitstop-ui/output/coverage/cobertura-coverage.xml
-    uiUnitTestFile: src/web/src/pitstop-ui/output/test/junit.xml
-    uiSonarEndpointName: sonarcloud-spydersoft
-    uiUseSonarCloud: true
-    uiSonarCloudOrganization: spydersoft-consulting
-    uiSonarConfigFile: src/web/react-sonar-project.properties
+      uiEnabled: true
+      uiSourceDirectory: src/web/src/pitstop-ui
+      uiNodeVersion: "24.x"
+      uiUseYarn2: true
+      uiCodeCoverageFile: src/web/src/pitstop-ui/output/coverage/cobertura-coverage.xml
+      uiUnitTestFile: src/web/src/pitstop-ui/output/test/junit.xml
+      uiSonarEndpointName: sonarcloud-spydersoft
+      uiUseSonarCloud: true
+      uiSonarCloudOrganization: spydersoft-consulting
+      uiSonarConfigFile: src/web/react-sonar-project.properties
 
-    containerRegistryName: github-spydersoft-docker
-    dockerImages:
-      - name: data_api
-        dockerImageName: spydersoft-consulting/pitstop-data-api
-        dockerFilePath: src/api/src/Spydersoft.PitStop.Api/Dockerfile
-        artifactName: pitStopApi
-        artifactZipName: Spydersoft.PitStop.Api
-      - name: web
-        dockerImageName: spydersoft-consulting/pitstop-web
-        dockerFilePath: src/web/Dockerfile
-        artifactName: pitstop-web
-        artifactZipName: Spydersoft.PitStop.Frontend
+      containerRegistryName: github-spydersoft-docker
+      dockerImages:
+        - name: data_api
+          dockerImageName: spydersoft-consulting/pitstop-data-api
+          dockerFilePath: src/api/src/Spydersoft.PitStop.Api/Dockerfile
+          artifactName: pitStopApi
+          artifactZipName: Spydersoft.PitStop.Api
+        - name: web
+          dockerImageName: spydersoft-consulting/pitstop-web
+          dockerFilePath: src/web/Dockerfile
+          artifactName: pitstop-web
+          artifactZipName: Spydersoft.PitStop.Frontend
 
-    helmCharts:
-      - name: pitstop
-        chartPath: charts/pitstop
+      helmCharts:
+        - name: pitstop
+          chartPath: charts/pitstop
 
-    helmfileRepoName: helmfileconfig
-    updateHelmConfigDependsOn:
-      - docker_publish
-      - chart_publish
+      helmfileRepoName: helmfileconfig
 
-    # Three build shapes:
-    #  - PR: build/test/sonar only, no publish, no helm-config update.
-    #  - main: beta build (GitVersion tags X.Y.Z-beta.<n> per GitVersion.yml's
-    #    `main` branch config) -> publish images+chart, update helm-config's
-    #    test environment. Still runs sonar since this is a real build path,
-    #    not just a skip case.
-    #  - anything else (a tag push): release build (unlabeled X.Y.Z) ->
-    #    publish images+chart, ALSO update helm-config's test environment --
-    #    helm-config's own process-cicd.ps1/feature.yml decide from there
-    #    whether to auto-promote to stage (gated on the version being
-    #    unlabeled, not on which branch built it). No sonar re-analysis
-    #    (mirrors the prior convention of not re-scanning release/tag builds).
-    ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-      updateHelmConfig: false
-      buildAndPublishDockerImages: false
-      buildAndPublishHelmCharts: false
-      executeSonar: true
-      uiExecuteSonar: true
-    ${{ elseif eq(variables['Build.SourceBranchName'], 'main') }}:
-      updateHelmConfig: true
-      buildAndPublishDockerImages: true
-      buildAndPublishHelmCharts: true
-      executeSonar: true
-      uiExecuteSonar: true
-    ${{ else }}:
-      updateHelmConfig: true
-      buildAndPublishDockerImages: true
-      buildAndPublishHelmCharts: true
-      executeSonar: false
-      uiExecuteSonar: false
+      # Serial chain: Build -> integration_tests -> docker_publish/chart_publish -> updateHelmConfig.
+      # Images and the chart (and therefore the helm/deploy bump) only happen if
+      # the Playwright suites pass.
+      dockerPublishDependsOn:
+        - integration_tests
+      chartPublishDependsOn:
+        - integration_tests
+      updateHelmConfigDependsOn:
+        - docker_publish
+        - chart_publish
 
-    helmTagsCollection: "data_api=$(build.buildnumber),pitstop_web=$(build.buildnumber),chart_version=$(build.buildnumber)"
+      # Three build shapes:
+      #  - PR: build/test/sonar only, no publish, no helm-config update.
+      #  - main: beta build (GitVersion tags X.Y.Z-beta.<n> per GitVersion.yml's
+      #    `main` branch config) -> publish images+chart, update helm-config's
+      #    test environment. Still runs sonar since this is a real build path,
+      #    not just a skip case.
+      #  - anything else (a tag push): release build (unlabeled X.Y.Z) ->
+      #    publish images+chart, ALSO update helm-config's test environment --
+      #    helm-config's own process-cicd.ps1/feature.yml decide from there
+      #    whether to auto-promote to stage (gated on the version being
+      #    unlabeled, not on which branch built it). No sonar re-analysis
+      #    (mirrors the prior convention of not re-scanning release/tag builds).
+      ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        updateHelmConfig: false
+        buildAndPublishDockerImages: false
+        buildAndPublishHelmCharts: false
+        executeSonar: true
+        uiExecuteSonar: true
+      ${{ elseif eq(variables['Build.SourceBranchName'], 'main') }}:
+        updateHelmConfig: true
+        buildAndPublishDockerImages: true
+        buildAndPublishHelmCharts: true
+        executeSonar: true
+        uiExecuteSonar: true
+      ${{ else }}:
+        updateHelmConfig: true
+        buildAndPublishDockerImages: true
+        buildAndPublishHelmCharts: true
+        executeSonar: false
+        uiExecuteSonar: false
+
+      helmTagsCollection: "data_api=$(build.buildnumber),pitstop_web=$(build.buildnumber),chart_version=$(build.buildnumber)"
+
+  # Playwright suites under src/*/tests/. Runs after Build, and docker_publish
+  # is pointed at it (above) so images + deploy are gated on these passing.
+  # Each suite boots the full Aspire stack itself via Playwright's webServer
+  # (needs .NET 10 + a container runtime on the agent -- ubuntu-latest hosted
+  # images ship Docker, which is all AppHost needs; podman is a local-dev-only
+  # substitution).
+  - template: stages/integration-tests/v1.yml@templates
+    parameters:
+      vmImage: ubuntu-latest
+      stageName: integration_tests
+      dependsOn:
+        - Build
+      netCoreVersion: "10.0.x"
+      nodeVersion: "24.x"
+      externalFeedCredentials: SpydersoftGithub
+      setupSteps:
+        # UseNode@1 (used by this template to set up Node) mis-resolves "24.x" to a
+        # stale cached Node on ubuntu-latest, which breaks corepack -- same failure
+        # mode identity_server's pipeline hit on its self-hosted agent. Force the
+        # PATH back to Node 24.x with NodeTool@0, which resolves correctly here.
+        - task: NodeTool@0
+          displayName: "Force Node 24.x (UseNode@1 workaround)"
+          inputs:
+            versionSpec: "24.x"
+
+        # AppHost always spins up pitstop-ui (AddViteApp) alongside whichever
+        # suite is under test, so its workspace deps need to be in place first
+        # -- root install covers it since it's a yarn workspace member.
+        - task: Bash@3
+          displayName: "pitstop-ui: yarn install"
+          inputs:
+            targetType: inline
+            workingDirectory: $(Build.SourcesDirectory)
+            script: |
+              set -euo pipefail
+              corepack enable
+              yarn install --immutable
+      suites:
+        - name: "API Integration"
+          workingDirectory: src/api/tests/api-integration
+          installCommand: "corepack enable && yarn install --immutable"
+          # API suite uses Playwright's request context -- no browser needed.
+          installBrowsers: false
+        - name: "Web Integration"
+          workingDirectory: src/web/tests/web-integration
+          installCommand: "corepack enable && yarn install --immutable"

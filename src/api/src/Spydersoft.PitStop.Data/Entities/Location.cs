@@ -19,4 +19,5 @@ public class Location
     public bool IsDeleted { get; set; }
 
     public ICollection<FillUp> FillUps { get; set; } = [];
+    public ICollection<MaintenanceLog> MaintenanceLogs { get; set; } = [];
 }

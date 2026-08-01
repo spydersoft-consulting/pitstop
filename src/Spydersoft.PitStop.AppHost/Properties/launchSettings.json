@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "https": {
+    "Remote": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
@@ -14,17 +14,18 @@
         "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true"
       }
     },
-    "http": {
+    "Local": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:8000",
+      "applicationUrl": "https://localhost:8001;http://localhost:8000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DOTNET_ENVIRONMENT": "Development",
         "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:8002",
         "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:8003",
-        "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true"
+        "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true",
+        "UseMockOidc": "true"
       }
     },
     "Testing": {

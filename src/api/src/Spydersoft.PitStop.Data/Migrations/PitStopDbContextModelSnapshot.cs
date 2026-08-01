@@ -17,7 +17,7 @@ namespace Spydersoft.PitStop.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.8")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -142,6 +142,74 @@ namespace Spydersoft.PitStop.Data.Migrations
                     b.ToTable("Locations");
                 });
 
+            modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.MaintenanceLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsWarrantyWork")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("LaborCost")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)");
+
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<decimal>("OdometerReading")
+                        .HasPrecision(10, 1)
+                        .HasColumnType("numeric(10,1)");
+
+                    b.Property<decimal?>("PartsCost")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)");
+
+                    b.Property<string>("PerformedBy")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateOnly>("ServiceDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<decimal?>("TotalCost")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)");
+
+                    b.Property<int>("VehicleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("VehicleId", "OdometerReading");
+
+                    b.HasIndex("VehicleId", "ServiceDate");
+
+                    b.ToTable("MaintenanceLogs");
+                });
+
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.Vehicle", b =>
                 {
                     b.Property<int>("Id")
@@ -216,14 +284,36 @@ namespace Spydersoft.PitStop.Data.Migrations
                     b.Navigation("Vehicle");
                 });
 
+            modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.MaintenanceLog", b =>
+                {
+                    b.HasOne("Spydersoft.PitStop.Data.Entities.Location", "Location")
+                        .WithMany("MaintenanceLogs")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Spydersoft.PitStop.Data.Entities.Vehicle", "Vehicle")
+                        .WithMany("MaintenanceLogs")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.Location", b =>
                 {
                     b.Navigation("FillUps");
+
+                    b.Navigation("MaintenanceLogs");
                 });
 
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.Vehicle", b =>
                 {
                     b.Navigation("FillUps");
+
+                    b.Navigation("MaintenanceLogs");
                 });
 #pragma warning restore 612, 618
         }

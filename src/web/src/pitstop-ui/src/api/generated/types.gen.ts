@@ -25,6 +25,21 @@ export type CreateLocationRequest = {
   googlePlaceId?: null | string;
 };
 
+export type CreateMaintenanceLogRequest = {
+  serviceDate?: string;
+  odometerReading?: number | string;
+  serviceType: string;
+  description?: null | string;
+  performedBy: string;
+  isWarrantyWork?: boolean;
+  locationId?: null | number | string;
+  location?: null | CreateLocationRequest;
+  partsCost?: null | number | string;
+  laborCost?: null | number | string;
+  totalCost?: null | number | string;
+  notes?: null | string;
+};
+
 export type CreateVehicleRequest = {
   name: string;
   year?: number | string;
@@ -91,6 +106,31 @@ export type LocationSummaryDto = {
   address?: null | string;
 };
 
+export type MaintenanceLogDto = {
+  id?: number | string;
+  vehicleId?: number | string;
+  serviceDate?: string;
+  odometerReading?: number | string;
+  serviceType?: string;
+  description?: null | string;
+  performedBy?: string;
+  isWarrantyWork?: boolean;
+  location?: null | LocationSummaryDto;
+  partsCost?: null | number | string;
+  laborCost?: null | number | string;
+  totalCost?: null | number | string;
+  notes?: null | string;
+  computedTotalCost?: null | number | string;
+};
+
+export type MaintenanceLogListResponse = {
+  items?: Array<MaintenanceLogDto>;
+  totalCount?: number | string;
+  page?: number | string;
+  pageSize?: number | string;
+  totalPages?: number | string;
+};
+
 export type MpgDataPoint = {
   date?: string;
   odometerReading?: number | string;
@@ -127,6 +167,29 @@ export type SummaryResponse = {
   avgCostPerMile?: null | number | string;
   lastFillUp?: null | string;
   lastOdometer?: null | number | string;
+};
+
+export type UpdateLocationRequest = {
+  name: string;
+  address?: null | string;
+  latitude?: null | number | string;
+  longitude?: null | number | string;
+  googlePlaceId?: null | string;
+};
+
+export type UpdateMaintenanceLogRequest = {
+  serviceDate?: string;
+  odometerReading?: number | string;
+  serviceType: string;
+  description?: null | string;
+  performedBy: string;
+  isWarrantyWork?: boolean;
+  locationId?: null | number | string;
+  location?: null | CreateLocationRequest;
+  partsCost?: null | number | string;
+  laborCost?: null | number | string;
+  totalCost?: null | number | string;
+  notes?: null | string;
 };
 
 export type UpdateVehicleRequest = {
@@ -327,8 +390,7 @@ export type GetApiV1LocationsResponses = {
   200: Array<LocationDto>;
 };
 
-export type GetApiV1LocationsResponse =
-  GetApiV1LocationsResponses[keyof GetApiV1LocationsResponses];
+export type GetApiV1LocationsResponse = GetApiV1LocationsResponses[keyof GetApiV1LocationsResponses];
 
 export type PostApiV1LocationsData = {
   body: CreateLocationRequest;
@@ -344,8 +406,23 @@ export type PostApiV1LocationsResponses = {
   200: LocationDto;
 };
 
-export type PostApiV1LocationsResponse =
-  PostApiV1LocationsResponses[keyof PostApiV1LocationsResponses];
+export type PostApiV1LocationsResponse = PostApiV1LocationsResponses[keyof PostApiV1LocationsResponses];
+
+export type DeleteApiV1LocationsByIdData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/locations/{id}";
+};
+
+export type DeleteApiV1LocationsByIdResponses = {
+  /**
+   * OK
+   */
+  200: unknown;
+};
 
 export type GetApiV1LocationsByIdData = {
   body?: never;
@@ -363,8 +440,129 @@ export type GetApiV1LocationsByIdResponses = {
   200: LocationDto;
 };
 
-export type GetApiV1LocationsByIdResponse =
-  GetApiV1LocationsByIdResponses[keyof GetApiV1LocationsByIdResponses];
+export type GetApiV1LocationsByIdResponse = GetApiV1LocationsByIdResponses[keyof GetApiV1LocationsByIdResponses];
+
+export type PutApiV1LocationsByIdData = {
+  body: UpdateLocationRequest;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/locations/{id}";
+};
+
+export type PutApiV1LocationsByIdResponses = {
+  /**
+   * OK
+   */
+  200: LocationDto;
+};
+
+export type PutApiV1LocationsByIdResponse = PutApiV1LocationsByIdResponses[keyof PutApiV1LocationsByIdResponses];
+
+export type GetApiV1VehiclesByVehicleIdMaintenanceData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+  };
+  query?: {
+    Page?: number | string;
+    PageSize?: number | string;
+    StartDate?: string;
+    EndDate?: string;
+    ServiceType?: string;
+    PerformedBy?: string;
+    SortBy?: string;
+    Order?: string;
+  };
+  url: "/api/v1/vehicles/{vehicleId}/maintenance";
+};
+
+export type GetApiV1VehiclesByVehicleIdMaintenanceResponses = {
+  /**
+   * OK
+   */
+  200: MaintenanceLogListResponse;
+};
+
+export type GetApiV1VehiclesByVehicleIdMaintenanceResponse =
+  GetApiV1VehiclesByVehicleIdMaintenanceResponses[keyof GetApiV1VehiclesByVehicleIdMaintenanceResponses];
+
+export type PostApiV1VehiclesByVehicleIdMaintenanceData = {
+  body: CreateMaintenanceLogRequest;
+  path: {
+    vehicleId: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/maintenance";
+};
+
+export type PostApiV1VehiclesByVehicleIdMaintenanceResponses = {
+  /**
+   * OK
+   */
+  200: MaintenanceLogDto;
+};
+
+export type PostApiV1VehiclesByVehicleIdMaintenanceResponse =
+  PostApiV1VehiclesByVehicleIdMaintenanceResponses[keyof PostApiV1VehiclesByVehicleIdMaintenanceResponses];
+
+export type DeleteApiV1VehiclesByVehicleIdMaintenanceByIdData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}";
+};
+
+export type DeleteApiV1VehiclesByVehicleIdMaintenanceByIdResponses = {
+  /**
+   * OK
+   */
+  200: unknown;
+};
+
+export type GetApiV1VehiclesByVehicleIdMaintenanceByIdData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}";
+};
+
+export type GetApiV1VehiclesByVehicleIdMaintenanceByIdResponses = {
+  /**
+   * OK
+   */
+  200: MaintenanceLogDto;
+};
+
+export type GetApiV1VehiclesByVehicleIdMaintenanceByIdResponse =
+  GetApiV1VehiclesByVehicleIdMaintenanceByIdResponses[keyof GetApiV1VehiclesByVehicleIdMaintenanceByIdResponses];
+
+export type PutApiV1VehiclesByVehicleIdMaintenanceByIdData = {
+  body: UpdateMaintenanceLogRequest;
+  path: {
+    vehicleId: number;
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}";
+};
+
+export type PutApiV1VehiclesByVehicleIdMaintenanceByIdResponses = {
+  /**
+   * OK
+   */
+  200: MaintenanceLogDto;
+};
+
+export type PutApiV1VehiclesByVehicleIdMaintenanceByIdResponse =
+  PutApiV1VehiclesByVehicleIdMaintenanceByIdResponses[keyof PutApiV1VehiclesByVehicleIdMaintenanceByIdResponses];
 
 export type GetApiV1VehiclesData = {
   body?: never;
@@ -380,8 +578,7 @@ export type GetApiV1VehiclesResponses = {
   200: Array<VehicleDto>;
 };
 
-export type GetApiV1VehiclesResponse =
-  GetApiV1VehiclesResponses[keyof GetApiV1VehiclesResponses];
+export type GetApiV1VehiclesResponse = GetApiV1VehiclesResponses[keyof GetApiV1VehiclesResponses];
 
 export type PostApiV1VehiclesData = {
   body: CreateVehicleRequest;
@@ -397,8 +594,7 @@ export type PostApiV1VehiclesResponses = {
   200: VehicleDto;
 };
 
-export type PostApiV1VehiclesResponse =
-  PostApiV1VehiclesResponses[keyof PostApiV1VehiclesResponses];
+export type PostApiV1VehiclesResponse = PostApiV1VehiclesResponses[keyof PostApiV1VehiclesResponses];
 
 export type DeleteApiV1VehiclesByIdData = {
   body?: never;
@@ -432,8 +628,7 @@ export type GetApiV1VehiclesByIdResponses = {
   200: VehicleDto;
 };
 
-export type GetApiV1VehiclesByIdResponse =
-  GetApiV1VehiclesByIdResponses[keyof GetApiV1VehiclesByIdResponses];
+export type GetApiV1VehiclesByIdResponse = GetApiV1VehiclesByIdResponses[keyof GetApiV1VehiclesByIdResponses];
 
 export type PutApiV1VehiclesByIdData = {
   body: UpdateVehicleRequest;
@@ -451,5 +646,4 @@ export type PutApiV1VehiclesByIdResponses = {
   200: VehicleDto;
 };
 
-export type PutApiV1VehiclesByIdResponse =
-  PutApiV1VehiclesByIdResponses[keyof PutApiV1VehiclesByIdResponses];
+export type PutApiV1VehiclesByIdResponse = PutApiV1VehiclesByIdResponses[keyof PutApiV1VehiclesByIdResponses];

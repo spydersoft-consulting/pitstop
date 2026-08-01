@@ -3,12 +3,13 @@ import { loadState, saveState } from "./localStorage";
 import type { RootState } from "./store";
 
 const KEY = "pitstop_state";
-const VERSION = 5;
+const VERSION = 6;
 
 const sampleState = (): RootState => ({
   vehicles: { vehicles: [], selectedVehicleId: null, loading: false },
   fillUps: { recentFillUps: [], loading: false },
   locations: { locations: [], loading: false },
+  maintenanceLogs: { recentMaintenanceLogs: [], loading: false },
 });
 
 describe("localStorage state persistence", () => {
@@ -41,10 +42,7 @@ describe("localStorage state persistence", () => {
   });
 
   it("ignores stored data with a mismatched version", () => {
-    localStorage.setItem(
-      KEY,
-      JSON.stringify({ version: VERSION - 1, state: sampleState() }),
-    );
+    localStorage.setItem(KEY, JSON.stringify({ version: VERSION - 1, state: sampleState() }));
     expect(loadState()).toBeUndefined();
   });
 
@@ -65,6 +63,17 @@ describe("localStorage state persistence", () => {
       JSON.stringify({
         version: VERSION,
         state: { fillUps: { recentFillUps: 42 } },
+      }),
+    );
+    expect(loadState()).toBeUndefined();
+  });
+
+  it("rejects payloads with the wrong maintenanceLogs shape", () => {
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        version: VERSION,
+        state: { maintenanceLogs: { recentMaintenanceLogs: 42 } },
       }),
     );
     expect(loadState()).toBeUndefined();

@@ -3,10 +3,14 @@
 import type { Client, Options as Options2, TDataShape } from "./client";
 import { client } from "./client.gen";
 import type {
+  DeleteApiV1LocationsByIdData,
+  DeleteApiV1LocationsByIdResponses,
   DeleteApiV1VehiclesByIdData,
   DeleteApiV1VehiclesByIdResponses,
   DeleteApiV1VehiclesByVehicleIdFillupsByIdData,
   DeleteApiV1VehiclesByVehicleIdFillupsByIdResponses,
+  DeleteApiV1VehiclesByVehicleIdMaintenanceByIdData,
+  DeleteApiV1VehiclesByVehicleIdMaintenanceByIdResponses,
   GetApiV1LocationsByIdData,
   GetApiV1LocationsByIdResponses,
   GetApiV1LocationsData,
@@ -23,18 +27,28 @@ import type {
   GetApiV1VehiclesByVehicleIdFillupsByIdResponses,
   GetApiV1VehiclesByVehicleIdFillupsData,
   GetApiV1VehiclesByVehicleIdFillupsResponses,
+  GetApiV1VehiclesByVehicleIdMaintenanceByIdData,
+  GetApiV1VehiclesByVehicleIdMaintenanceByIdResponses,
+  GetApiV1VehiclesByVehicleIdMaintenanceData,
+  GetApiV1VehiclesByVehicleIdMaintenanceResponses,
   GetApiV1VehiclesData,
   GetApiV1VehiclesResponses,
   PostApiV1LocationsData,
   PostApiV1LocationsResponses,
   PostApiV1VehiclesByVehicleIdFillupsData,
   PostApiV1VehiclesByVehicleIdFillupsResponses,
+  PostApiV1VehiclesByVehicleIdMaintenanceData,
+  PostApiV1VehiclesByVehicleIdMaintenanceResponses,
   PostApiV1VehiclesData,
   PostApiV1VehiclesResponses,
+  PutApiV1LocationsByIdData,
+  PutApiV1LocationsByIdResponses,
   PutApiV1VehiclesByIdData,
   PutApiV1VehiclesByIdResponses,
   PutApiV1VehiclesByVehicleIdFillupsByIdData,
   PutApiV1VehiclesByVehicleIdFillupsByIdResponses,
+  PutApiV1VehiclesByVehicleIdMaintenanceByIdData,
+  PutApiV1VehiclesByVehicleIdMaintenanceByIdResponses,
 } from "./types.gen";
 
 export type Options<
@@ -55,79 +69,46 @@ export type Options<
   meta?: Record<string, unknown>;
 };
 
-export const getApiV1VehiclesByVehicleIdAnalyticsSummary = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    GetApiV1VehiclesByVehicleIdAnalyticsSummaryData,
-    ThrowOnError
-  >,
+export const getApiV1VehiclesByVehicleIdAnalyticsSummary = <ThrowOnError extends boolean = false>(
+  options: Options<GetApiV1VehiclesByVehicleIdAnalyticsSummaryData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
-    GetApiV1VehiclesByVehicleIdAnalyticsSummaryResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdAnalyticsSummaryResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/vehicles/{vehicleId}/analytics/summary",
     ...options,
   });
 
-export const getApiV1VehiclesByVehicleIdAnalyticsMpg = <
-  ThrowOnError extends boolean = false,
->(
+export const getApiV1VehiclesByVehicleIdAnalyticsMpg = <ThrowOnError extends boolean = false>(
   options: Options<GetApiV1VehiclesByVehicleIdAnalyticsMpgData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
-    GetApiV1VehiclesByVehicleIdAnalyticsMpgResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdAnalyticsMpgResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/vehicles/{vehicleId}/analytics/mpg",
     ...options,
   });
 
-export const getApiV1VehiclesByVehicleIdAnalyticsSpend = <
-  ThrowOnError extends boolean = false,
->(
+export const getApiV1VehiclesByVehicleIdAnalyticsSpend = <ThrowOnError extends boolean = false>(
   options: Options<GetApiV1VehiclesByVehicleIdAnalyticsSpendData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
-    GetApiV1VehiclesByVehicleIdAnalyticsSpendResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdAnalyticsSpendResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/vehicles/{vehicleId}/analytics/spend",
     ...options,
   });
 
-export const getApiV1VehiclesByVehicleIdFillups = <
-  ThrowOnError extends boolean = false,
->(
+export const getApiV1VehiclesByVehicleIdFillups = <ThrowOnError extends boolean = false>(
   options: Options<GetApiV1VehiclesByVehicleIdFillupsData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
-    GetApiV1VehiclesByVehicleIdFillupsResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdFillupsResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/vehicles/{vehicleId}/fillups",
     ...options,
   });
 
-export const postApiV1VehiclesByVehicleIdFillups = <
-  ThrowOnError extends boolean = false,
->(
+export const postApiV1VehiclesByVehicleIdFillups = <ThrowOnError extends boolean = false>(
   options: Options<PostApiV1VehiclesByVehicleIdFillupsData, ThrowOnError>,
 ) =>
-  (options.client ?? client).post<
-    PostApiV1VehiclesByVehicleIdFillupsResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).post<PostApiV1VehiclesByVehicleIdFillupsResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/vehicles/{vehicleId}/fillups",
     ...options,
@@ -137,42 +118,27 @@ export const postApiV1VehiclesByVehicleIdFillups = <
     },
   });
 
-export const deleteApiV1VehiclesByVehicleIdFillupsById = <
-  ThrowOnError extends boolean = false,
->(
+export const deleteApiV1VehiclesByVehicleIdFillupsById = <ThrowOnError extends boolean = false>(
   options: Options<DeleteApiV1VehiclesByVehicleIdFillupsByIdData, ThrowOnError>,
 ) =>
-  (options.client ?? client).delete<
-    DeleteApiV1VehiclesByVehicleIdFillupsByIdResponses,
-    unknown,
-    ThrowOnError
-  >({ url: "/api/v1/vehicles/{vehicleId}/fillups/{id}", ...options });
+  (options.client ?? client).delete<DeleteApiV1VehiclesByVehicleIdFillupsByIdResponses, unknown, ThrowOnError>({
+    url: "/api/v1/vehicles/{vehicleId}/fillups/{id}",
+    ...options,
+  });
 
-export const getApiV1VehiclesByVehicleIdFillupsById = <
-  ThrowOnError extends boolean = false,
->(
+export const getApiV1VehiclesByVehicleIdFillupsById = <ThrowOnError extends boolean = false>(
   options: Options<GetApiV1VehiclesByVehicleIdFillupsByIdData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
-    GetApiV1VehiclesByVehicleIdFillupsByIdResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdFillupsByIdResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/vehicles/{vehicleId}/fillups/{id}",
     ...options,
   });
 
-export const putApiV1VehiclesByVehicleIdFillupsById = <
-  ThrowOnError extends boolean = false,
->(
+export const putApiV1VehiclesByVehicleIdFillupsById = <ThrowOnError extends boolean = false>(
   options: Options<PutApiV1VehiclesByVehicleIdFillupsByIdData, ThrowOnError>,
 ) =>
-  (options.client ?? client).put<
-    PutApiV1VehiclesByVehicleIdFillupsByIdResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).put<PutApiV1VehiclesByVehicleIdFillupsByIdResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/vehicles/{vehicleId}/fillups/{id}",
     ...options,
@@ -185,11 +151,7 @@ export const putApiV1VehiclesByVehicleIdFillupsById = <
 export const getApiV1Locations = <ThrowOnError extends boolean = false>(
   options?: Options<GetApiV1LocationsData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).get<
-    GetApiV1LocationsResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options?.client ?? client).get<GetApiV1LocationsResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/locations",
     ...options,
@@ -198,11 +160,7 @@ export const getApiV1Locations = <ThrowOnError extends boolean = false>(
 export const postApiV1Locations = <ThrowOnError extends boolean = false>(
   options: Options<PostApiV1LocationsData, ThrowOnError>,
 ) =>
-  (options.client ?? client).post<
-    PostApiV1LocationsResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).post<PostApiV1LocationsResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/locations",
     ...options,
@@ -212,27 +170,92 @@ export const postApiV1Locations = <ThrowOnError extends boolean = false>(
     },
   });
 
+export const deleteApiV1LocationsById = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteApiV1LocationsByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<DeleteApiV1LocationsByIdResponses, unknown, ThrowOnError>({
+    url: "/api/v1/locations/{id}",
+    ...options,
+  });
+
 export const getApiV1LocationsById = <ThrowOnError extends boolean = false>(
   options: Options<GetApiV1LocationsByIdData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
-    GetApiV1LocationsByIdResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).get<GetApiV1LocationsByIdResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/locations/{id}",
     ...options,
   });
 
+export const putApiV1LocationsById = <ThrowOnError extends boolean = false>(
+  options: Options<PutApiV1LocationsByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<PutApiV1LocationsByIdResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/locations/{id}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const getApiV1VehiclesByVehicleIdMaintenance = <ThrowOnError extends boolean = false>(
+  options: Options<GetApiV1VehiclesByVehicleIdMaintenanceData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdMaintenanceResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/maintenance",
+    ...options,
+  });
+
+export const postApiV1VehiclesByVehicleIdMaintenance = <ThrowOnError extends boolean = false>(
+  options: Options<PostApiV1VehiclesByVehicleIdMaintenanceData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<PostApiV1VehiclesByVehicleIdMaintenanceResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/maintenance",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const deleteApiV1VehiclesByVehicleIdMaintenanceById = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteApiV1VehiclesByVehicleIdMaintenanceByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<DeleteApiV1VehiclesByVehicleIdMaintenanceByIdResponses, unknown, ThrowOnError>({
+    url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}",
+    ...options,
+  });
+
+export const getApiV1VehiclesByVehicleIdMaintenanceById = <ThrowOnError extends boolean = false>(
+  options: Options<GetApiV1VehiclesByVehicleIdMaintenanceByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdMaintenanceByIdResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}",
+    ...options,
+  });
+
+export const putApiV1VehiclesByVehicleIdMaintenanceById = <ThrowOnError extends boolean = false>(
+  options: Options<PutApiV1VehiclesByVehicleIdMaintenanceByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<PutApiV1VehiclesByVehicleIdMaintenanceByIdResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
 export const getApiV1Vehicles = <ThrowOnError extends boolean = false>(
   options?: Options<GetApiV1VehiclesData, ThrowOnError>,
 ) =>
-  (options?.client ?? client).get<
-    GetApiV1VehiclesResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options?.client ?? client).get<GetApiV1VehiclesResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/Vehicles",
     ...options,
@@ -241,11 +264,7 @@ export const getApiV1Vehicles = <ThrowOnError extends boolean = false>(
 export const postApiV1Vehicles = <ThrowOnError extends boolean = false>(
   options: Options<PostApiV1VehiclesData, ThrowOnError>,
 ) =>
-  (options.client ?? client).post<
-    PostApiV1VehiclesResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).post<PostApiV1VehiclesResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/Vehicles",
     ...options,
@@ -258,20 +277,15 @@ export const postApiV1Vehicles = <ThrowOnError extends boolean = false>(
 export const deleteApiV1VehiclesById = <ThrowOnError extends boolean = false>(
   options: Options<DeleteApiV1VehiclesByIdData, ThrowOnError>,
 ) =>
-  (options.client ?? client).delete<
-    DeleteApiV1VehiclesByIdResponses,
-    unknown,
-    ThrowOnError
-  >({ url: "/api/v1/Vehicles/{id}", ...options });
+  (options.client ?? client).delete<DeleteApiV1VehiclesByIdResponses, unknown, ThrowOnError>({
+    url: "/api/v1/Vehicles/{id}",
+    ...options,
+  });
 
 export const getApiV1VehiclesById = <ThrowOnError extends boolean = false>(
   options: Options<GetApiV1VehiclesByIdData, ThrowOnError>,
 ) =>
-  (options.client ?? client).get<
-    GetApiV1VehiclesByIdResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).get<GetApiV1VehiclesByIdResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/Vehicles/{id}",
     ...options,
@@ -280,11 +294,7 @@ export const getApiV1VehiclesById = <ThrowOnError extends boolean = false>(
 export const putApiV1VehiclesById = <ThrowOnError extends boolean = false>(
   options: Options<PutApiV1VehiclesByIdData, ThrowOnError>,
 ) =>
-  (options.client ?? client).put<
-    PutApiV1VehiclesByIdResponses,
-    unknown,
-    ThrowOnError
-  >({
+  (options.client ?? client).put<PutApiV1VehiclesByIdResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/Vehicles/{id}",
     ...options,

@@ -13,6 +13,7 @@ import {
   faUser,
   faAnglesLeft,
   faAnglesRight,
+  faWrench,
 } from "@fortawesome/free-solid-svg-icons";
 import { Sidebar } from "primereact/sidebar";
 import { useAuth, usePageTitle } from "../../context";
@@ -31,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", icon: faHome, to: "/" },
   { label: "Vehicles", icon: faCar, to: "/vehicles" },
   { label: "Fill-Ups", icon: faGasPump, to: "/fill-ups" },
+  { label: "Maintenance", icon: faWrench, to: "/maintenance" },
   { label: "Locations", icon: faLocationDot, to: "/locations" },
   { label: "Analytics", icon: faChartLine, to: "/analytics" },
 ];
@@ -50,9 +52,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ brand }) => {
       "flex items-center gap-3 rounded-lg text-sm font-medium transition-colors",
       "min-h-[44px] no-underline",
       isCollapsed ? "justify-center px-2" : "px-3",
-      isActive
-        ? "bg-brand text-brand-fg"
-        : "text-content-inverse/80 hover:text-content-inverse hover:bg-white/5",
+      isActive ? "bg-brand text-brand-fg" : "text-content-inverse/80 hover:text-content-inverse hover:bg-white/5",
     ].join(" ");
 
   /* ------------------------- Desktop sidebar ------------------------- */
@@ -80,11 +80,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ brand }) => {
         <span className="flex h-9 w-9 items-center justify-center rounded-md bg-brand text-brand-fg">
           <FontAwesomeIcon icon={faGasPump} className="text-lg" />
         </span>
-        {!collapsed && (
-          <span className="font-display text-xl uppercase tracking-wider">
-            {brandName}
-          </span>
-        )}
+        {!collapsed && <span className="font-display text-xl uppercase tracking-wider">{brandName}</span>}
       </button>
 
       {/* Nav */}
@@ -108,21 +104,16 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ brand }) => {
         {isAuthenticated ? (
           <>
             {!collapsed && (
-              <div className="px-3 pb-1 text-meta uppercase tracking-wide text-content-inverse/50">
-                Signed in
-              </div>
+              <div className="px-3 pb-1 text-meta uppercase tracking-wide text-content-inverse/50">Signed in</div>
             )}
             <div
-              className={[
-                "flex items-center gap-3 rounded-lg px-3 py-2",
-                collapsed ? "justify-center px-2" : "",
-              ].join(" ")}
+              className={["flex items-center gap-3 rounded-lg px-3 py-2", collapsed ? "justify-center px-2" : ""].join(
+                " ",
+              )}
               title={collapsed ? (userName ?? "Account") : undefined}
             >
               <FontAwesomeIcon icon={faUser} className="text-content-inverse/70" />
-              {!collapsed && (
-                <span className="truncate text-sm">{userName ?? "Account"}</span>
-              )}
+              {!collapsed && <span className="truncate text-sm">{userName ?? "Account"}</span>}
             </div>
             <button
               type="button"
@@ -195,9 +186,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ brand }) => {
         >
           <FontAwesomeIcon icon={faGasPump} className="text-base" />
         </button>
-        <h1 className="font-display text-lg uppercase tracking-wider leading-none truncate min-w-0">
-          {mobileTitle}
-        </h1>
+        <h1 className="font-display text-lg uppercase tracking-wider leading-none truncate min-w-0">{mobileTitle}</h1>
       </div>
     </div>
   );
@@ -208,20 +197,12 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ brand }) => {
     "w-full flex items-center gap-3 px-3 min-h-[48px] rounded-lg text-base font-medium no-underline bg-transparent border-0 cursor-pointer text-content hover:bg-surface-muted";
 
   const mobileDrawer = (
-    <Sidebar
-      visible={drawerOpen}
-      onHide={() => setDrawerOpen(false)}
-      position="left"
-      className="w-72"
-      showCloseIcon
-    >
+    <Sidebar visible={drawerOpen} onHide={() => setDrawerOpen(false)} position="left" className="w-72" showCloseIcon>
       <div className="flex items-center gap-2 mb-4">
         <span className="flex h-9 w-9 items-center justify-center rounded-md bg-brand text-brand-fg">
           <FontAwesomeIcon icon={faGasPump} className="text-lg" />
         </span>
-        <span className="font-display text-xl uppercase tracking-wider">
-          {brandName}
-        </span>
+        <span className="font-display text-xl uppercase tracking-wider">{brandName}</span>
       </div>
       <nav className="space-y-1">
         {NAV_ITEMS.map((item) => (
@@ -233,9 +214,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ brand }) => {
             className={({ isActive }) =>
               [
                 "flex items-center gap-3 px-3 min-h-[48px] rounded-lg text-base font-medium no-underline",
-                isActive
-                  ? "bg-brand text-brand-fg"
-                  : "text-content hover:bg-surface-muted",
+                isActive ? "bg-brand text-brand-fg" : "text-content hover:bg-surface-muted",
               ].join(" ")
             }
           >

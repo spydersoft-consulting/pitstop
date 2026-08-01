@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 import type {
   VehicleDto,
   FillUpDto,
@@ -6,19 +6,19 @@ import type {
   FillUpRequest,
   FillUpListResponse,
   LocationDto,
-  CreateLocationRequest,
-} from './types';
+} from "./types";
+import { uniqueName, createLocation } from "./location-helpers";
 
 let vehicleId: number;
 
 test.beforeEach(async ({ request }) => {
-  const response = await request.post('/api/v1/vehicles', {
+  const response = await request.post("/api/v1/vehicles", {
     data: {
-      name: `FillUp Test Vehicle ${crypto.randomUUID().replace(/-/g, '')}`,
+      name: `FillUp Test Vehicle ${crypto.randomUUID().replace(/-/g, "")}`,
       year: 2024,
-      make: 'Ford',
-      model: 'Bronco',
-      startDate: '2024-01-01',
+      make: "Ford",
+      model: "Bronco",
+      startDate: "2024-01-01",
     },
   });
   const vehicle: VehicleDto = await response.json();
@@ -39,7 +39,7 @@ function testFillUp(odometer: number): CreateFillUpRequest {
   };
 }
 
-test('CreateFillUp_Returns201WithComputedFields', async ({ request }) => {
+test("CreateFillUp_Returns201WithComputedFields", async ({ request }) => {
   const response = await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, {
     data: testFillUp(1000),
   });
@@ -50,7 +50,7 @@ test('CreateFillUp_Returns201WithComputedFields', async ({ request }) => {
   expect(dto.vehicleId).toBe(vehicleId);
 });
 
-test('TwoFillUps_SecondHasMilesAndMpg', async ({ request }) => {
+test("TwoFillUps_SecondHasMilesAndMpg", async ({ request }) => {
   await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, { data: testFillUp(1000) });
 
   const response = await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, { data: testFillUp(1240) });
@@ -60,7 +60,7 @@ test('TwoFillUps_SecondHasMilesAndMpg', async ({ request }) => {
   expect(dto.mpgThisFillUp).not.toBeNull(); // 240 / 12.0 = 20
 });
 
-test('GetFillUp_ById_ReturnsExpectedFields', async ({ request }) => {
+test("GetFillUp_ById_ReturnsExpectedFields", async ({ request }) => {
   const created: FillUpDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, { data: testFillUp(2000) })
   ).json();
@@ -73,7 +73,7 @@ test('GetFillUp_ById_ReturnsExpectedFields', async ({ request }) => {
   expect(dto.odometerReading).toBe(2000);
 });
 
-test('ListFillUps_ReturnsPaginatedResults', async ({ request }) => {
+test("ListFillUps_ReturnsPaginatedResults", async ({ request }) => {
   for (let i = 0; i < 3; i++) {
     await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, { data: testFillUp(3000 + i * 200) });
   }
@@ -88,7 +88,7 @@ test('ListFillUps_ReturnsPaginatedResults', async ({ request }) => {
   expect(list.totalCount).toBeGreaterThanOrEqual(3);
 });
 
-test('UpdateFillUp_ReturnsUpdatedOdometer', async ({ request }) => {
+test("UpdateFillUp_ReturnsUpdatedOdometer", async ({ request }) => {
   const created: FillUpDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, { data: testFillUp(5000) })
   ).json();
@@ -108,7 +108,7 @@ test('UpdateFillUp_ReturnsUpdatedOdometer', async ({ request }) => {
   expect(updated.odometerReading).toBe(5100);
 });
 
-test('DeleteFillUp_Returns204ThenNotFound', async ({ request }) => {
+test("DeleteFillUp_Returns204ThenNotFound", async ({ request }) => {
   const created: FillUpDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, { data: testFillUp(9000) })
   ).json();
@@ -117,24 +117,22 @@ test('DeleteFillUp_Returns204ThenNotFound', async ({ request }) => {
   expect((await request.get(`/api/v1/vehicles/${vehicleId}/fillups/${created.id}`)).status()).toBe(404);
 });
 
-test('CreateFillUp_FuelGrade_DefaultsMidGrade', async ({ request }) => {
+test("CreateFillUp_FuelGrade_DefaultsMidGrade", async ({ request }) => {
   const dto: FillUpDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, { data: testFillUp(10000) })
   ).json();
 
-  expect(dto.fuelGrade).toBe('MidGrade');
+  expect(dto.fuelGrade).toBe("MidGrade");
 });
 
-test('CreateFillUp_ExplicitFuelGrade_IsStored', async ({ request }) => {
-  const req: CreateFillUpRequest = { ...testFillUp(11000), fuelGrade: 'Premium' };
-  const dto: FillUpDto = await (
-    await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, { data: req })
-  ).json();
+test("CreateFillUp_ExplicitFuelGrade_IsStored", async ({ request }) => {
+  const req: CreateFillUpRequest = { ...testFillUp(11000), fuelGrade: "Premium" };
+  const dto: FillUpDto = await (await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, { data: req })).json();
 
-  expect(dto.fuelGrade).toBe('Premium');
+  expect(dto.fuelGrade).toBe("Premium");
 });
 
-test('CreateFillUp_OnlyTotalCost_DerivesPricePerGallon', async ({ request }) => {
+test("CreateFillUp_OnlyTotalCost_DerivesPricePerGallon", async ({ request }) => {
   const req: CreateFillUpRequest = {
     odometerReading: 12000,
     gallonsAdded: 10.0,
@@ -148,7 +146,7 @@ test('CreateFillUp_OnlyTotalCost_DerivesPricePerGallon', async ({ request }) => 
   expect(dto.totalCost).toBe(35.0);
 });
 
-test('CreateFillUp_OnlyPricePerGallon_DerivesTotalCost', async ({ request }) => {
+test("CreateFillUp_OnlyPricePerGallon_DerivesTotalCost", async ({ request }) => {
   const req: CreateFillUpRequest = {
     odometerReading: 13000,
     gallonsAdded: 10.0,
@@ -162,7 +160,7 @@ test('CreateFillUp_OnlyPricePerGallon_DerivesTotalCost', async ({ request }) => 
   expect(dto.totalCost).toBe(35.0);
 });
 
-test('CreateFillUp_NoCostFields_Returns400', async ({ request }) => {
+test("CreateFillUp_NoCostFields_Returns400", async ({ request }) => {
   const req: CreateFillUpRequest = {
     odometerReading: 14000,
     gallonsAdded: 10.0,
@@ -172,21 +170,7 @@ test('CreateFillUp_NoCostFields_Returns400', async ({ request }) => {
   expect(response.status()).toBe(400);
 });
 
-function uniqueName(prefix = 'FillUp-Loc'): string {
-  return `${prefix}-${crypto.randomUUID().replaceAll('-', '').slice(0, 12)}`;
-}
-
-async function createLocation(
-  request: import('@playwright/test').APIRequestContext,
-  overrides: Partial<CreateLocationRequest> = {},
-): Promise<LocationDto> {
-  const response = await request.post('/api/v1/locations', {
-    data: { name: uniqueName(), ...overrides },
-  });
-  return response.json();
-}
-
-test('CreateFillUp_WithLocationId_AttachesLocation', async ({ request }) => {
+test("CreateFillUp_WithLocationId_AttachesLocation", async ({ request }) => {
   const loc = await createLocation(request);
 
   const dto: FillUpDto = await (
@@ -200,7 +184,7 @@ test('CreateFillUp_WithLocationId_AttachesLocation', async ({ request }) => {
   expect(dto.location!.name).toBe(loc.name);
 });
 
-test('CreateFillUp_WithLocationId_IncrementsUseCount', async ({ request }) => {
+test("CreateFillUp_WithLocationId_IncrementsUseCount", async ({ request }) => {
   const loc = await createLocation(request);
   expect(loc.useCount).toBe(0);
 
@@ -213,14 +197,14 @@ test('CreateFillUp_WithLocationId_IncrementsUseCount', async ({ request }) => {
   expect(refreshed.lastUsedAt).toBeTruthy();
 });
 
-test('CreateFillUp_WithInlineLocation_CreatesAndAttaches', async ({ request }) => {
-  const name = uniqueName('Inline');
+test("CreateFillUp_WithInlineLocation_CreatesAndAttaches", async ({ request }) => {
+  const name = uniqueName("Inline");
 
   const dto: FillUpDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, {
       data: {
         ...testFillUp(16000),
-        location: { name, address: '500 Pine St' },
+        location: { name, address: "500 Pine St" },
       },
     })
   ).json();
@@ -232,14 +216,14 @@ test('CreateFillUp_WithInlineLocation_CreatesAndAttaches', async ({ request }) =
   expect(refreshed.useCount).toBe(1);
 });
 
-test('CreateFillUp_WithInlineLocationMatchingExisting_ReusesExisting', async ({ request }) => {
-  const loc = await createLocation(request, { address: '700 Reuse Ave' });
+test("CreateFillUp_WithInlineLocationMatchingExisting_ReusesExisting", async ({ request }) => {
+  const loc = await createLocation(request, { address: "700 Reuse Ave" });
 
   const dto: FillUpDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, {
       data: {
         ...testFillUp(16500),
-        location: { name: loc.name, address: '700 Reuse Ave' },
+        location: { name: loc.name, address: "700 Reuse Ave" },
       },
     })
   ).json();
@@ -247,21 +231,21 @@ test('CreateFillUp_WithInlineLocationMatchingExisting_ReusesExisting', async ({ 
   expect(dto.location!.id).toBe(loc.id);
 });
 
-test('CreateFillUp_WithBothLocationIdAndInlineLocation_Returns400', async ({ request }) => {
+test("CreateFillUp_WithBothLocationIdAndInlineLocation_Returns400", async ({ request }) => {
   const loc = await createLocation(request);
 
   const response = await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, {
     data: {
       ...testFillUp(17000),
       locationId: loc.id,
-      location: { name: 'Other' },
+      location: { name: "Other" },
     },
   });
 
   expect(response.status()).toBe(400);
 });
 
-test('CreateFillUp_WithUnknownLocationId_Returns400', async ({ request }) => {
+test("CreateFillUp_WithUnknownLocationId_Returns400", async ({ request }) => {
   const response = await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, {
     data: { ...testFillUp(17500), locationId: 999999999 },
   });
@@ -269,7 +253,7 @@ test('CreateFillUp_WithUnknownLocationId_Returns400', async ({ request }) => {
   expect(response.status()).toBe(400);
 });
 
-test('UpdateFillUp_ChangingLocation_MovesUsageCount', async ({ request }) => {
+test("UpdateFillUp_ChangingLocation_MovesUsageCount", async ({ request }) => {
   const oldLoc = await createLocation(request);
   const newLoc = await createLocation(request);
 
@@ -296,7 +280,7 @@ test('UpdateFillUp_ChangingLocation_MovesUsageCount', async ({ request }) => {
   expect(newRefreshed.useCount).toBe(1);
 });
 
-test('DeleteFillUp_DecrementsLocationUseCount', async ({ request }) => {
+test("DeleteFillUp_DecrementsLocationUseCount", async ({ request }) => {
   const loc = await createLocation(request);
 
   const created: FillUpDto = await (
@@ -311,8 +295,8 @@ test('DeleteFillUp_DecrementsLocationUseCount', async ({ request }) => {
   expect(refreshed.useCount).toBe(0);
 });
 
-test('GetFillUp_AfterCreate_EmbedsLocationSummary', async ({ request }) => {
-  const loc = await createLocation(request, { address: '800 Summary Ln' });
+test("GetFillUp_AfterCreate_EmbedsLocationSummary", async ({ request }) => {
+  const loc = await createLocation(request, { address: "800 Summary Ln" });
 
   const created: FillUpDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/fillups`, {
@@ -320,11 +304,9 @@ test('GetFillUp_AfterCreate_EmbedsLocationSummary', async ({ request }) => {
     })
   ).json();
 
-  const fetched: FillUpDto = await (
-    await request.get(`/api/v1/vehicles/${vehicleId}/fillups/${created.id}`)
-  ).json();
+  const fetched: FillUpDto = await (await request.get(`/api/v1/vehicles/${vehicleId}/fillups/${created.id}`)).json();
 
   expect(fetched.location).not.toBeNull();
   expect(fetched.location!.id).toBe(loc.id);
-  expect(fetched.location!.address).toBe('800 Summary Ln');
+  expect(fetched.location!.address).toBe("800 Summary Ln");
 });

@@ -1,4 +1,4 @@
-﻿namespace Spydersoft.PitStop.Data.Entities;
+namespace Spydersoft.PitStop.Data.Entities;
 
 public class Vehicle
 {
@@ -15,4 +15,5 @@ public class Vehicle
     public bool IsDeleted { get; set; }
 
     public ICollection<FillUp> FillUps { get; set; } = [];
+    public ICollection<MaintenanceLog> MaintenanceLogs { get; set; } = [];
 }
