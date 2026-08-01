@@ -28,8 +28,7 @@ const toEpochSeconds = (value: unknown): number => {
   return 0;
 };
 
-const isFresh = (exp: number): boolean =>
-  exp > 0 && Date.now() < exp * 1000 - REFRESH_WINDOW_MS;
+const isFresh = (exp: number): boolean => exp > 0 && Date.now() < exp * 1000 - REFRESH_WINDOW_MS;
 
 interface IAuthContext {
   isLoading: boolean;
@@ -63,11 +62,24 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const inflight = useRef<Promise<void> | null>(null);
 
-  const clearAuthState = () => {
+  // Whether the session was previously known-good before this clear, so we can tell
+  // "returning user whose session lapsed" apart from "never-authenticated visitor".
+  const clearAuthState = (wasAuthenticated: boolean) => {
     setIsAuthenticated(false);
     setUser(undefined);
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("user");
+
+    // A session that was valid a moment ago going invalid means the access/refresh
+    // token expired server-side. Send the browser through /.auth/login: if the
+    // upstream IdP session cookie is still alive this is a silent SSO round-trip
+    // that drops the user straight back into the app; if it isn't, it lands them on
+    // the IdP's real login page. Either way beats stranding them on Landing with a
+    // stale "logged in" UI. Because localStorage is cleared first, a failed attempt
+    // won't re-trigger this on the next load, so it can't loop.
+    if (wasAuthenticated) {
+      login();
+    }
   };
 
   const fetchUser = (): Promise<void> => {
@@ -89,7 +101,7 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
       })
       .catch((err: { response?: { status: number } }) => {
         if (err.response?.status === 401) {
-          clearAuthState();
+          clearAuthState(isAuthenticated);
         }
       })
       .finally(() => {
@@ -121,16 +133,16 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
   }, [isAuthenticated, user?.exp]);
 
   useEffect(() => {
-    return registerUnauthorizedHandler(clearAuthState);
+    return registerUnauthorizedHandler(() => clearAuthState(isAuthenticated));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAuthenticated]);
 
   const login = () => {
     globalThis.location.href = "/.auth/login";
   };
 
   const logout = () => {
-    clearAuthState();
+    clearAuthState(false);
     globalThis.location.href = "/.auth/end-session";
   };
 
@@ -142,9 +154,5 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
     [isAuthenticated, user, isLoading],
   );
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {props.children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{props.children}</AuthContext.Provider>;
 };
