@@ -16,12 +16,9 @@ async function selectDropdownOption(page: Page, testId: string, optionText: stri
   await page.getByRole("option", { name: optionText, exact: true }).click();
 }
 
-// The freshly-booted Testing stack (Postgres + mock OIDC + API + BFF + Vite dev server, all
-// cold-starting together) can be transiently flaky in CI for the first few requests -- a 502
-// from the reverse proxy while a backend is still warming up, or a page load that resolves
-// before the SPA has actually mounted. Both have been observed in CI (a 502 with an empty body
-// on vehicle creation, and a blank page body after `goto` that never recovered within the test
-// timeout). Retry each of those two operations a few times before giving up for real.
+// The freshly-booted Testing stack (Postgres + mock OIDC + API + BFF, all cold-starting
+// together) can be transiently flaky in CI for the very first requests -- a 502 from the
+// reverse proxy while a backend is still warming up. Retry before giving up for real.
 async function createVehicle(page: Page, name: string): Promise<{ id: number }> {
   let lastStatus = 0;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -35,26 +32,6 @@ async function createVehicle(page: Page, name: string): Promise<{ id: number }> 
   throw new Error(`Failed to create vehicle "${name}" after 3 attempts (last status: ${lastStatus})`);
 }
 
-async function gotoAndWaitForApp(page: Page, url: string) {
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    const navResponse = await page.goto(url);
-    try {
-      await page.getByText("PITSTOP").waitFor({ timeout: 20_000 });
-      return;
-    } catch {
-      // TEMP DEBUG: this has failed persistently in CI even across reload retries -- capture
-      // the navigation response status, the resulting URL, and a raw HTML snippet so we can
-      // tell whether the server ever served the SPA shell at all versus it failing to mount.
-      console.log(
-        `[debug] gotoAndWaitForApp(${url}) attempt ${attempt} failed: ` +
-          `navStatus=${navResponse?.status()} finalUrl=${page.url()}`,
-      );
-      console.log(`[debug] html snippet: ${(await page.content()).slice(0, 1500)}`);
-      if (attempt === 2) throw new Error(`App shell never rendered at ${url} after 2 attempts`);
-    }
-  }
-}
-
 let vehicleId: number;
 let vehicleName: string;
 
@@ -63,7 +40,7 @@ test.beforeEach(async ({ page }) => {
   // (vehicle creation, an extra vehicle-selection step, and a full CRUD cycle) -- give it
   // headroom so a slower CI agent doesn't trip the timeout mid-flow. Set here (as early as
   // possible in beforeEach) so it covers the rest of this hook too, not just the test body.
-  test.setTimeout(90_000);
+  test.setTimeout(60_000);
 
   await login(page);
 
@@ -75,7 +52,7 @@ test.beforeEach(async ({ page }) => {
   // land on a vehicle other than the one just created. Select the newly-created vehicle
   // explicitly by its unique name, then navigate via the nav link (client-side route
   // change) rather than a second full page load.
-  await gotoAndWaitForApp(page, "/vehicles");
+  await page.goto("/vehicles");
   await page.getByText(vehicleName).click();
   await page.getByRole("link", { name: "Maintenance" }).click();
   await expect(page).toHaveURL(/\/maintenance$/);

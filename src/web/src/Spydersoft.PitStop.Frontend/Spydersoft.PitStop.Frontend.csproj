@@ -26,6 +26,21 @@
 	</Target>
 
 	<!--
+	`dotnet run`/`dotnet build` only trigger BuildSpa (dist/ on disk). MapFallbackToFile in
+	Program.cs needs wwwroot/index.html, which used to only get populated by PublishSpa below
+	(a publish-only target), leaving wwwroot empty for anything driven by `dotnet run`
+	(notably the Playwright suites' AppHost webServer): every deep-linked SPA route 404'd
+	with an empty body on a clean checkout. It only worked locally by accident, riding on a
+	leftover wwwroot/ from an earlier `dotnet publish` in the same working tree.
+	-->
+	<Target Name="CopySpaToWwwroot" AfterTargets="Build">
+		<ItemGroup>
+			<SpaBuildFiles Include="$(SpaRoot)dist\**" />
+		</ItemGroup>
+		<Copy SourceFiles="@(SpaBuildFiles)" DestinationFolder="$(MSBuildProjectDirectory)\wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
+	</Target>
+
+	<!--
 	A "no build" publish (used by CI) skips the Build target above, so this
 	depends on BuildSpa having already run earlier in the same job/workspace
 	(via `dotnet build`) and left dist/ on disk; see pipeline-ci.yml.
