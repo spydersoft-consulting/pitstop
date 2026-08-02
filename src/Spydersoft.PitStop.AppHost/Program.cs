@@ -150,7 +150,7 @@ static string MockOidcClientsJson(string clientId, string clientSecret) => $$"""
     "ClientId": "{{clientId}}",
     "ClientSecrets": ["{{clientSecret}}"],
     "AllowedGrantTypes": ["authorization_code"],
-    "AllowedScopes": ["openid", "profile", "email", "pitstop:read", "pitstop:write"],
+    "AllowedScopes": ["openid", "profile", "email", "offline_access", "pitstop:read", "pitstop:write"],
     "RedirectUris": ["http://localhost:9080/.auth/login/callback"],
     "PostLogoutRedirectUris": ["http://localhost:9080/"],
     "RequireConsent": false,
