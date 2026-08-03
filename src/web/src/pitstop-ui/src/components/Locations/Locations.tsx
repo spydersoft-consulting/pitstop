@@ -1,12 +1,6 @@
 import React, { useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faList,
-  faMap,
-  faPlus,
-  faPencil,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faList, faMap, faPlus, faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -18,11 +12,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import {
-  createLocation,
-  deleteLocation,
-  updateLocation,
-} from "../../store/slices/locationSlice";
+import { createLocation, deleteLocation, updateLocation } from "../../store/slices/locationSlice";
 import type { Location } from "../../store/slices/locationSlice";
 import { PageHeader } from "../layout/PageHeader";
 
@@ -40,8 +30,7 @@ const num = (v: number | string | null | undefined): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-const fmtDate = (s: string | null | undefined) =>
-  s ? new Date(s).toLocaleDateString() : "—";
+const fmtDate = (s: string | null | undefined) => (s ? new Date(s).toLocaleDateString() : "—");
 
 type ViewMode = "list" | "map";
 
@@ -153,17 +142,13 @@ export const Locations: React.FC = () => {
     </div>
   );
 
-  const mappableLocations = locations.filter(
-    (l) => num(l.latitude) !== null && num(l.longitude) !== null,
-  );
+  const mappableLocations = locations.filter((l) => num(l.latitude) !== null && num(l.longitude) !== null);
 
   const mapCenter: [number, number] =
     mappableLocations.length > 0
       ? [
-          mappableLocations.reduce((s, l) => s + num(l.latitude)!, 0) /
-            mappableLocations.length,
-          mappableLocations.reduce((s, l) => s + num(l.longitude)!, 0) /
-            mappableLocations.length,
+          mappableLocations.reduce((s, l) => s + num(l.latitude)!, 0) / mappableLocations.length,
+          mappableLocations.reduce((s, l) => s + num(l.longitude)!, 0) / mappableLocations.length,
         ]
       : [40.4, -79.9];
 
@@ -182,9 +167,7 @@ export const Locations: React.FC = () => {
                 onClick={() => setViewMode("list")}
                 className={[
                   "px-3 py-2 text-sm flex items-center gap-2 border-0 cursor-pointer transition-colors",
-                  viewMode === "list"
-                    ? "bg-brand text-brand-fg"
-                    : "bg-surface text-content hover:bg-surface-muted",
+                  viewMode === "list" ? "bg-brand text-brand-fg" : "bg-surface text-content hover:bg-surface-muted",
                 ].join(" ")}
                 aria-label="List view"
               >
@@ -196,9 +179,7 @@ export const Locations: React.FC = () => {
                 onClick={() => setViewMode("map")}
                 className={[
                   "px-3 py-2 text-sm flex items-center gap-2 border-0 cursor-pointer transition-colors",
-                  viewMode === "map"
-                    ? "bg-brand text-brand-fg"
-                    : "bg-surface text-content hover:bg-surface-muted",
+                  viewMode === "map" ? "bg-brand text-brand-fg" : "bg-surface text-content hover:bg-surface-muted",
                 ].join(" ")}
                 aria-label="Map view"
               >
@@ -206,13 +187,7 @@ export const Locations: React.FC = () => {
                 <span className="hidden sm:inline">Map</span>
               </button>
             </div>
-            <Button
-              type="button"
-              icon={<FontAwesomeIcon icon={faPlus} />}
-              label="Add"
-              size="small"
-              onClick={openAdd}
-            />
+            <Button type="button" icon={<FontAwesomeIcon icon={faPlus} />} label="Add" size="small" onClick={openAdd} />
           </div>
         }
       />
@@ -235,9 +210,7 @@ export const Locations: React.FC = () => {
                 body={(row: Location) => {
                   const lat = num(row.latitude);
                   const lng = num(row.longitude);
-                  return lat !== null && lng !== null
-                    ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
-                    : "—";
+                  return lat !== null && lng !== null ? `${lat.toFixed(4)}, ${lng.toFixed(4)}` : "—";
                 }}
               />
               <Column
@@ -254,35 +227,22 @@ export const Locations: React.FC = () => {
                 body={(row: Location) => fmtDate(row.lastUsedAt)}
                 style={{ width: "10rem" }}
               />
-              <Column
-                body={actionTemplate}
-                style={{ width: "8rem" }}
-                bodyStyle={{ textAlign: "right" }}
-              />
+              <Column body={actionTemplate} style={{ width: "8rem" }} bodyStyle={{ textAlign: "right" }} />
             </DataTable>
           </div>
 
           {/* Mobile card list */}
           <div className="lg:hidden flex flex-col gap-3">
-            {loading && (
-              <div className="text-center py-8 text-content-muted">Loading…</div>
-            )}
+            {loading && <div className="text-center py-8 text-content-muted">Loading…</div>}
             {!loading && locations.length === 0 && (
-              <div className="text-center py-8 text-content-muted">
-                No locations yet — add your first station.
-              </div>
+              <div className="text-center py-8 text-content-muted">No locations yet — add your first station.</div>
             )}
             {locations.map((loc) => (
-              <div
-                key={String(loc.id)}
-                className="rounded-lg border border-border bg-surface p-4 flex flex-col gap-1"
-              >
+              <div key={String(loc.id)} className="rounded-lg border border-border bg-surface p-4 flex flex-col gap-1">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-semibold truncate">{loc.name}</p>
-                    {loc.address && (
-                      <p className="text-sm text-content-muted truncate">{loc.address}</p>
-                    )}
+                    {loc.address && <p className="text-sm text-content-muted truncate">{loc.address}</p>}
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <Button
@@ -306,7 +266,9 @@ export const Locations: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-4 text-sm text-content-muted mt-1">
-                  <span>{num(loc.useCount) ?? 0} fill-up{(num(loc.useCount) ?? 0) !== 1 ? "s" : ""}</span>
+                  <span>
+                    {num(loc.useCount) ?? 0} fill-up{(num(loc.useCount) ?? 0) !== 1 ? "s" : ""}
+                  </span>
                   <span>Last: {fmtDate(loc.lastUsedAt)}</span>
                 </div>
               </div>
@@ -322,26 +284,17 @@ export const Locations: React.FC = () => {
               No locations with coordinates to display.
             </div>
           ) : (
-            <MapContainer
-              center={mapCenter}
-              zoom={11}
-              style={{ height: "100%", minHeight: "400px", width: "100%" }}
-            >
+            <MapContainer center={mapCenter} zoom={11} style={{ height: "100%", minHeight: "400px", width: "100%" }}>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               {mappableLocations.map((loc) => (
-                <Marker
-                  key={String(loc.id)}
-                  position={[num(loc.latitude)!, num(loc.longitude)!]}
-                >
+                <Marker key={String(loc.id)} position={[num(loc.latitude)!, num(loc.longitude)!]}>
                   <Popup>
                     <div className="flex flex-col gap-1 min-w-[180px]">
                       <p className="font-semibold m-0">{loc.name}</p>
-                      {loc.address && (
-                        <p className="text-xs text-gray-500 m-0">{loc.address}</p>
-                      )}
+                      {loc.address && <p className="text-xs text-gray-500 m-0">{loc.address}</p>}
                       <p className="text-xs m-0">
                         {num(loc.useCount) ?? 0} fill-up{(num(loc.useCount) ?? 0) !== 1 ? "s" : ""}
                       </p>
@@ -390,8 +343,11 @@ export const Locations: React.FC = () => {
       >
         <div className="flex flex-col gap-3 pt-2">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Name *</label>
+            <label htmlFor="location-name" className="text-sm font-medium">
+              Name *
+            </label>
             <InputText
+              id="location-name"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               placeholder="e.g. Sheetz Monroeville"
@@ -400,8 +356,11 @@ export const Locations: React.FC = () => {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Address</label>
+            <label htmlFor="location-address" className="text-sm font-medium">
+              Address
+            </label>
             <InputText
+              id="location-address"
               value={form.address}
               onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
               placeholder="Street address (optional)"
@@ -410,8 +369,11 @@ export const Locations: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">Latitude</label>
+              <label htmlFor="location-latitude" className="text-sm font-medium">
+                Latitude
+              </label>
               <InputNumber
+                inputId="location-latitude"
                 value={form.latitude}
                 onValueChange={(e) => setForm((f) => ({ ...f, latitude: e.value ?? null }))}
                 placeholder="e.g. 40.3164"
@@ -422,8 +384,11 @@ export const Locations: React.FC = () => {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">Longitude</label>
+              <label htmlFor="location-longitude" className="text-sm font-medium">
+                Longitude
+              </label>
               <InputNumber
+                inputId="location-longitude"
                 value={form.longitude}
                 onValueChange={(e) => setForm((f) => ({ ...f, longitude: e.value ?? null }))}
                 placeholder="e.g. -79.6837"

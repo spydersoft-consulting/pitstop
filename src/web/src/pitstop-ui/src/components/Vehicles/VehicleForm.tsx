@@ -59,7 +59,7 @@ export const VehicleForm: React.FC<Props> = ({
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -98,36 +98,43 @@ export const VehicleForm: React.FC<Props> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      {field("Name *", errors.name,
+      {field(
+        "Name *",
+        errors.name,
         <InputText
           value={values.name}
           onChange={(e) => set("name", e.target.value)}
           placeholder="e.g. My Daily Driver"
           className={errors.name ? "p-invalid w-full" : "w-full"}
-        />
+        />,
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {field("Make *", errors.make,
+        {field(
+          "Make *",
+          errors.make,
           <InputText
             value={values.make}
             onChange={(e) => set("make", e.target.value)}
             placeholder="e.g. Honda"
             className={errors.make ? "p-invalid w-full" : "w-full"}
-          />
+          />,
         )}
-        {field("Model *", errors.model,
+        {field(
+          "Model *",
+          errors.model,
           <InputText
             value={values.model}
             onChange={(e) => set("model", e.target.value)}
             placeholder="e.g. Accord"
             className={errors.model ? "p-invalid w-full" : "w-full"}
-          />
+          />,
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {field("Year",
+        {field(
+          "Year",
           undefined,
           <InputNumber
             value={values.year}
@@ -136,18 +143,20 @@ export const VehicleForm: React.FC<Props> = ({
             useGrouping={false}
             className="w-full"
             inputClassName="w-full"
-          />
+          />,
         )}
-        {field("Trim",
+        {field(
+          "Trim",
           undefined,
           <InputText
             value={values.trim}
             onChange={(e) => set("trim", e.target.value)}
             placeholder="e.g. Sport"
             className="w-full"
-          />
+          />,
         )}
-        {field("Tank Capacity (gal)",
+        {field(
+          "Tank Capacity (gal)",
           undefined,
           <InputNumber
             value={values.tankCapacityGallons}
@@ -157,13 +166,14 @@ export const VehicleForm: React.FC<Props> = ({
             maxFractionDigits={3}
             className="w-full"
             inputClassName="w-full"
-          />
+          />,
         )}
       </div>
 
       {!isEdit && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {field("Starting Odometer (mi)",
+          {field(
+            "Starting Odometer (mi)",
             undefined,
             <InputNumber
               value={values.initialOdometer}
@@ -172,9 +182,10 @@ export const VehicleForm: React.FC<Props> = ({
               useGrouping={false}
               className="w-full"
               inputClassName="w-full"
-            />
+            />,
           )}
-          {field("Start Date",
+          {field(
+            "Start Date",
             undefined,
             <Calendar
               value={values.startDate}
@@ -183,7 +194,7 @@ export const VehicleForm: React.FC<Props> = ({
               showIcon
               className="w-full"
               inputClassName="w-full"
-            />
+            />,
           )}
         </div>
       )}

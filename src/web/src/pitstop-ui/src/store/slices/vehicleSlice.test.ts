@@ -48,7 +48,7 @@ describe("vehicleSlice reducers", () => {
     const store = makeStore();
     store.dispatch(setVehicles([v(1), v(2)]));
     const state = store.getState().vehicles;
-    expect(state.vehicles.length).toBe(2);
+    expect(state.vehicles).toHaveLength(2);
     expect(state.selectedVehicleId).toBe(1);
   });
 
@@ -93,9 +93,7 @@ describe("vehicleSlice thunks", () => {
   it("createVehicle appends and auto-selects when nothing was selected", async () => {
     vi.mocked(vehiclesApi.create).mockResolvedValue(v(20));
     const store = makeStore();
-    await store.dispatch(
-      createVehicle({ name: "new", make: "Honda", model: "Civic" }),
-    );
+    await store.dispatch(createVehicle({ name: "new", make: "Honda", model: "Civic" }));
     const state = store.getState().vehicles;
     expect(state.vehicles.map((x) => x.id)).toEqual([20]);
     expect(state.selectedVehicleId).toBe(20);

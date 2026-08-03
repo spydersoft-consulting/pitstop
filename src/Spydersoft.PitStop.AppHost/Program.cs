@@ -1,4 +1,5 @@
 const string TestingEnvironmentName = "Testing";
+const string HttpsScheme = "https";
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -21,9 +22,9 @@ if (builder.Environment.EnvironmentName != TestingEnvironmentName)
 
 var db = postgres.AddDatabase("pitstop-db");
 
-var api = builder.AddProject<Projects.Spydersoft_PitStop_Api>("api", launchProfileName: "https")
+var api = builder.AddProject<Projects.Spydersoft_PitStop_Api>("api", launchProfileName: HttpsScheme)
     .WithEndpoint("http", e => { e.Port = 8080; e.TargetPort = 8080; e.IsProxied = false; })
-    .WithEndpoint("https", e => { e.Port = 8081; e.TargetPort = 8081; e.IsProxied = false; })
+    .WithEndpoint(HttpsScheme, e => { e.Port = 8081; e.TargetPort = 8081; e.IsProxied = false; })
     .WithEnvironment("Telemetry__Log__Type", "otlp")
     .WithEnvironment("Telemetry__Metrics__Type", "otlp")
     .WithEnvironment("Telemetry__Trace__Type", "otlp")
@@ -113,11 +114,11 @@ var frontendProjectDir = Path.GetFullPath(
 
 builder.AddViteApp("pitstop-ui", "../web/src/pitstop-ui")
     .WithYarn()
-    .WithEndpoint("http", e => { e.Port = 5200; e.IsProxied = false; e.UriScheme = "https"; });
+    .WithEndpoint("http", e => { e.Port = 5200; e.IsProxied = false; e.UriScheme = HttpsScheme; });
 
-var web = builder.AddProject<Projects.Spydersoft_PitStop_Frontend>("web", launchProfileName: "https")
+var web = builder.AddProject<Projects.Spydersoft_PitStop_Frontend>("web", launchProfileName: HttpsScheme)
     .WithEndpoint("http", e => { e.Port = 9080; e.TargetPort = 9080; e.IsProxied = false; })
-    .WithEndpoint("https", e => { e.Port = 9081; e.TargetPort = 9081; e.IsProxied = false; })
+    .WithEndpoint(HttpsScheme, e => { e.Port = 9081; e.TargetPort = 9081; e.IsProxied = false; })
     .WithEnvironment("ASPNETCORE_CONTENTROOT", frontendProjectDir)
     .WithEnvironment("OidcProxySettings__Oidc__Authority", authority)
     .WithEnvironment("OidcProxySettings__Oidc__ClientId", clientId)

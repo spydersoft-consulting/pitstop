@@ -95,7 +95,7 @@ export const MaintenanceLogForm: React.FC<Props> = ({
     };
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
 

@@ -8,6 +8,7 @@ namespace Spydersoft.PitStop.Api.UnitTests.DataSeeder;
 public class TokenGeneratorTests
 {
     private const string TestKey = "jRv3YFPH/19t9t5CgsEFgAkykfW5bQhHmceMprLgzlQ=";
+    private static readonly string[] ExpectedScopes = ["pitstop:read", "pitstop:write"];
 
     [Test]
     public void Generate_ProducesParseableJwt_WithExpectedSubjectAndScopes()
@@ -22,7 +23,7 @@ public class TokenGeneratorTests
             .Where(c => c.Type == "scope")
             .Select(c => c.Value)
             .ToList();
-        Assert.That(scopes, Is.EquivalentTo(new[] { "pitstop:read", "pitstop:write" }));
+        Assert.That(scopes, Is.EquivalentTo(ExpectedScopes));
 
         Assert.That(token.ValidTo, Is.GreaterThan(DateTime.UtcNow));
     }

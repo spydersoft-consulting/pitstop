@@ -16,6 +16,7 @@ namespace Spydersoft.PitStop.Api.UnitTests.Controllers;
 public class LocationsControllerTests
 {
     private const string TestUserId = "test-user";
+    private static readonly string[] ExpectedNameOrder = ["BP", "Costco", "Shell"];
 
     private PitStopDbContext _db = null!;
     private LocationService _service = null!;
@@ -122,7 +123,7 @@ public class LocationsControllerTests
             CancellationToken.None);
 
         var items = (result.Result as OkObjectResult)!.Value as List<LocationDto>;
-        Assert.That(items!.Select(i => i.Name), Is.EqualTo(new[] { "BP", "Costco", "Shell" }));
+        Assert.That(items!.Select(i => i.Name), Is.EqualTo(ExpectedNameOrder));
     }
 
     [Test]

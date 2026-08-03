@@ -52,7 +52,7 @@ public class FillUpServiceTests
         return vehicle;
     }
 
-    private FillUp MakeFillUp(int vehicleId, decimal odometer, decimal gallons, bool full = true) => new()
+    private static FillUp MakeFillUp(int vehicleId, decimal odometer, decimal gallons, bool full = true) => new()
     {
         VehicleId = vehicleId,
         FilledAt = DateTimeOffset.UtcNow,

@@ -1,4 +1,4 @@
-﻿using Spydersoft.PitStop.Contracts.Analytics;
+using Spydersoft.PitStop.Contracts.Analytics;
 using Spydersoft.PitStop.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -72,7 +72,7 @@ public class AnalyticsController(PitStopDbContext db) : PitStopControllerBase(db
             if (window.Count == 10)
                 windowSum -= window.Dequeue();
             window.Enqueue(f.MpgThisFillUp!.Value);
-            windowSum += f.MpgThisFillUp!.Value;
+            windowSum += f.MpgThisFillUp.Value;
 
             points.Add(new MpgDataPoint
             {
