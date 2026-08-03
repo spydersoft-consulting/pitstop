@@ -127,7 +127,7 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated || !user?.exp) return;
+    if (!isAuthenticated || !user?.exp || !isFresh(user.exp)) return;
     const msUntilRefresh = user.exp * 1000 - REFRESH_WINDOW_MS - Date.now();
     const handle = globalThis.setTimeout(
       () => {
