@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { ProgressSpinner } from "primereact/progressspinner";
 import MainLayout from "../layouts/Main";
 import { Dashboard } from "./Dashboard/Dashboard";
 import { FillUpHistory } from "./FillUpHistory/FillUpHistory";
@@ -23,7 +24,7 @@ import { useAuth } from "../context";
 
 export const AppRouter: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const { selectedVehicleId } = useAppSelector((s) => s.vehicles);
 
   useEffect(() => {
@@ -39,6 +40,14 @@ export const AppRouter: React.FC = () => {
       void dispatch(fetchMaintenanceLogs(selectedVehicleId));
     }
   }, [dispatch, isAuthenticated, selectedVehicleId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Landing />;
