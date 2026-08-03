@@ -11,11 +11,7 @@ interface RenderOpts {
   brand?: string;
 }
 
-function renderNav({
-  isAuthenticated = false,
-  userName,
-  brand,
-}: RenderOpts = {}) {
+function renderNav({ isAuthenticated = false, userName, brand }: RenderOpts = {}) {
   const login = vi.fn();
   const logout = vi.fn();
   return {
@@ -27,9 +23,7 @@ function renderNav({
           value={{
             isLoading: false,
             isAuthenticated,
-            user: isAuthenticated
-              ? { name: userName ?? "", authenticated: true, exp: 0 }
-              : undefined,
+            user: isAuthenticated ? { name: userName ?? "", authenticated: true, exp: 0 } : undefined,
             login,
             logout,
             refreshAuth: async () => undefined,
@@ -46,12 +40,12 @@ describe("NavigationBar", () => {
   it("renders the supplied brand in both desktop and mobile views", () => {
     renderNav({ brand: "PitStopTest" });
     // Brand renders once for desktop sidebar and once for mobile top bar.
-    expect(screen.getAllByText("PitStopTest").length).toBe(2);
+    expect(screen.getAllByText("PitStopTest")).toHaveLength(2);
   });
 
   it("falls back to 'PitStop' brand when none is provided", () => {
     renderNav();
-    expect(screen.getAllByText("PitStop").length).toBe(2);
+    expect(screen.getAllByText("PitStop")).toHaveLength(2);
   });
 
   it("renders primary nav items", () => {
@@ -88,8 +82,6 @@ describe("NavigationBar", () => {
     renderNav();
     const collapseBtn = screen.getByRole("button", { name: /collapse sidebar/i });
     await user.click(collapseBtn);
-    expect(
-      screen.getByRole("button", { name: /expand sidebar/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /expand sidebar/i })).toBeInTheDocument();
   });
 });

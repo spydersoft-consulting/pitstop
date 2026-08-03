@@ -65,7 +65,7 @@ export const FillUpForm: React.FC<Props> = ({
 
   const autoTotalCost = () => {
     if (values.gallonsAdded != null && values.pricePerGallon != null && values.totalCost == null) {
-      set("totalCost", parseFloat((values.gallonsAdded * values.pricePerGallon).toFixed(2)));
+      set("totalCost", Number.parseFloat((values.gallonsAdded * values.pricePerGallon).toFixed(2)));
     }
   };
 
@@ -83,8 +83,7 @@ export const FillUpForm: React.FC<Props> = ({
     return Object.keys(next).length === 0;
   };
 
-  const locationFields = (selection: LocationSelection):
-    | Pick<CreateFillUpRequest, "locationId" | "location"> => {
+  const locationFields = (selection: LocationSelection): Pick<CreateFillUpRequest, "locationId" | "location"> => {
     if (selection === null) return { locationId: null, location: null };
     if (selection.kind === "existing") return { locationId: selection.id, location: null };
     return {
@@ -99,7 +98,7 @@ export const FillUpForm: React.FC<Props> = ({
     };
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -127,7 +126,9 @@ export const FillUpForm: React.FC<Props> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      {field("Date *", errors.filledAt,
+      {field(
+        "Date *",
+        errors.filledAt,
         <Calendar
           value={values.filledAt}
           onChange={(e) => set("filledAt", e.value ?? null)}
@@ -136,11 +137,13 @@ export const FillUpForm: React.FC<Props> = ({
           hourFormat="12"
           className="w-full"
           inputClassName="w-full"
-        />
+        />,
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {field("Odometer (mi) *", errors.odometerReading,
+        {field(
+          "Odometer (mi) *",
+          errors.odometerReading,
           <InputNumber
             value={values.odometerReading}
             onValueChange={(e) => set("odometerReading", e.value ?? null)}
@@ -148,21 +151,24 @@ export const FillUpForm: React.FC<Props> = ({
             useGrouping
             className={errors.odometerReading ? "p-invalid w-full" : "w-full"}
             inputClassName="w-full"
-          />
+          />,
         )}
-        {field("Fuel Grade",
+        {field(
+          "Fuel Grade",
           undefined,
           <Dropdown
             value={values.fuelGrade}
             options={FUEL_GRADE_OPTIONS}
             onChange={(e) => set("fuelGrade", e.value)}
             className="w-full"
-          />
+          />,
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {field("Gallons Added *", errors.gallonsAdded,
+        {field(
+          "Gallons Added *",
+          errors.gallonsAdded,
           <InputNumber
             value={values.gallonsAdded}
             onValueChange={(e) => set("gallonsAdded", e.value ?? null)}
@@ -172,9 +178,11 @@ export const FillUpForm: React.FC<Props> = ({
             maxFractionDigits={3}
             className={errors.gallonsAdded ? "p-invalid w-full" : "w-full"}
             inputClassName="w-full"
-          />
+          />,
         )}
-        {field("Price / Gallon *", errors.pricePerGallon,
+        {field(
+          "Price / Gallon *",
+          errors.pricePerGallon,
           <InputNumber
             value={values.pricePerGallon}
             onValueChange={(e) => set("pricePerGallon", e.value ?? null)}
@@ -186,9 +194,11 @@ export const FillUpForm: React.FC<Props> = ({
             maxFractionDigits={3}
             className={errors.pricePerGallon ? "p-invalid w-full" : "w-full"}
             inputClassName="w-full"
-          />
+          />,
         )}
-        {field("Total Cost *", errors.totalCost,
+        {field(
+          "Total Cost *",
+          errors.totalCost,
           <InputNumber
             value={values.totalCost}
             onValueChange={(e) => set("totalCost", e.value ?? null)}
@@ -199,18 +209,18 @@ export const FillUpForm: React.FC<Props> = ({
             maxFractionDigits={2}
             className={errors.totalCost ? "p-invalid w-full" : "w-full"}
             inputClassName="w-full"
-          />
+          />,
         )}
       </div>
 
-      {field("Location", errors.location,
-        <LocationPicker
-          value={values.location}
-          onChange={(loc) => set("location", loc)}
-        />
+      {field(
+        "Location",
+        errors.location,
+        <LocationPicker value={values.location} onChange={(loc) => set("location", loc)} />,
       )}
 
-      {field("Notes",
+      {field(
+        "Notes",
         undefined,
         <InputTextarea
           value={values.notes}
@@ -219,7 +229,7 @@ export const FillUpForm: React.FC<Props> = ({
           rows={3}
           autoResize
           className="w-full"
-        />
+        />,
       )}
 
       <div className="flex items-center gap-2 pt-1">

@@ -217,7 +217,7 @@ public class FillUpsController(
         MilesSinceLastFillUp = f.MilesSinceLastFillUp,
         MpgThisFillUp = f.MpgThisFillUp,
         CostPerMile = f.MilesSinceLastFillUp > 0
-            ? Math.Round(f.TotalCost / f.MilesSinceLastFillUp!.Value, 3)
+            ? Math.Round(f.TotalCost / f.MilesSinceLastFillUp.Value, 3)
             : null
     };
 }
