@@ -63,6 +63,41 @@ describe("AuthProvider", () => {
     await waitFor(() => expect(mockedAxios.get).not.toHaveBeenCalled());
   });
 
+  it("starts isLoading true on first render when there is no cached session", async () => {
+    mockedAxios.get.mockResolvedValueOnce({
+      data: { name: "Jane Doe", exp: Math.floor(Date.now() / 1000) + 3600 },
+    });
+
+    renderAuth();
+
+    expect(screen.getByTestId("isLoading")).toHaveTextContent("true");
+    await waitFor(() => expect(screen.getByTestId("isLoading")).toHaveTextContent("false"));
+  });
+
+  it("starts isLoading false on first render when a fresh cached user is present", () => {
+    const exp = Math.floor(Date.now() / 1000) + 3600;
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("user", JSON.stringify({ name: "Cached User", authenticated: true, exp }));
+
+    renderAuth();
+
+    expect(screen.getByTestId("isLoading")).toHaveTextContent("false");
+  });
+
+  it("starts isLoading true on first render when the cached user has expired", async () => {
+    const exp = Math.floor(Date.now() / 1000) - 3600;
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("user", JSON.stringify({ name: "Cached User", authenticated: true, exp }));
+    mockedAxios.get.mockResolvedValueOnce({
+      data: { name: "Cached User", exp: Math.floor(Date.now() / 1000) + 3600 },
+    });
+
+    renderAuth();
+
+    expect(screen.getByTestId("isLoading")).toHaveTextContent("true");
+    await waitFor(() => expect(screen.getByTestId("isLoading")).toHaveTextContent("false"));
+  });
+
   it("clears auth state without redirecting on a 401 for a never-authenticated visitor", async () => {
     mockedAxios.get.mockRejectedValueOnce({ response: { status: 401 } });
 

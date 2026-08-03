@@ -59,7 +59,14 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
     return saved ? (JSON.parse(saved) as UserInfo) : undefined;
   });
 
-  const [isLoading, setIsLoading] = useState(false);
+  // Start in a loading state unless we have a still-fresh cached session, so
+  // consumers (e.g. AppRouter) can hold off rendering the logged-out view
+  // until the mount-time /.auth/me check below has had a chance to resolve.
+  const [isLoading, setIsLoading] = useState(() => {
+    const saved = localStorage.getItem("user");
+    const cached = saved ? (JSON.parse(saved) as UserInfo) : undefined;
+    return !(cached && isFresh(cached.exp));
+  });
   const inflight = useRef<Promise<void> | null>(null);
 
   // Whether the session was previously known-good before this clear, so we can tell
