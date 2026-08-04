@@ -106,6 +106,13 @@ export type LocationSummaryDto = {
   address?: null | string;
 };
 
+export type MaintenanceAttachmentDto = {
+  id?: number | string;
+  fileId?: string;
+  fileName?: string;
+  contentType?: string;
+};
+
 export type MaintenanceLogDto = {
   id?: number | string;
   vehicleId?: number | string;
@@ -120,7 +127,25 @@ export type MaintenanceLogDto = {
   laborCost?: null | number | string;
   totalCost?: null | number | string;
   notes?: null | string;
+  attachments?: Array<MaintenanceAttachmentDto>;
   computedTotalCost?: null | number | string;
+};
+
+export type InitiateAttachmentUploadRequest = {
+  fileName: string;
+  contentType: string;
+  sizeBytes: number | string;
+};
+
+export type InitiateAttachmentUploadResponse = {
+  attachmentId?: number | string;
+  uploadUrl?: string;
+  expiresAt?: string;
+};
+
+export type FileUrlResponse = {
+  url?: string;
+  expiresAt?: string;
 };
 
 export type MaintenanceLogListResponse = {
@@ -563,6 +588,86 @@ export type PutApiV1VehiclesByVehicleIdMaintenanceByIdResponses = {
 
 export type PutApiV1VehiclesByVehicleIdMaintenanceByIdResponse =
   PutApiV1VehiclesByVehicleIdMaintenanceByIdResponses[keyof PutApiV1VehiclesByVehicleIdMaintenanceByIdResponses];
+
+export type PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateData = {
+  body: InitiateAttachmentUploadRequest;
+  path: {
+    vehicleId: number;
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/initiate";
+};
+
+export type PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateResponses = {
+  /**
+   * OK
+   */
+  200: InitiateAttachmentUploadResponse;
+};
+
+export type PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateResponse =
+  PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateResponses[keyof PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateResponses];
+
+export type PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirmData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+    id: number;
+    attachmentId: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}/confirm";
+};
+
+export type PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirmResponses = {
+  /**
+   * OK
+   */
+  200: MaintenanceAttachmentDto;
+};
+
+export type PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirmResponse =
+  PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirmResponses[keyof PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirmResponses];
+
+export type GetApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrlData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+    id: number;
+    attachmentId: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}/url";
+};
+
+export type GetApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrlResponses = {
+  /**
+   * OK
+   */
+  200: FileUrlResponse;
+};
+
+export type GetApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrlResponse =
+  GetApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrlResponses[keyof GetApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrlResponses];
+
+export type DeleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+    id: number;
+    attachmentId: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}";
+};
+
+export type DeleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdResponses = {
+  /**
+   * OK
+   */
+  200: unknown;
+};
 
 export type GetApiV1VehiclesData = {
   body?: never;

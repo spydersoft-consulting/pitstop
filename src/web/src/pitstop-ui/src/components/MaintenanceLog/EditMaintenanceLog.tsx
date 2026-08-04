@@ -4,6 +4,7 @@ import { Card } from "primereact/card";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updateMaintenanceLog } from "../../store/slices/maintenanceLogSlice";
 import { MaintenanceLogForm, type MaintenanceLogFormValues } from "./MaintenanceLogForm";
+import { MaintenanceLogAttachments } from "./MaintenanceLogAttachments";
 import type { UpdateMaintenanceLogRequest } from "../../api/generated/types.gen";
 import { PageHeader } from "../layout/PageHeader";
 
@@ -75,6 +76,9 @@ export const EditMaintenanceLog: React.FC = () => {
       <Card>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <MaintenanceLogForm initialValues={initialValues} isEdit onSubmit={handleSubmit} submitting={submitting} />
+      </Card>
+      <Card>
+        <MaintenanceLogAttachments vehicleId={selectedVehicleId} maintenanceLogId={Number(maintenanceLog.id)} />
       </Card>
     </div>
   );

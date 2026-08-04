@@ -6,6 +6,8 @@ import {
   createMaintenanceLog,
   updateMaintenanceLog,
   deleteMaintenanceLog,
+  uploadMaintenanceAttachment,
+  deleteMaintenanceAttachment,
   type MaintenanceLog,
 } from "./maintenanceLogSlice";
 
@@ -18,7 +20,18 @@ vi.mock("../../api/maintenanceLogsApi", () => ({
   },
 }));
 
+vi.mock("../../api/maintenanceAttachmentsApi", () => ({
+  maintenanceAttachmentsApi: {
+    initiate: vi.fn(),
+    confirm: vi.fn(),
+    getUrl: vi.fn(),
+    delete: vi.fn(),
+    uploadToPresignedUrl: vi.fn(),
+  },
+}));
+
 import { maintenanceLogsApi } from "../../api/maintenanceLogsApi";
+import { maintenanceAttachmentsApi } from "../../api/maintenanceAttachmentsApi";
 
 const m = (id: number, overrides: Partial<MaintenanceLog> = {}): MaintenanceLog =>
   ({
@@ -151,5 +164,89 @@ describe("maintenanceLogSlice thunks", () => {
     vi.mocked(maintenanceLogsApi.delete).mockResolvedValue(undefined);
     await store.dispatch(deleteMaintenanceLog({ vehicleId: 1, id: 1 }));
     expect(store.getState().maintenanceLogs.recentMaintenanceLogs.map((x) => x.id)).toEqual([2]);
+  });
+
+  it("uploadMaintenanceAttachment initiates, uploads to the presigned URL, then confirms", async () => {
+    const store = makeStore();
+    vi.mocked(maintenanceLogsApi.list).mockResolvedValue({
+      items: [m(1)],
+      totalCount: 1,
+      page: 1,
+      pageSize: 100,
+      totalPages: 1,
+    });
+    await store.dispatch(fetchMaintenanceLogs(1));
+
+    vi.mocked(maintenanceAttachmentsApi.initiate).mockResolvedValue({
+      attachmentId: 5,
+      uploadUrl: "https://filestore.test/upload/abc",
+      expiresAt: "2026-01-01T00:15:00.000Z",
+    });
+    vi.mocked(maintenanceAttachmentsApi.uploadToPresignedUrl).mockResolvedValue(undefined);
+    vi.mocked(maintenanceAttachmentsApi.confirm).mockResolvedValue({
+      id: 5,
+      fileId: "file-guid",
+      fileName: "receipt.pdf",
+      contentType: "application/pdf",
+    });
+
+    const file = new File(["contents"], "receipt.pdf", { type: "application/pdf" });
+    await store.dispatch(uploadMaintenanceAttachment({ vehicleId: 1, id: 1, file }));
+
+    expect(maintenanceAttachmentsApi.initiate).toHaveBeenCalledWith(1, 1, {
+      fileName: "receipt.pdf",
+      contentType: "application/pdf",
+      sizeBytes: file.size,
+    });
+    expect(maintenanceAttachmentsApi.uploadToPresignedUrl).toHaveBeenCalledWith(
+      "https://filestore.test/upload/abc",
+      file,
+    );
+    expect(maintenanceAttachmentsApi.confirm).toHaveBeenCalledWith(1, 1, 5);
+
+    const log = store.getState().maintenanceLogs.recentMaintenanceLogs.find((x) => x.id === 1);
+    expect(log?.attachments).toEqual([
+      { id: 5, fileId: "file-guid", fileName: "receipt.pdf", contentType: "application/pdf" },
+    ]);
+  });
+
+  it("uploadMaintenanceAttachment.fulfilled appends to any existing attachments", () => {
+    const initial = {
+      recentMaintenanceLogs: [m(1, { attachments: [{ id: 1, fileName: "existing.pdf" }] })],
+      loading: false,
+    };
+    const action = {
+      type: uploadMaintenanceAttachment.fulfilled.type,
+      payload: { logId: 1, attachment: { id: 2, fileName: "new.pdf" } },
+    };
+    const next = maintenanceLogSliceReducer(initial, action);
+    const log = next.recentMaintenanceLogs.find((x) => x.id === 1);
+    expect(log?.attachments?.map((a) => a.fileName)).toEqual(["existing.pdf", "new.pdf"]);
+  });
+
+  it("deleteMaintenanceAttachment removes the matching attachment from the log", async () => {
+    const store = makeStore();
+    vi.mocked(maintenanceLogsApi.list).mockResolvedValue({
+      items: [
+        m(1, {
+          attachments: [
+            { id: 1, fileName: "a.pdf" },
+            { id: 2, fileName: "b.pdf" },
+          ],
+        }),
+      ],
+      totalCount: 1,
+      page: 1,
+      pageSize: 100,
+      totalPages: 1,
+    });
+    await store.dispatch(fetchMaintenanceLogs(1));
+
+    vi.mocked(maintenanceAttachmentsApi.delete).mockResolvedValue(undefined);
+    await store.dispatch(deleteMaintenanceAttachment({ vehicleId: 1, id: 1, attachmentId: 1 }));
+
+    expect(maintenanceAttachmentsApi.delete).toHaveBeenCalledWith(1, 1, 1);
+    const log = store.getState().maintenanceLogs.recentMaintenanceLogs.find((x) => x.id === 1);
+    expect(log?.attachments?.map((a) => a.id)).toEqual([2]);
   });
 });

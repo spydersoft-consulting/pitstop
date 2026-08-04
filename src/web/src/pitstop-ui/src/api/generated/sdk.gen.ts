@@ -9,6 +9,8 @@ import type {
   DeleteApiV1VehiclesByIdResponses,
   DeleteApiV1VehiclesByVehicleIdFillupsByIdData,
   DeleteApiV1VehiclesByVehicleIdFillupsByIdResponses,
+  DeleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdData,
+  DeleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdResponses,
   DeleteApiV1VehiclesByVehicleIdMaintenanceByIdData,
   DeleteApiV1VehiclesByVehicleIdMaintenanceByIdResponses,
   GetApiV1LocationsByIdData,
@@ -27,6 +29,8 @@ import type {
   GetApiV1VehiclesByVehicleIdFillupsByIdResponses,
   GetApiV1VehiclesByVehicleIdFillupsData,
   GetApiV1VehiclesByVehicleIdFillupsResponses,
+  GetApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrlData,
+  GetApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrlResponses,
   GetApiV1VehiclesByVehicleIdMaintenanceByIdData,
   GetApiV1VehiclesByVehicleIdMaintenanceByIdResponses,
   GetApiV1VehiclesByVehicleIdMaintenanceData,
@@ -37,6 +41,10 @@ import type {
   PostApiV1LocationsResponses,
   PostApiV1VehiclesByVehicleIdFillupsData,
   PostApiV1VehiclesByVehicleIdFillupsResponses,
+  PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirmData,
+  PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirmResponses,
+  PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateData,
+  PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateResponses,
   PostApiV1VehiclesByVehicleIdMaintenanceData,
   PostApiV1VehiclesByVehicleIdMaintenanceResponses,
   PostApiV1VehiclesData,
@@ -250,6 +258,67 @@ export const putApiV1VehiclesByVehicleIdMaintenanceById = <ThrowOnError extends 
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+export const postApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiate = <ThrowOnError extends boolean = false>(
+  options: Options<PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/initiate",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const postApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirm = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirmData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdConfirmResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}/confirm",
+    ...options,
+  });
+
+export const getApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrl = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<GetApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrlData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    GetApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdUrlResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}/url",
+    ...options,
+  });
+
+export const deleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentId = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<DeleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<
+    DeleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdResponses,
+    unknown,
+    ThrowOnError
+  >({
+    url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}",
+    ...options,
   });
 
 export const getApiV1Vehicles = <ThrowOnError extends boolean = false>(

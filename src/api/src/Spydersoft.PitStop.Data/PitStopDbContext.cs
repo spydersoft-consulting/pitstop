@@ -10,6 +10,7 @@ public class PitStopDbContext(DbContextOptions<PitStopDbContext> options) : DbCo
     public DbSet<FillUp> FillUps => Set<FillUp>();
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<MaintenanceLog> MaintenanceLogs => Set<MaintenanceLog>();
+    public DbSet<MaintenanceLogAttachment> MaintenanceLogAttachments => Set<MaintenanceLogAttachment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -17,5 +18,6 @@ public class PitStopDbContext(DbContextOptions<PitStopDbContext> options) : DbCo
         modelBuilder.ApplyConfiguration(new FillUpConfiguration());
         modelBuilder.ApplyConfiguration(new LocationConfiguration());
         modelBuilder.ApplyConfiguration(new MaintenanceLogConfiguration());
+        modelBuilder.ApplyConfiguration(new MaintenanceLogAttachmentConfiguration());
     }
 }

@@ -34,6 +34,7 @@ export const AddMaintenanceLog: React.FC = () => {
       <Card>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <MaintenanceLogForm onSubmit={handleSubmit} submitting={submitting} />
+        <p className="text-xs text-gray-400 mt-3">Save this entry to attach receipts or photos.</p>
       </Card>
     </div>
   );
