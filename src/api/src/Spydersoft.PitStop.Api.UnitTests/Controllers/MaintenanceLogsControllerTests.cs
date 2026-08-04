@@ -30,7 +30,7 @@ public class MaintenanceLogsControllerTests
 
         _db = new PitStopDbContext(options);
         _locationService = new LocationService(_db);
-        _controller = new MaintenanceLogsController(_db, _locationService)
+        _controller = new MaintenanceLogsController(_db, _locationService, new FakeFileStoreClient())
         {
             ControllerContext = BuildControllerContext(TestUserId)
         };
