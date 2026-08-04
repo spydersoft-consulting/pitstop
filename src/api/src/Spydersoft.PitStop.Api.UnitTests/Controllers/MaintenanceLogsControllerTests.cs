@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using Spydersoft.FileStore.Contracts;
 using Spydersoft.PitStop.Api.Controllers;
 using Spydersoft.PitStop.Api.Services;
 using Spydersoft.PitStop.Api.UnitTests.Support;
@@ -18,6 +19,7 @@ public class MaintenanceLogsControllerTests
 
     private PitStopDbContext _db = null!;
     private LocationService _locationService = null!;
+    private FakeFileStoreClient _fileStore = null!;
     private MaintenanceLogsController _controller = null!;
 
     [SetUp]
@@ -30,7 +32,8 @@ public class MaintenanceLogsControllerTests
 
         _db = new PitStopDbContext(options);
         _locationService = new LocationService(_db);
-        _controller = new MaintenanceLogsController(_db, _locationService, new FakeFileStoreClient())
+        _fileStore = new FakeFileStoreClient();
+        _controller = new MaintenanceLogsController(_db, _locationService, _fileStore)
         {
             ControllerContext = BuildControllerContext(TestUserId)
         };
@@ -269,4 +272,418 @@ public class MaintenanceLogsControllerTests
 
         Assert.That(created.ComputedTotalCost, Is.EqualTo(35.00m));
     }
+
+    [Test]
+    public async Task GetAll_FiltersByStartDateAndEndDate()
+    {
+        var v = await CreateVehicleAsync();
+        await _controller.Create(v.Id, TestRequestWithDate(new DateOnly(2026, 1, 1)), CancellationToken.None);
+        await _controller.Create(v.Id, TestRequestWithDate(new DateOnly(2026, 3, 1)), CancellationToken.None);
+
+        var result = await _controller.GetAll(
+            v.Id,
+            new MaintenanceLogQuery { StartDate = new DateOnly(2026, 2, 1), EndDate = new DateOnly(2026, 4, 1) },
+            CancellationToken.None);
+
+        var response = (MaintenanceLogListResponse)((OkObjectResult)result.Result!).Value!;
+        Assert.That(response.TotalCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task GetAll_FiltersByServiceType_Valid()
+    {
+        var v = await CreateVehicleAsync();
+        await _controller.Create(v.Id, TestRequest(), CancellationToken.None);
+        var recall = TestRequest();
+        recall.ServiceType = "Recall";
+        await _controller.Create(v.Id, recall, CancellationToken.None);
+
+        var result = await _controller.GetAll(
+            v.Id,
+            new MaintenanceLogQuery { ServiceType = "Recall" },
+            CancellationToken.None);
+
+        var response = (MaintenanceLogListResponse)((OkObjectResult)result.Result!).Value!;
+        Assert.That(response.TotalCount, Is.EqualTo(1));
+        Assert.That(response.Items[0].ServiceType, Is.EqualTo("Recall"));
+    }
+
+    [Test]
+    public async Task GetAll_ReturnsValidationProblem_WhenServiceTypeFilterInvalid()
+    {
+        var v = await CreateVehicleAsync();
+
+        var result = await _controller.GetAll(
+            v.Id,
+            new MaintenanceLogQuery { ServiceType = "NotAType" },
+            CancellationToken.None);
+
+        Assert.That(((ObjectResult)result.Result!).Value, Is.InstanceOf<ValidationProblemDetails>());
+    }
+
+    [Test]
+    public async Task GetAll_FiltersByPerformedBy_Valid()
+    {
+        var v = await CreateVehicleAsync();
+        await _controller.Create(v.Id, TestRequest(), CancellationToken.None);
+        var shop = TestRequest();
+        shop.PerformedBy = "Shop";
+        await _controller.Create(v.Id, shop, CancellationToken.None);
+
+        var result = await _controller.GetAll(
+            v.Id,
+            new MaintenanceLogQuery { PerformedBy = "Shop" },
+            CancellationToken.None);
+
+        var response = (MaintenanceLogListResponse)((OkObjectResult)result.Result!).Value!;
+        Assert.That(response.TotalCount, Is.EqualTo(1));
+        Assert.That(response.Items[0].PerformedBy, Is.EqualTo("Shop"));
+    }
+
+    [Test]
+    public async Task GetAll_ReturnsValidationProblem_WhenPerformedByFilterInvalid()
+    {
+        var v = await CreateVehicleAsync();
+
+        var result = await _controller.GetAll(
+            v.Id,
+            new MaintenanceLogQuery { PerformedBy = "NotAPerformer" },
+            CancellationToken.None);
+
+        Assert.That(((ObjectResult)result.Result!).Value, Is.InstanceOf<ValidationProblemDetails>());
+    }
+
+    [Test]
+    public async Task GetAll_SortsByOdometerAscending()
+    {
+        var v = await CreateVehicleAsync();
+        await _controller.Create(v.Id, TestRequest(odometer: 2000m), CancellationToken.None);
+        await _controller.Create(v.Id, TestRequest(odometer: 1000m), CancellationToken.None);
+
+        var result = await _controller.GetAll(
+            v.Id,
+            new MaintenanceLogQuery { SortBy = "odometer", Order = "asc" },
+            CancellationToken.None);
+
+        var response = (MaintenanceLogListResponse)((OkObjectResult)result.Result!).Value!;
+        Assert.That(response.Items[0].OdometerReading, Is.EqualTo(1000m));
+        Assert.That(response.Items[1].OdometerReading, Is.EqualTo(2000m));
+    }
+
+    [Test]
+    public async Task GetAll_SortsByDateAscending()
+    {
+        var v = await CreateVehicleAsync();
+        await _controller.Create(v.Id, TestRequestWithDate(new DateOnly(2026, 3, 1)), CancellationToken.None);
+        await _controller.Create(v.Id, TestRequestWithDate(new DateOnly(2026, 1, 1)), CancellationToken.None);
+
+        var result = await _controller.GetAll(
+            v.Id,
+            new MaintenanceLogQuery { SortBy = "date", Order = "asc" },
+            CancellationToken.None);
+
+        var response = (MaintenanceLogListResponse)((OkObjectResult)result.Result!).Value!;
+        Assert.That(response.Items[0].ServiceDate, Is.EqualTo(new DateOnly(2026, 1, 1)));
+        Assert.That(response.Items[1].ServiceDate, Is.EqualTo(new DateOnly(2026, 3, 1)));
+    }
+
+    [Test]
+    public async Task GetAll_IncludesOnlyConfirmedAttachments()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+
+        _db.MaintenanceLogAttachments.AddRange(
+            new MaintenanceLogAttachment { MaintenanceLogId = created.Id, FileId = Guid.NewGuid(), FileName = "confirmed.pdf", ContentType = "application/pdf", IsConfirmed = true },
+            new MaintenanceLogAttachment { MaintenanceLogId = created.Id, FileId = Guid.NewGuid(), FileName = "pending.pdf", ContentType = "application/pdf", IsConfirmed = false });
+        await _db.SaveChangesAsync();
+
+        var result = await _controller.GetAll(v.Id, new MaintenanceLogQuery(), CancellationToken.None);
+
+        var response = (MaintenanceLogListResponse)((OkObjectResult)result.Result!).Value!;
+        Assert.That(response.Items[0].Attachments, Has.Count.EqualTo(1));
+        Assert.That(response.Items[0].Attachments[0].FileName, Is.EqualTo("confirmed.pdf"));
+    }
+
+    [Test]
+    public async Task GetById_ReturnsNotFound_WhenVehicleNotOwnedByCaller()
+    {
+        var v = await CreateVehicleAsync(ownerId: "someone-else");
+
+        var result = await _controller.GetById(v.Id, 1, CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task GetById_ReturnsNotFound_WhenLogDoesNotExist()
+    {
+        var v = await CreateVehicleAsync();
+
+        var result = await _controller.GetById(v.Id, 999, CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task Update_ReturnsNotFound_WhenVehicleNotOwnedByCaller()
+    {
+        var v = await CreateVehicleAsync(ownerId: "someone-else");
+
+        var result = await _controller.Update(v.Id, 1, UpdateRequest(), CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task Update_ReturnsValidationProblem_WhenServiceTypeInvalid()
+    {
+        var v = await CreateVehicleAsync();
+        var request = UpdateRequest();
+        request.ServiceType = "NotAType";
+
+        var result = await _controller.Update(v.Id, 1, request, CancellationToken.None);
+
+        Assert.That(((ObjectResult)result.Result!).Value, Is.InstanceOf<ValidationProblemDetails>());
+    }
+
+    [Test]
+    public async Task Update_ReturnsValidationProblem_WhenPerformedByInvalid()
+    {
+        var v = await CreateVehicleAsync();
+        var request = UpdateRequest();
+        request.PerformedBy = "NotAPerformer";
+
+        var result = await _controller.Update(v.Id, 1, request, CancellationToken.None);
+
+        Assert.That(((ObjectResult)result.Result!).Value, Is.InstanceOf<ValidationProblemDetails>());
+    }
+
+    [Test]
+    public async Task Update_ReturnsNotFound_WhenLogDoesNotExist()
+    {
+        var v = await CreateVehicleAsync();
+
+        var result = await _controller.Update(v.Id, 999, UpdateRequest(), CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task Update_RejectsBothLocationIdAndInlineLocation()
+    {
+        var v = await CreateVehicleAsync();
+        var loc = await CreateLocationAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+
+        var request = UpdateRequest();
+        request.LocationId = loc.Id;
+        request.Location = new CreateLocationRequest { Name = "Other" };
+
+        var result = await _controller.Update(v.Id, created.Id, request, CancellationToken.None);
+
+        Assert.That(((ObjectResult)result.Result!).Value, Is.InstanceOf<ValidationProblemDetails>());
+    }
+
+    [Test]
+    public async Task Delete_ReturnsNotFound_WhenVehicleNotOwnedByCaller()
+    {
+        var v = await CreateVehicleAsync(ownerId: "someone-else");
+
+        var result = await _controller.Delete(v.Id, 1, CancellationToken.None);
+
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task Delete_ReturnsNotFound_WhenLogDoesNotExist()
+    {
+        var v = await CreateVehicleAsync();
+
+        var result = await _controller.Delete(v.Id, 999, CancellationToken.None);
+
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task InitiateAttachmentUpload_ReturnsNotFound_WhenVehicleNotOwnedByCaller()
+    {
+        var v = await CreateVehicleAsync(ownerId: "someone-else");
+
+        var result = await _controller.InitiateAttachmentUpload(v.Id, 1, InitiateRequest(), CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task InitiateAttachmentUpload_ReturnsNotFound_WhenLogDoesNotExist()
+    {
+        var v = await CreateVehicleAsync();
+
+        var result = await _controller.InitiateAttachmentUpload(v.Id, 999, InitiateRequest(), CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task InitiateAttachmentUpload_CreatesUnconfirmedAttachment_AndReturnsUploadUrl()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+        _fileStore.NextUploadUrl = "https://filestore.test/upload/abc";
+
+        var result = await _controller.InitiateAttachmentUpload(v.Id, created.Id, InitiateRequest(), CancellationToken.None);
+
+        var response = ((OkObjectResult)result.Result!).Value as InitiateAttachmentUploadResponse;
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.UploadUrl, Is.EqualTo("https://filestore.test/upload/abc"));
+
+        var stored = await _db.MaintenanceLogAttachments.SingleAsync(a => a.MaintenanceLogId == created.Id);
+        Assert.That(stored.IsConfirmed, Is.False);
+        Assert.That(stored.FileName, Is.EqualTo("receipt.pdf"));
+
+        Assert.That(_fileStore.LastInitiateRequest!.EntityId, Is.EqualTo(created.Id.ToString()));
+    }
+
+    [Test]
+    public async Task ConfirmAttachmentUpload_ReturnsNotFound_WhenVehicleNotOwnedByCaller()
+    {
+        var v = await CreateVehicleAsync(ownerId: "someone-else");
+
+        var result = await _controller.ConfirmAttachmentUpload(v.Id, 1, 1, CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task ConfirmAttachmentUpload_ReturnsNotFound_WhenAttachmentDoesNotExist()
+    {
+        var v = await CreateVehicleAsync();
+
+        var result = await _controller.ConfirmAttachmentUpload(v.Id, 1, 999, CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task ConfirmAttachmentUpload_MarksConfirmed_AndCallsFileStore()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+        var initiated = ((OkObjectResult)(await _controller.InitiateAttachmentUpload(
+            v.Id, created.Id, InitiateRequest(), CancellationToken.None)).Result!).Value as InitiateAttachmentUploadResponse;
+
+        var result = await _controller.ConfirmAttachmentUpload(v.Id, created.Id, initiated!.AttachmentId, CancellationToken.None);
+
+        var dto = ((OkObjectResult)result.Result!).Value as MaintenanceAttachmentDto;
+        Assert.That(dto, Is.Not.Null);
+        Assert.That(dto!.FileName, Is.EqualTo("receipt.pdf"));
+
+        var stored = await _db.MaintenanceLogAttachments.SingleAsync(a => a.Id == initiated.AttachmentId);
+        Assert.That(stored.IsConfirmed, Is.True);
+        Assert.That(_fileStore.LastConfirmedFileId, Is.EqualTo(stored.FileId));
+    }
+
+    [Test]
+    public async Task GetAttachmentUrl_ReturnsNotFound_WhenVehicleNotOwnedByCaller()
+    {
+        var v = await CreateVehicleAsync(ownerId: "someone-else");
+
+        var result = await _controller.GetAttachmentUrl(v.Id, 1, 1, CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task GetAttachmentUrl_ReturnsNotFound_WhenAttachmentNotConfirmed()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+        await _controller.InitiateAttachmentUpload(v.Id, created.Id, InitiateRequest(), CancellationToken.None);
+
+        var result = await _controller.GetAttachmentUrl(v.Id, created.Id, 999, CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task GetAttachmentUrl_ReturnsUrl_WhenConfirmed()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+        var initiated = ((OkObjectResult)(await _controller.InitiateAttachmentUpload(
+            v.Id, created.Id, InitiateRequest(), CancellationToken.None)).Result!).Value as InitiateAttachmentUploadResponse;
+        await _controller.ConfirmAttachmentUpload(v.Id, created.Id, initiated!.AttachmentId, CancellationToken.None);
+        _fileStore.NextDownloadUrl = "https://filestore.test/download/xyz";
+
+        var result = await _controller.GetAttachmentUrl(v.Id, created.Id, initiated.AttachmentId, CancellationToken.None);
+
+        var url = ((OkObjectResult)result.Result!).Value as FileUrlResponse;
+        Assert.That(url, Is.Not.Null);
+        Assert.That(url!.Url, Is.EqualTo("https://filestore.test/download/xyz"));
+    }
+
+    [Test]
+    public async Task DeleteAttachment_ReturnsNotFound_WhenVehicleNotOwnedByCaller()
+    {
+        var v = await CreateVehicleAsync(ownerId: "someone-else");
+
+        var result = await _controller.DeleteAttachment(v.Id, 1, 1, CancellationToken.None);
+
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task DeleteAttachment_ReturnsNotFound_WhenAttachmentDoesNotExist()
+    {
+        var v = await CreateVehicleAsync();
+
+        var result = await _controller.DeleteAttachment(v.Id, 1, 999, CancellationToken.None);
+
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task DeleteAttachment_RemovesAttachment_AndCallsFileStore()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+        var initiated = ((OkObjectResult)(await _controller.InitiateAttachmentUpload(
+            v.Id, created.Id, InitiateRequest(), CancellationToken.None)).Result!).Value as InitiateAttachmentUploadResponse;
+
+        var result = await _controller.DeleteAttachment(v.Id, created.Id, initiated!.AttachmentId, CancellationToken.None);
+
+        Assert.That(result, Is.InstanceOf<NoContentResult>());
+        Assert.That(await _db.MaintenanceLogAttachments.AnyAsync(a => a.Id == initiated.AttachmentId), Is.False);
+        Assert.That(_fileStore.LastDeletedFileId, Is.EqualTo(_fileStore.NextFileId));
+    }
+
+    private static CreateMaintenanceLogRequest TestRequestWithDate(DateOnly date)
+    {
+        var request = TestRequest();
+        request.ServiceDate = date;
+        return request;
+    }
+
+    private static UpdateMaintenanceLogRequest UpdateRequest() => new()
+    {
+        ServiceDate = new DateOnly(2026, 1, 1),
+        OdometerReading = 1500m,
+        ServiceType = "OilChange",
+        PerformedBy = "Self",
+    };
+
+    private static InitiateAttachmentUploadRequest InitiateRequest() => new()
+    {
+        FileName = "receipt.pdf",
+        ContentType = "application/pdf",
+        SizeBytes = 1024,
+    };
 }
