@@ -6,6 +6,7 @@ using Spydersoft.PitStop.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Spydersoft.FileStore.Contracts;
 
 namespace Spydersoft.PitStop.Api.Controllers;
 
@@ -13,9 +14,13 @@ namespace Spydersoft.PitStop.Api.Controllers;
 [Route("api/v1/vehicles/{vehicleId:int}/maintenance")]
 public class MaintenanceLogsController(
     PitStopDbContext db,
-    LocationService locationService)
+    LocationService locationService,
+    IFileStoreClient fileStore)
     : PitStopControllerBase(db)
 {
+    private const string AttachmentSource = "pitstop";
+    private const string AttachmentEntityType = "maintenance-log";
+
     private const string OrderByOdometer = "odometer";
     private const string OrderAscending = "asc";
 
@@ -64,6 +69,7 @@ public class MaintenanceLogsController(
 
         var items = await query
             .Include(m => m.Location)
+            .Include(m => m.Attachments)
             .Skip((listQuery.Page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(ct);
@@ -86,6 +92,7 @@ public class MaintenanceLogsController(
 
         var log = await Db.MaintenanceLogs
             .Include(m => m.Location)
+            .Include(m => m.Attachments)
             .FirstOrDefaultAsync(m => m.Id == id && m.VehicleId == vehicleId, ct);
         return log is null ? NotFound() : Ok(MapToDto(log));
     }
@@ -235,8 +242,116 @@ public class MaintenanceLogsController(
         LaborCost = m.LaborCost,
         TotalCost = m.TotalCost,
         Notes = m.Notes,
+        Attachments = m.Attachments
+            .Where(a => a.IsConfirmed)
+            .Select(a => new MaintenanceAttachmentDto
+            {
+                Id = a.Id,
+                FileId = a.FileId,
+                FileName = a.FileName,
+                ContentType = a.ContentType,
+            })
+            .ToList(),
         ComputedTotalCost = m.TotalCost ?? (m.PartsCost.HasValue || m.LaborCost.HasValue
             ? (m.PartsCost ?? 0) + (m.LaborCost ?? 0)
             : null)
     };
+
+    [HttpPost("{id:int}/attachments/initiate")]
+    [Authorize(Policy = AuthorizationPolicies.Write)]
+    public async Task<ActionResult<InitiateAttachmentUploadResponse>> InitiateAttachmentUpload(
+        int vehicleId, int id, InitiateAttachmentUploadRequest request, CancellationToken ct)
+    {
+        if (!await VehicleExistsAsync(vehicleId, GetCurrentUserId(), ct))
+            return NotFound();
+
+        var logExists = await Db.MaintenanceLogs.AnyAsync(m => m.Id == id && m.VehicleId == vehicleId, ct);
+        if (!logExists)
+            return NotFound();
+
+        var uploadResponse = await fileStore.InitiateUploadAsync(new InitiateUploadRequest(
+            AttachmentSource, AttachmentEntityType, id.ToString(), request.FileName, request.ContentType, request.SizeBytes), ct);
+
+        var attachment = new MaintenanceLogAttachment
+        {
+            MaintenanceLogId = id,
+            FileId = uploadResponse.FileId,
+            FileName = request.FileName,
+            ContentType = request.ContentType,
+            IsConfirmed = false,
+        };
+        Db.MaintenanceLogAttachments.Add(attachment);
+        await Db.SaveChangesAsync(ct);
+
+        return Ok(new InitiateAttachmentUploadResponse
+        {
+            AttachmentId = attachment.Id,
+            UploadUrl = uploadResponse.UploadUrl,
+            ExpiresAt = uploadResponse.UploadExpiresAt,
+        });
+    }
+
+    [HttpPost("{id:int}/attachments/{attachmentId:int}/confirm")]
+    [Authorize(Policy = AuthorizationPolicies.Write)]
+    public async Task<ActionResult<MaintenanceAttachmentDto>> ConfirmAttachmentUpload(
+        int vehicleId, int id, int attachmentId, CancellationToken ct)
+    {
+        if (!await VehicleExistsAsync(vehicleId, GetCurrentUserId(), ct))
+            return NotFound();
+
+        var attachment = await Db.MaintenanceLogAttachments
+            .FirstOrDefaultAsync(a => a.Id == attachmentId && a.MaintenanceLogId == id, ct);
+        if (attachment is null)
+            return NotFound();
+
+        await fileStore.ConfirmUploadAsync(attachment.FileId, ct);
+
+        attachment.IsConfirmed = true;
+        await Db.SaveChangesAsync(ct);
+
+        return Ok(new MaintenanceAttachmentDto
+        {
+            Id = attachment.Id,
+            FileId = attachment.FileId,
+            FileName = attachment.FileName,
+            ContentType = attachment.ContentType,
+        });
+    }
+
+    [HttpGet("{id:int}/attachments/{attachmentId:int}/url")]
+    [Authorize(Policy = AuthorizationPolicies.Read)]
+    public async Task<ActionResult<FileUrlResponse>> GetAttachmentUrl(
+        int vehicleId, int id, int attachmentId, CancellationToken ct)
+    {
+        if (!await VehicleExistsAsync(vehicleId, GetCurrentUserId(), ct))
+            return NotFound();
+
+        var attachment = await Db.MaintenanceLogAttachments
+            .FirstOrDefaultAsync(a => a.Id == attachmentId && a.MaintenanceLogId == id && a.IsConfirmed, ct);
+        if (attachment is null)
+            return NotFound();
+
+        var url = await fileStore.GetFileUrlAsync(attachment.FileId, ct);
+        return Ok(url);
+    }
+
+    [HttpDelete("{id:int}/attachments/{attachmentId:int}")]
+    [Authorize(Policy = AuthorizationPolicies.Write)]
+    public async Task<IActionResult> DeleteAttachment(int vehicleId, int id, int attachmentId, CancellationToken ct)
+    {
+        if (!await VehicleExistsAsync(vehicleId, GetCurrentUserId(), ct))
+            return NotFound();
+
+        var attachment = await Db.MaintenanceLogAttachments
+            .FirstOrDefaultAsync(a => a.Id == attachmentId && a.MaintenanceLogId == id, ct);
+        if (attachment is null)
+            return NotFound();
+
+        await fileStore.DeleteFileAsync(attachment.FileId, ct);
+
+        Db.MaintenanceLogAttachments.Remove(attachment);
+        await Db.SaveChangesAsync(ct);
+
+        return NoContent();
+    }
 }

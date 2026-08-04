@@ -1,7 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { maintenanceLogsApi } from "../../api/maintenanceLogsApi";
+import { maintenanceAttachmentsApi } from "../../api/maintenanceAttachmentsApi";
 import type {
   CreateMaintenanceLogRequest,
+  MaintenanceAttachmentDto,
   MaintenanceLogDto,
   UpdateMaintenanceLogRequest,
 } from "../../api/generated/types.gen";
@@ -42,6 +44,28 @@ export const deleteMaintenanceLog = createAsyncThunk(
   },
 );
 
+export const uploadMaintenanceAttachment = createAsyncThunk(
+  "maintenanceLogs/uploadAttachment",
+  async ({ vehicleId, id, file }: { vehicleId: number; id: number; file: File }) => {
+    const initiated = await maintenanceAttachmentsApi.initiate(vehicleId, id, {
+      fileName: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    });
+    await maintenanceAttachmentsApi.uploadToPresignedUrl(initiated.uploadUrl!, file);
+    const attachment = await maintenanceAttachmentsApi.confirm(vehicleId, id, Number(initiated.attachmentId));
+    return { logId: id, attachment };
+  },
+);
+
+export const deleteMaintenanceAttachment = createAsyncThunk(
+  "maintenanceLogs/deleteAttachment",
+  async ({ vehicleId, id, attachmentId }: { vehicleId: number; id: number; attachmentId: number }) => {
+    await maintenanceAttachmentsApi.delete(vehicleId, id, attachmentId);
+    return { logId: id, attachmentId };
+  },
+);
+
 const maintenanceLogSlice = createSlice({
   name: "maintenanceLogs",
   initialState,
@@ -68,6 +92,20 @@ const maintenanceLogSlice = createSlice({
       })
       .addCase(deleteMaintenanceLog.fulfilled, (state, action) => {
         state.recentMaintenanceLogs = state.recentMaintenanceLogs.filter((f) => f.id !== action.payload);
+      })
+      .addCase(uploadMaintenanceAttachment.fulfilled, (state, action) => {
+        const { logId, attachment } = action.payload;
+        const log = state.recentMaintenanceLogs.find((f) => f.id === logId);
+        if (log) {
+          log.attachments = [...(log.attachments ?? []), attachment];
+        }
+      })
+      .addCase(deleteMaintenanceAttachment.fulfilled, (state, action) => {
+        const { logId, attachmentId } = action.payload;
+        const log = state.recentMaintenanceLogs.find((f) => f.id === logId);
+        if (log) {
+          log.attachments = (log.attachments ?? []).filter((a: MaintenanceAttachmentDto) => a.id !== attachmentId);
+        }
       });
   },
 });

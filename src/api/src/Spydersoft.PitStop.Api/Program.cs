@@ -4,6 +4,7 @@ using Spydersoft.PitStop.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Spydersoft.FileStore.Client;
 using Spydersoft.Platform.Hosting.StartupExtensions;
 using Spydersoft.Platform.Hosting.Telemetry;
 using System.IdentityModel.Tokens.Jwt;
@@ -63,6 +64,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<FillUpService>();
 builder.Services.AddScoped<LocationService>();
+builder.Services.AddSpydersoftFileStore(builder.Configuration);
 
 var app = builder.Build();
 

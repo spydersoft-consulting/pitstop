@@ -23,4 +23,6 @@ public class MaintenanceLog
     public string? Notes { get; set; }
 
     public bool IsDeleted { get; set; }
+
+    public List<MaintenanceLogAttachment> Attachments { get; set; } = [];
 }

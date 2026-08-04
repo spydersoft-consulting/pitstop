@@ -18,6 +18,8 @@ public class MaintenanceLogDto
     public decimal? TotalCost { get; set; }
     public string? Notes { get; set; }
 
+    public List<MaintenanceAttachmentDto> Attachments { get; set; } = [];
+
     // Computed
     public decimal? ComputedTotalCost { get; set; }
 }
