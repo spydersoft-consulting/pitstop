@@ -269,8 +269,16 @@ public class MaintenanceLogsController(
         if (!logExists)
             return NotFound();
 
-        var uploadResponse = await fileStore.InitiateUploadAsync(new InitiateUploadRequest(
-            AttachmentSource, AttachmentEntityType, id.ToString(), request.FileName, request.ContentType, request.SizeBytes), ct);
+        InitiateUploadResponse uploadResponse;
+        try
+        {
+            uploadResponse = await fileStore.InitiateUploadAsync(new InitiateUploadRequest(
+                AttachmentSource, AttachmentEntityType, id.ToString(), request.FileName, request.ContentType, request.SizeBytes), ct);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
+        {
+            return FileStoreUnavailable();
+        }
 
         var attachment = new MaintenanceLogAttachment
         {
@@ -304,7 +312,14 @@ public class MaintenanceLogsController(
         if (attachment is null)
             return NotFound();
 
-        await fileStore.ConfirmUploadAsync(attachment.FileId, ct);
+        try
+        {
+            await fileStore.ConfirmUploadAsync(attachment.FileId, ct);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
+        {
+            return FileStoreUnavailable();
+        }
 
         attachment.IsConfirmed = true;
         await Db.SaveChangesAsync(ct);
@@ -331,8 +346,15 @@ public class MaintenanceLogsController(
         if (attachment is null)
             return NotFound();
 
-        var url = await fileStore.GetFileUrlAsync(attachment.FileId, ct);
-        return Ok(url);
+        try
+        {
+            var url = await fileStore.GetFileUrlAsync(attachment.FileId, ct);
+            return Ok(url);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
+        {
+            return FileStoreUnavailable();
+        }
     }
 
     [HttpDelete("{id:int}/attachments/{attachmentId:int}")]
@@ -347,11 +369,21 @@ public class MaintenanceLogsController(
         if (attachment is null)
             return NotFound();
 
-        await fileStore.DeleteFileAsync(attachment.FileId, ct);
+        try
+        {
+            await fileStore.DeleteFileAsync(attachment.FileId, ct);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
+        {
+            return FileStoreUnavailable();
+        }
 
         Db.MaintenanceLogAttachments.Remove(attachment);
         await Db.SaveChangesAsync(ct);
 
         return NoContent();
     }
+
+    private ObjectResult FileStoreUnavailable() =>
+        Problem(detail: "The file storage service is currently unavailable. Please try again later.", statusCode: StatusCodes.Status502BadGateway);
 }
