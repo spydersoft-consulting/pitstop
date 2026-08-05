@@ -665,6 +665,73 @@ public class MaintenanceLogsControllerTests
         Assert.That(_fileStore.LastDeletedFileId, Is.EqualTo(_fileStore.NextFileId));
     }
 
+    [Test]
+    public async Task InitiateAttachmentUpload_Returns502_WhenFileStoreCallFails()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+        _fileStore.FailWith = new HttpRequestException("Response status code does not indicate success: 401 (Unauthorized).");
+
+        var result = await _controller.InitiateAttachmentUpload(v.Id, created.Id, InitiateRequest(), CancellationToken.None);
+
+        var problem = (ObjectResult)result.Result!;
+        Assert.That(problem.StatusCode, Is.EqualTo(502));
+        Assert.That(await _db.MaintenanceLogAttachments.CountAsync(), Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task ConfirmAttachmentUpload_Returns502_WhenFileStoreCallFails()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+        var initiated = ((OkObjectResult)(await _controller.InitiateAttachmentUpload(
+            v.Id, created.Id, InitiateRequest(), CancellationToken.None)).Result!).Value as InitiateAttachmentUploadResponse;
+        _fileStore.FailWith = new InvalidOperationException("Failed to acquire a FileStore access token: invalid_client");
+
+        var result = await _controller.ConfirmAttachmentUpload(v.Id, created.Id, initiated!.AttachmentId, CancellationToken.None);
+
+        var problem = (ObjectResult)result.Result!;
+        Assert.That(problem.StatusCode, Is.EqualTo(502));
+        var stored = await _db.MaintenanceLogAttachments.SingleAsync(a => a.Id == initiated.AttachmentId);
+        Assert.That(stored.IsConfirmed, Is.False);
+    }
+
+    [Test]
+    public async Task GetAttachmentUrl_Returns502_WhenFileStoreCallFails()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+        var initiated = ((OkObjectResult)(await _controller.InitiateAttachmentUpload(
+            v.Id, created.Id, InitiateRequest(), CancellationToken.None)).Result!).Value as InitiateAttachmentUploadResponse;
+        await _controller.ConfirmAttachmentUpload(v.Id, created.Id, initiated!.AttachmentId, CancellationToken.None);
+        _fileStore.FailWith = new HttpRequestException("boom");
+
+        var result = await _controller.GetAttachmentUrl(v.Id, created.Id, initiated.AttachmentId, CancellationToken.None);
+
+        var problem = (ObjectResult)result.Result!;
+        Assert.That(problem.StatusCode, Is.EqualTo(502));
+    }
+
+    [Test]
+    public async Task DeleteAttachment_Returns502_WhenFileStoreCallFails()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+        var initiated = ((OkObjectResult)(await _controller.InitiateAttachmentUpload(
+            v.Id, created.Id, InitiateRequest(), CancellationToken.None)).Result!).Value as InitiateAttachmentUploadResponse;
+        _fileStore.FailWith = new HttpRequestException("boom");
+
+        var result = await _controller.DeleteAttachment(v.Id, created.Id, initiated!.AttachmentId, CancellationToken.None);
+
+        var problem = (ObjectResult)result;
+        Assert.That(problem.StatusCode, Is.EqualTo(502));
+        Assert.That(await _db.MaintenanceLogAttachments.AnyAsync(a => a.Id == initiated.AttachmentId), Is.True);
+    }
+
     private static CreateMaintenanceLogRequest TestRequestWithDate(DateOnly date)
     {
         var request = TestRequest();

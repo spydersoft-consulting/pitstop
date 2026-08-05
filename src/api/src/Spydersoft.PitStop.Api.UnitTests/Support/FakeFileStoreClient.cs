@@ -18,14 +18,19 @@ internal sealed class FakeFileStoreClient : IFileStoreClient
     public string NextUploadUrl { get; set; } = "https://filestore.test/upload";
     public string NextDownloadUrl { get; set; } = "https://filestore.test/download";
 
+    /// <summary>When set, every call throws this instead of returning a canned response.</summary>
+    public Exception? FailWith { get; set; }
+
     public Task<InitiateUploadResponse> InitiateUploadAsync(InitiateUploadRequest request, CancellationToken cancellationToken = default)
     {
+        if (FailWith is not null) throw FailWith;
         LastInitiateRequest = request;
         return Task.FromResult(new InitiateUploadResponse(NextFileId, NextUploadUrl, DateTimeOffset.UtcNow.AddMinutes(15)));
     }
 
     public Task ConfirmUploadAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
+        if (FailWith is not null) throw FailWith;
         LastConfirmedFileId = fileId;
         return Task.CompletedTask;
     }
@@ -38,12 +43,14 @@ internal sealed class FakeFileStoreClient : IFileStoreClient
 
     public Task<FileUrlResponse> GetFileUrlAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
+        if (FailWith is not null) throw FailWith;
         LastUrlFileId = fileId;
         return Task.FromResult(new FileUrlResponse(NextDownloadUrl, DateTimeOffset.UtcNow.AddHours(1)));
     }
 
     public Task DeleteFileAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
+        if (FailWith is not null) throw FailWith;
         LastDeletedFileId = fileId;
         return Task.CompletedTask;
     }
