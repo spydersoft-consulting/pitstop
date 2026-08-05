@@ -1,7 +1,7 @@
+import "./styles.css";
 import "primereact/resources/themes/lara-light-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
-import "./styles.css";
 import "./api/pitstopClient";
 
 import React from "react";
