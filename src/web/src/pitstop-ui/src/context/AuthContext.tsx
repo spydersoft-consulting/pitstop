@@ -85,6 +85,12 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
     // stale "logged in" UI. Because localStorage is cleared first, a failed attempt
     // won't re-trigger this on the next load, so it can't loop.
     if (wasAuthenticated) {
+      // Setting location.href doesn't navigate instantly -- the current page keeps
+      // running (and can still render) until the browser actually unloads it. Leaving
+      // isLoading true here keeps AppRouter showing its spinner instead of Landing for
+      // whatever's left of this page's life, rather than flashing a "logged out" view
+      // for a real, visible window right before the redirect lands.
+      setIsLoading(true);
       login();
     }
   };
@@ -105,14 +111,20 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
         setUser(userInfo);
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("user", JSON.stringify(userInfo));
+        setIsLoading(false);
       })
       .catch((err: { response?: { status: number } }) => {
+        const wasAuthenticated = isAuthenticated;
         if (err.response?.status === 401) {
-          clearAuthState(isAuthenticated);
+          clearAuthState(wasAuthenticated);
         }
+        if (!wasAuthenticated) {
+          setIsLoading(false);
+        }
+        // else: clearAuthState already set isLoading back to true for the redirect
+        // it just triggered -- leave it alone.
       })
       .finally(() => {
-        setIsLoading(false);
         inflight.current = null;
       });
 
@@ -150,6 +162,9 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
 
   const logout = () => {
     clearAuthState(false);
+    // Same reasoning as the redirect branch in clearAuthState: this navigation isn't
+    // instant either, so keep the spinner up rather than flashing Landing first.
+    setIsLoading(true);
     globalThis.location.href = "/.auth/end-session";
   };
 
