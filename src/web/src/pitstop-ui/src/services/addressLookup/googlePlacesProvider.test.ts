@@ -106,4 +106,71 @@ describe("GooglePlacesProvider", () => {
       await expect(provider.getDetails("missing")).rejects.toThrow("Address lookup failed (404)");
     });
   });
+
+  describe("session tokens", () => {
+    const okAutocomplete = (): Response => ({ ok: true, json: async () => ({ suggestions: [] }) }) as Response;
+    const okDetails = (): Response =>
+      ({ ok: true, json: async () => ({ formattedAddress: "", addressComponents: [] }) }) as Response;
+
+    const bodyOf = (call: unknown[]): { sessionToken?: string } =>
+      JSON.parse((call[1] as RequestInit).body as string) as { sessionToken?: string };
+
+    const sessionTokenParamOf = (call: unknown[]): string | null =>
+      new URL(call[0] as string | URL).searchParams.get("sessionToken");
+
+    it("generates a session token on the first search and reuses it across further keystrokes", async () => {
+      vi.mocked(globalThis.fetch).mockResolvedValue(okAutocomplete());
+
+      const provider = new GooglePlacesProvider("test-key");
+      await provider.search("123 Main");
+      await provider.search("123 Main St");
+
+      const calls = vi.mocked(globalThis.fetch).mock.calls;
+      const firstToken = bodyOf(calls[0]).sessionToken;
+      const secondToken = bodyOf(calls[1]).sessionToken;
+
+      expect(firstToken).toBeTruthy();
+      expect(secondToken).toBe(firstToken);
+    });
+
+    it("sends the same session token used during search on the details call, linking them into one billed session", async () => {
+      vi.mocked(globalThis.fetch).mockResolvedValueOnce(okAutocomplete()).mockResolvedValueOnce(okDetails());
+
+      const provider = new GooglePlacesProvider("test-key");
+      await provider.search("123 Main St");
+      const searchToken = bodyOf(vi.mocked(globalThis.fetch).mock.calls[0]).sessionToken;
+
+      await provider.getDetails("place-1");
+      const detailsToken = sessionTokenParamOf(vi.mocked(globalThis.fetch).mock.calls[1]);
+
+      expect(detailsToken).toBe(searchToken);
+    });
+
+    it("starts a new session for the next search after a details call completes", async () => {
+      vi.mocked(globalThis.fetch)
+        .mockResolvedValueOnce(okAutocomplete())
+        .mockResolvedValueOnce(okDetails())
+        .mockResolvedValueOnce(okAutocomplete());
+
+      const provider = new GooglePlacesProvider("test-key");
+      await provider.search("123 Main St");
+      const firstToken = bodyOf(vi.mocked(globalThis.fetch).mock.calls[0]).sessionToken;
+
+      await provider.getDetails("place-1");
+      await provider.search("456 Elm St");
+      const secondToken = bodyOf(vi.mocked(globalThis.fetch).mock.calls[2]).sessionToken;
+
+      expect(secondToken).toBeTruthy();
+      expect(secondToken).not.toBe(firstToken);
+    });
+
+    it("omits the sessionToken param on getDetails when called without a prior search", async () => {
+      vi.mocked(globalThis.fetch).mockResolvedValueOnce(okDetails());
+
+      const provider = new GooglePlacesProvider("test-key");
+      await provider.getDetails("place-1");
+
+      expect(sessionTokenParamOf(vi.mocked(globalThis.fetch).mock.calls[0])).toBeNull();
+    });
+  });
 });

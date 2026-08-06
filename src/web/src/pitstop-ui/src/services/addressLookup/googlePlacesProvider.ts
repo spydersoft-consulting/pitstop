@@ -31,10 +31,19 @@ const findComponent = (components: AddressComponent[], type: string) => componen
  * https://developers.google.com/maps/documentation/places/web-service/place-autocomplete
  */
 export class GooglePlacesProvider implements AddressLookupProvider {
+  // Google bills a whole Autocomplete+Details session as a single Place Details call (the
+  // Autocomplete keystrokes are free) as long as every request in the session carries the
+  // same token. A session ends -- successfully or not -- the moment Details is requested, so
+  // the token is cleared after that call regardless of outcome; the next search() then lazily
+  // starts a fresh session. https://developers.google.com/maps/documentation/places/web-service/session-pricing
+  private sessionToken: string | null = null;
+
   constructor(private readonly apiKey: string) {}
 
   async search(query: string): Promise<AddressSuggestion[]> {
     if (!this.apiKey || !query.trim()) return [];
+
+    this.sessionToken ??= crypto.randomUUID();
 
     const response = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
       method: "POST",
@@ -42,7 +51,7 @@ export class GooglePlacesProvider implements AddressLookupProvider {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": this.apiKey,
       },
-      body: JSON.stringify({ input: query }),
+      body: JSON.stringify({ input: query, sessionToken: this.sessionToken }),
     });
 
     if (!response.ok) return [];
@@ -55,7 +64,13 @@ export class GooglePlacesProvider implements AddressLookupProvider {
   }
 
   async getDetails(suggestionId: string): Promise<NormalizedAddress> {
-    const response = await fetch(`https://places.googleapis.com/v1/places/${suggestionId}`, {
+    const sessionToken = this.sessionToken;
+    this.sessionToken = null;
+
+    const url = new URL(`https://places.googleapis.com/v1/places/${suggestionId}`);
+    if (sessionToken) url.searchParams.set("sessionToken", sessionToken);
+
+    const response = await fetch(url, {
       headers: {
         "X-Goog-Api-Key": this.apiKey,
         "X-Goog-FieldMask": "formattedAddress,addressComponents,location",
