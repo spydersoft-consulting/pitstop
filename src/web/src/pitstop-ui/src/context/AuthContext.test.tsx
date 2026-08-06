@@ -167,6 +167,33 @@ describe("AuthProvider", () => {
     expect(screen.getByTestId("isLoading")).toHaveTextContent("true");
   });
 
+  it("only navigates once even if login is triggered twice in quick succession", async () => {
+    mockedAxios.get.mockRejectedValueOnce({ response: { status: 401 } });
+
+    renderAuth();
+    await waitFor(() => expect(screen.getByTestId("isLoading")).toHaveTextContent("false"));
+
+    let hrefSetCount = 0;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        get href() {
+          return "";
+        },
+        set href(_value: string) {
+          hrefSetCount++;
+        },
+      },
+    });
+
+    act(() => {
+      screen.getByText("login").click();
+      screen.getByText("login").click();
+    });
+
+    expect(hrefSetCount).toBe(1);
+  });
+
   it("routes the global unauthorized handler through clearAuthState", async () => {
     mockedAxios.get.mockResolvedValueOnce({
       data: { name: "Jane Doe", exp: Math.floor(Date.now() / 1000) + 3600 },

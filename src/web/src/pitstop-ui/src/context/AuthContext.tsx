@@ -68,6 +68,12 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
     return !(cached && isFresh(cached.exp));
   });
   const inflight = useRef<Promise<void> | null>(null);
+  // Guards against a second /.auth/login or /.auth/end-session redirect firing while the
+  // first is still in flight (location.href assignments don't navigate synchronously). A
+  // duplicate redirect isn't just redundant -- OIDC's state/nonce is generated fresh per
+  // request, so two concurrent /.auth/login round trips can genuinely fail with a state
+  // mismatch at the IdP.
+  const isRedirecting = useRef(false);
 
   // Whether the session was previously known-good before this clear, so we can tell
   // "returning user whose session lapsed" apart from "never-authenticated visitor".
@@ -157,10 +163,14 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
   }, [isAuthenticated]);
 
   const login = () => {
+    if (isRedirecting.current) return;
+    isRedirecting.current = true;
     globalThis.location.href = "/.auth/login";
   };
 
   const logout = () => {
+    if (isRedirecting.current) return;
+    isRedirecting.current = true;
     clearAuthState(false);
     // Same reasoning as the redirect branch in clearAuthState: this navigation isn't
     // instant either, so keep the spinner up rather than flashing Landing first.
