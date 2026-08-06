@@ -10,15 +10,14 @@ import { fillUpSliceReducer, type FillUp } from "../../store/slices/fillUpSlice"
 // PrimeReact's Chart component pulls in chart.js, which doesn't render in jsdom.
 // Stub it so Dashboard's chart branches render without exploding.
 vi.mock("primereact/chart", () => ({
-  Chart: ({ type }: { type: string }) => (
-    <div data-testid={`chart-${type}`} />
-  ),
+  Chart: ({ type }: { type: string }) => <div data-testid={`chart-${type}`} />,
 }));
 
 interface StateOverrides {
   vehicles?: Vehicle[];
   selectedVehicleId?: number | null;
   recentFillUps?: FillUp[];
+  vehiclesLoading?: boolean;
 }
 
 function renderDashboard(overrides: StateOverrides = {}) {
@@ -28,7 +27,7 @@ function renderDashboard(overrides: StateOverrides = {}) {
       vehicles: {
         vehicles: overrides.vehicles ?? [],
         selectedVehicleId: overrides.selectedVehicleId ?? null,
-        loading: false,
+        loading: overrides.vehiclesLoading ?? false,
       },
       fillUps: {
         recentFillUps: overrides.recentFillUps ?? [],
@@ -73,9 +72,14 @@ describe("Dashboard", () => {
   it("shows the empty state when no vehicle is selected", () => {
     renderDashboard();
     expect(screen.getByText(/no vehicle selected/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /add a vehicle/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /add a vehicle/i })).toBeInTheDocument();
+  });
+
+  it("shows a loading indicator instead of the empty state while vehicles are loading", () => {
+    renderDashboard({ vehiclesLoading: true });
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    expect(screen.queryByText(/no vehicle selected/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /add a vehicle/i })).not.toBeInTheDocument();
   });
 
   it("renders KPI tiles with placeholders when there are no fill-ups", () => {
@@ -89,9 +93,7 @@ describe("Dashboard", () => {
     expect(screen.getByText("Est. range")).toBeInTheDocument();
     // All four KPI tiles should show the em-dash placeholder when no data is present.
     expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(4);
-    expect(
-      screen.getByText(/no fill-ups recorded yet/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/no fill-ups recorded yet/i)).toBeInTheDocument();
   });
 
   it("renders the recent fill-up list when fill-ups exist", () => {
