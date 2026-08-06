@@ -26,7 +26,9 @@ public static class SeedData
             Trim = "Badlands",
             InitialOdometer = 0,
             TankCapacityGallons = 20.8m,
-            StartDate = new DateOnly(2021, 8, 1)
+            StartDate = new DateOnly(2021, 8, 1),
+            PlateState = "CO",
+            PlateNumber = "BR0NC0"
         };
         db.Vehicles.Add(vehicle);
         await db.SaveChangesAsync();

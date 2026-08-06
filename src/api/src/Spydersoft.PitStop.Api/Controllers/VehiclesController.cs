@@ -50,7 +50,9 @@ public class VehiclesController(PitStopDbContext db) : PitStopControllerBase(db)
             Trim = request.Trim,
             InitialOdometer = request.InitialOdometer,
             TankCapacityGallons = request.TankCapacityGallons,
-            StartDate = request.StartDate
+            StartDate = request.StartDate,
+            PlateState = request.PlateState,
+            PlateNumber = request.PlateNumber
         };
 
         Db.Vehicles.Add(vehicle);
@@ -76,6 +78,8 @@ public class VehiclesController(PitStopDbContext db) : PitStopControllerBase(db)
         vehicle.Model = request.Model;
         vehicle.Trim = request.Trim;
         vehicle.TankCapacityGallons = request.TankCapacityGallons;
+        vehicle.PlateState = request.PlateState;
+        vehicle.PlateNumber = request.PlateNumber;
 
         await Db.SaveChangesAsync(ct);
         return Ok(MapToDto(vehicle));
@@ -107,6 +111,8 @@ public class VehiclesController(PitStopDbContext db) : PitStopControllerBase(db)
         Trim = v.Trim,
         InitialOdometer = v.InitialOdometer,
         TankCapacityGallons = v.TankCapacityGallons,
-        StartDate = v.StartDate
+        StartDate = v.StartDate,
+        PlateState = v.PlateState,
+        PlateNumber = v.PlateNumber
     };
 }

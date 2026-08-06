@@ -943,6 +943,235 @@
         }
       }
     },
+    "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/initiate": {
+      "post": {
+        "tags": ["MaintenanceLogs"],
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateAttachmentUploadRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateAttachmentUploadRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateAttachmentUploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitiateAttachmentUploadResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitiateAttachmentUploadResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitiateAttachmentUploadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}/confirm": {
+      "post": {
+        "tags": ["MaintenanceLogs"],
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceAttachmentDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceAttachmentDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceAttachmentDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}/url": {
+      "get": {
+        "tags": ["MaintenanceLogs"],
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUrlResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUrlResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUrlResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}": {
+      "delete": {
+        "tags": ["MaintenanceLogs"],
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/Vehicles": {
       "get": {
         "tags": ["Vehicles"],
@@ -1257,6 +1486,9 @@
           "performedBy": {
             "type": "string"
           },
+          "isWarrantyWork": {
+            "type": "boolean"
+          },
           "locationId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": ["null", "integer", "string"],
@@ -1289,16 +1521,6 @@
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": ["null", "number", "string"],
             "format": "double"
-          },
-          "nextServiceOdometer": {
-            "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": ["null", "number", "string"],
-            "format": "double"
-          },
-          "nextServiceDate": {
-            "type": ["null", "string"],
-            "format": "date"
           },
           "notes": {
             "maxLength": 1000,
@@ -1349,6 +1571,27 @@
           "startDate": {
             "type": "string",
             "format": "date"
+          },
+          "plateState": {
+            "maxLength": 2,
+            "type": ["null", "string"]
+          },
+          "plateNumber": {
+            "maxLength": 20,
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "FileUrlResponse": {
+        "required": ["url", "expiresAt"],
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -1514,6 +1757,44 @@
           }
         }
       },
+      "InitiateAttachmentUploadRequest": {
+        "required": ["fileName", "contentType"],
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "contentType": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "sizeBytes": {
+            "maximum": 9223372036854776000,
+            "minimum": 1,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": ["integer", "string"],
+            "format": "int64"
+          }
+        }
+      },
+      "InitiateAttachmentUploadResponse": {
+        "type": "object",
+        "properties": {
+          "attachmentId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": ["integer", "string"],
+            "format": "int32"
+          },
+          "uploadUrl": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "LocationDto": {
         "type": "object",
         "properties": {
@@ -1568,6 +1849,26 @@
           }
         }
       },
+      "MaintenanceAttachmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": ["integer", "string"],
+            "format": "int32"
+          },
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          }
+        }
+      },
       "MaintenanceLogDto": {
         "type": "object",
         "properties": {
@@ -1599,6 +1900,9 @@
           "performedBy": {
             "type": "string"
           },
+          "isWarrantyWork": {
+            "type": "boolean"
+          },
           "location": {
             "oneOf": [
               {
@@ -1624,17 +1928,14 @@
             "type": ["null", "number", "string"],
             "format": "double"
           },
-          "nextServiceOdometer": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": ["null", "number", "string"],
-            "format": "double"
-          },
-          "nextServiceDate": {
-            "type": ["null", "string"],
-            "format": "date"
-          },
           "notes": {
             "type": ["null", "string"]
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceAttachmentDto"
+            }
           },
           "computedTotalCost": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
@@ -1870,6 +2171,9 @@
           "performedBy": {
             "type": "string"
           },
+          "isWarrantyWork": {
+            "type": "boolean"
+          },
           "locationId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": ["null", "integer", "string"],
@@ -1902,16 +2206,6 @@
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": ["null", "number", "string"],
             "format": "double"
-          },
-          "nextServiceOdometer": {
-            "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": ["null", "number", "string"],
-            "format": "double"
-          },
-          "nextServiceDate": {
-            "type": ["null", "string"],
-            "format": "date"
           },
           "notes": {
             "maxLength": 1000,
@@ -1952,6 +2246,14 @@
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": ["null", "number", "string"],
             "format": "double"
+          },
+          "plateState": {
+            "maxLength": 2,
+            "type": ["null", "string"]
+          },
+          "plateNumber": {
+            "maxLength": 20,
+            "type": ["null", "string"]
           }
         }
       },
@@ -1993,6 +2295,12 @@
           "startDate": {
             "type": "string",
             "format": "date"
+          },
+          "plateState": {
+            "type": ["null", "string"]
+          },
+          "plateNumber": {
+            "type": ["null", "string"]
           }
         }
       }
