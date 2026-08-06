@@ -1,27 +1,28 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card } from "primereact/card";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { updateFillUp } from "../../store/slices/fillUpSlice";
 import { FillUpForm, type FillUpFormValues } from "./FillUpForm";
 import type { FillUpRequest } from "../../api/generated/types.gen";
 import { PageHeader } from "../layout/PageHeader";
+import { formatVehicleLabel } from "../../utils/vehicle";
 
 export const EditFillUp: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const selectedVehicleId = useAppSelector((s) => s.vehicles.selectedVehicleId);
-  const fillUp = useAppSelector((s) =>
-    s.fillUps.recentFillUps.find((f) => String(f.id) === id),
-  );
+  const selectedVehicle = useSelectedVehicle();
+  const vehicleLabel = selectedVehicle ? formatVehicleLabel(selectedVehicle) : undefined;
+  const fillUp = useAppSelector((s) => s.fillUps.recentFillUps.find((f) => String(f.id) === id));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!fillUp || selectedVehicleId == null) {
     return (
       <div className="space-y-4 max-w-2xl mx-auto">
-        <PageHeader title="Edit Fill-Up" />
+        <PageHeader title="Edit Fill-Up" subtitle={vehicleLabel} />
         <p className="text-gray-400">Fill-up not found.</p>
       </div>
     );
@@ -50,9 +51,7 @@ export const EditFillUp: React.FC = () => {
     setSubmitting(true);
     setError(null);
     try {
-      await dispatch(
-        updateFillUp({ vehicleId: selectedVehicleId, id: Number(fillUp.id), body: values }),
-      ).unwrap();
+      await dispatch(updateFillUp({ vehicleId: selectedVehicleId, id: Number(fillUp.id), body: values })).unwrap();
       navigate("/fill-ups");
     } catch {
       setError("Failed to update fill-up. Please try again.");
@@ -63,17 +62,10 @@ export const EditFillUp: React.FC = () => {
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
-      <PageHeader title="Edit Fill-Up" />
+      <PageHeader title="Edit Fill-Up" subtitle={vehicleLabel} />
       <Card>
-        {error && (
-          <p className="text-red-500 text-sm mb-4">{error}</p>
-        )}
-        <FillUpForm
-          initialValues={initialValues}
-          isEdit
-          onSubmit={handleSubmit}
-          submitting={submitting}
-        />
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        <FillUpForm initialValues={initialValues} isEdit onSubmit={handleSubmit} submitting={submitting} />
       </Card>
     </div>
   );

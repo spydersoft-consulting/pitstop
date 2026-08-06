@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card } from "primereact/card";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { updateMaintenanceLog } from "../../store/slices/maintenanceLogSlice";
 import { MaintenanceLogForm, type MaintenanceLogFormValues } from "./MaintenanceLogForm";
 import { MaintenanceLogAttachments } from "./MaintenanceLogAttachments";
 import type { UpdateMaintenanceLogRequest } from "../../api/generated/types.gen";
 import { PageHeader } from "../layout/PageHeader";
+import { formatVehicleLabel } from "../../utils/vehicle";
 
 const parseDateOnly = (s: string | null | undefined): Date | null => (s ? new Date(`${s}T00:00:00`) : null);
 
@@ -15,6 +16,8 @@ export const EditMaintenanceLog: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const selectedVehicleId = useAppSelector((s) => s.vehicles.selectedVehicleId);
+  const selectedVehicle = useSelectedVehicle();
+  const vehicleLabel = selectedVehicle ? formatVehicleLabel(selectedVehicle) : undefined;
   const maintenanceLog = useAppSelector((s) =>
     s.maintenanceLogs.recentMaintenanceLogs.find((f) => String(f.id) === id),
   );
@@ -24,7 +27,7 @@ export const EditMaintenanceLog: React.FC = () => {
   if (!maintenanceLog || selectedVehicleId == null) {
     return (
       <div className="space-y-4 max-w-2xl mx-auto">
-        <PageHeader title="Edit Maintenance Log" />
+        <PageHeader title="Edit Maintenance Log" subtitle={vehicleLabel} />
         <p className="text-gray-400">Maintenance log not found.</p>
       </div>
     );
@@ -72,7 +75,7 @@ export const EditMaintenanceLog: React.FC = () => {
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
-      <PageHeader title="Edit Maintenance Log" />
+      <PageHeader title="Edit Maintenance Log" subtitle={vehicleLabel} />
       <Card>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <MaintenanceLogForm initialValues={initialValues} isEdit onSubmit={handleSubmit} submitting={submitting} />
