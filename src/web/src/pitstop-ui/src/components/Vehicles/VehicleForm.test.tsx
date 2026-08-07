@@ -23,6 +23,8 @@ const filled: VehicleFormValues = {
   tankCapacityGallons: 14,
   initialOdometer: 100,
   startDate: new Date("2026-01-15T00:00:00Z"),
+  plateState: "CA",
+  plateNumber: "8ABC123",
 };
 
 describe("VehicleForm", () => {

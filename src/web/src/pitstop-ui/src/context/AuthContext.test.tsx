@@ -125,6 +125,29 @@ describe("AuthProvider", () => {
     await waitFor(() => expect(window.location.href).toBe("/.auth/login"));
     expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("false");
     expect(localStorage.getItem("isAuthenticated")).toBeNull();
+    // Setting location.href doesn't navigate synchronously -- isLoading must stay true
+    // for the rest of this page's life so AppRouter keeps showing its spinner instead of
+    // ever rendering Landing (isAuthenticated=false, isLoading=false) before the browser
+    // actually leaves for the IdP.
+    expect(screen.getByTestId("isLoading")).toHaveTextContent("true");
+  });
+
+  it("keeps isLoading true (never flashes Landing) when a lapsed session is caught by the global unauthorized handler", async () => {
+    mockedAxios.get.mockResolvedValueOnce({
+      data: { name: "Jane Doe", exp: Math.floor(Date.now() / 1000) + 3600 },
+    });
+
+    renderAuth();
+    await waitFor(() => expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("true"));
+    expect(screen.getByTestId("isLoading")).toHaveTextContent("false");
+
+    act(() => {
+      notifyUnauthorized();
+    });
+
+    await waitFor(() => expect(window.location.href).toBe("/.auth/login"));
+    expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("false");
+    expect(screen.getByTestId("isLoading")).toHaveTextContent("true");
   });
 
   it("logs out without triggering a login redirect, then sends the browser to end-session", async () => {
@@ -141,6 +164,34 @@ describe("AuthProvider", () => {
 
     expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("false");
     expect(window.location.href).toBe("/.auth/end-session");
+    expect(screen.getByTestId("isLoading")).toHaveTextContent("true");
+  });
+
+  it("only navigates once even if login is triggered twice in quick succession", async () => {
+    mockedAxios.get.mockRejectedValueOnce({ response: { status: 401 } });
+
+    renderAuth();
+    await waitFor(() => expect(screen.getByTestId("isLoading")).toHaveTextContent("false"));
+
+    let hrefSetCount = 0;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        get href() {
+          return "";
+        },
+        set href(_value: string) {
+          hrefSetCount++;
+        },
+      },
+    });
+
+    act(() => {
+      screen.getByText("login").click();
+      screen.getByText("login").click();
+    });
+
+    expect(hrefSetCount).toBe(1);
   });
 
   it("routes the global unauthorized handler through clearAuthState", async () => {

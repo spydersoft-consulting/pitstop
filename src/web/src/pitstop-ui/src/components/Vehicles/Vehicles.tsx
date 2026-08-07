@@ -1,21 +1,11 @@
 import { useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCar,
-  faPlus,
-  faPencil,
-  faTrash,
-  faGaugeHigh,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCar, faPlus, faPencil, faTrash, faGaugeHigh } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "primereact/button";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
-import {
-  selectVehicle,
-  deleteVehicle,
-  type Vehicle,
-} from "../../store/slices/vehicleSlice";
+import { selectVehicle, deleteVehicle, type Vehicle } from "../../store/slices/vehicleSlice";
 import { PageHeader } from "../layout/PageHeader";
 
 const num = (v: number | string | null | undefined): number | null => {
@@ -49,14 +39,7 @@ interface VehicleCardProps {
   onDelete: (e: React.MouseEvent) => void;
 }
 
-const VehicleCard: React.FC<VehicleCardProps> = ({
-  vehicle,
-  isActive,
-  mpgBadge,
-  onSelect,
-  onEdit,
-  onDelete,
-}) => {
+const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, isActive, mpgBadge, onSelect, onEdit, onDelete }) => {
   const odo = num(vehicle.initialOdometer);
   return (
     <div
@@ -74,9 +57,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
           <span
             className={[
               "flex h-12 w-12 items-center justify-center rounded-lg shrink-0",
-              isActive
-                ? "bg-brand text-brand-fg"
-                : "bg-surface-muted text-content-muted",
+              isActive ? "bg-brand text-brand-fg" : "bg-surface-muted text-content-muted",
             ].join(" ")}
           >
             <FontAwesomeIcon icon={faCar} className="text-xl" />
@@ -89,10 +70,14 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
               {vehicle.name}
               {vehicle.trim ? ` · ${vehicle.trim}` : ""}
             </p>
+            {vehicle.plateNumber && (
+              <p className="text-meta text-content-muted truncate">
+                {vehicle.plateState ? `${vehicle.plateState} · ` : ""}
+                {vehicle.plateNumber}
+              </p>
+            )}
             {isActive && (
-              <span className="inline-block mt-1 text-meta uppercase tracking-wide text-brand font-medium">
-                Active
-              </span>
+              <span className="inline-block mt-1 text-meta uppercase tracking-wide text-brand font-medium">Active</span>
             )}
           </div>
         </button>
@@ -105,11 +90,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
                 {mpgBadge} mpg
               </span>
             )}
-            {odo !== null && (
-              <span className="font-numeric truncate">
-                {odo.toLocaleString()} mi
-              </span>
-            )}
+            {odo !== null && <span className="font-numeric truncate">{odo.toLocaleString()} mi</span>}
           </div>
           <div className="flex gap-1 shrink-0">
             <Button
@@ -143,9 +124,7 @@ export const Vehicles: React.FC = () => {
   const toastRef = useRef(null);
 
   const activeMpg = useMemo(() => {
-    const mpgs = recentFillUps
-      .map((f) => num(f.mpgThisFillUp))
-      .filter((v): v is number => v !== null);
+    const mpgs = recentFillUps.map((f) => num(f.mpgThisFillUp)).filter((v): v is number => v !== null);
     if (mpgs.length === 0) return null;
     return mpgs.reduce((a, b) => a + b, 0) / mpgs.length;
   }, [recentFillUps]);
@@ -182,22 +161,13 @@ export const Vehicles: React.FC = () => {
             key={vehicle.id}
             vehicle={vehicle}
             isActive={vehicle.id === selectedVehicleId}
-            mpgBadge={
-              vehicle.id === selectedVehicleId && activeMpg !== null
-                ? activeMpg.toFixed(1)
-                : null
-            }
+            mpgBadge={vehicle.id === selectedVehicleId && activeMpg !== null ? activeMpg.toFixed(1) : null}
             onSelect={() => dispatch(selectVehicle(vehicle.id as number))}
             onEdit={() => navigate(`/vehicles/${vehicle.id as number}/edit`)}
             onDelete={(e) => handleDelete(e, vehicle)}
           />
         ))}
-        {vehicles.length === 0 && (
-          <AddTile
-            onClick={() => navigate("/vehicles/new")}
-            label="Add your first vehicle"
-          />
-        )}
+        {vehicles.length === 0 && <AddTile onClick={() => navigate("/vehicles/new")} label="Add your first vehicle" />}
       </div>
     </div>
   );

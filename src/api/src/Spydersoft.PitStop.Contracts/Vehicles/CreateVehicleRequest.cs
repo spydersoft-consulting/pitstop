@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Spydersoft.PitStop.Contracts.Vehicles;
 
@@ -26,4 +26,10 @@ public class CreateVehicleRequest
     public decimal? TankCapacityGallons { get; set; }
 
     public DateOnly StartDate { get; set; }
+
+    [MaxLength(2)]
+    public string? PlateState { get; set; }
+
+    [MaxLength(20)]
+    public string? PlateNumber { get; set; }
 }

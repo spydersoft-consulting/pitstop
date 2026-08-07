@@ -14,9 +14,7 @@ export const EditVehicle: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const vehicle = useAppSelector((s) =>
-    s.vehicles.vehicles.find((v) => String(v.id) === id)
-  );
+  const vehicle = useAppSelector((s) => s.vehicles.vehicles.find((v) => String(v.id) === id));
 
   if (!vehicle) {
     return (
@@ -38,6 +36,8 @@ export const EditVehicle: React.FC = () => {
     tankCapacityGallons: vehicle.tankCapacityGallons != null ? Number(vehicle.tankCapacityGallons) : null,
     initialOdometer: null,
     startDate: null,
+    plateState: vehicle.plateState ?? "",
+    plateNumber: vehicle.plateNumber ?? "",
   };
 
   const handleSubmit = async (values: UpdateVehicleRequest) => {
@@ -57,11 +57,7 @@ export const EditVehicle: React.FC = () => {
     <div className="space-y-4 max-w-2xl mx-auto">
       <PageHeader title="Edit Vehicle" />
       <Card>
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">{error}</div>}
         <VehicleForm
           initialValues={initialValues}
           isEdit

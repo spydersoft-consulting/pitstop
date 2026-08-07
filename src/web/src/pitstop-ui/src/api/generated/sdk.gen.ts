@@ -316,10 +316,7 @@ export const deleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmen
     DeleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdResponses,
     unknown,
     ThrowOnError
-  >({
-    url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}",
-    ...options,
-  });
+  >({ url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}", ...options });
 
 export const getApiV1Vehicles = <ThrowOnError extends boolean = false>(
   options?: Options<GetApiV1VehiclesData, ThrowOnError>,

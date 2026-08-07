@@ -49,6 +49,13 @@ export type CreateVehicleRequest = {
   initialOdometer?: number | string;
   tankCapacityGallons?: null | number | string;
   startDate?: string;
+  plateState?: null | string;
+  plateNumber?: null | string;
+};
+
+export type FileUrlResponse = {
+  url: string;
+  expiresAt: string;
 };
 
 export type FillUpDto = {
@@ -87,6 +94,18 @@ export type FillUpRequest = {
   locationId?: null | number | string;
   location?: null | CreateLocationRequest;
   notes?: null | string;
+};
+
+export type InitiateAttachmentUploadRequest = {
+  fileName: string;
+  contentType: string;
+  sizeBytes?: number | string;
+};
+
+export type InitiateAttachmentUploadResponse = {
+  attachmentId?: number | string;
+  uploadUrl?: string;
+  expiresAt?: string;
 };
 
 export type LocationDto = {
@@ -129,23 +148,6 @@ export type MaintenanceLogDto = {
   notes?: null | string;
   attachments?: Array<MaintenanceAttachmentDto>;
   computedTotalCost?: null | number | string;
-};
-
-export type InitiateAttachmentUploadRequest = {
-  fileName: string;
-  contentType: string;
-  sizeBytes: number | string;
-};
-
-export type InitiateAttachmentUploadResponse = {
-  attachmentId?: number | string;
-  uploadUrl?: string;
-  expiresAt?: string;
-};
-
-export type FileUrlResponse = {
-  url?: string;
-  expiresAt?: string;
 };
 
 export type MaintenanceLogListResponse = {
@@ -224,6 +226,8 @@ export type UpdateVehicleRequest = {
   model: string;
   trim?: null | string;
   tankCapacityGallons?: null | number | string;
+  plateState?: null | string;
+  plateNumber?: null | string;
 };
 
 export type VehicleDto = {
@@ -236,6 +240,8 @@ export type VehicleDto = {
   initialOdometer?: number | string;
   tankCapacityGallons?: null | number | string;
   startDate?: string;
+  plateState?: null | string;
+  plateNumber?: null | string;
 };
 
 export type GetApiV1VehiclesByVehicleIdAnalyticsSummaryData = {

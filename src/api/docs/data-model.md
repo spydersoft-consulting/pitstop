@@ -18,6 +18,8 @@ Represents a tracked vehicle. Owned by a single user, identified by the JWT `sub
 | `InitialOdometer`     | decimal  | Odometer at tracking start |
 | `TankCapacityGallons` | decimal? | Optional                   |
 | `StartDate`           | DateOnly | Date tracking began        |
+| `PlateState`          | string?  | 2-letter state code        |
+| `PlateNumber`         | string?  | Optional                   |
 | `IsDeleted`           | bool     | Soft delete flag           |
 
 ### FillUp

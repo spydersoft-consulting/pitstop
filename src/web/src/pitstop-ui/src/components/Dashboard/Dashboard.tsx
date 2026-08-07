@@ -14,6 +14,7 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Chart } from "primereact/chart";
 import { Dropdown } from "primereact/dropdown";
+import { ProgressSpinner } from "primereact/progressspinner";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { selectVehicle, type Vehicle } from "../../store/slices/vehicleSlice";
 import type { FillUp } from "../../store/slices/fillUpSlice";
@@ -212,7 +213,7 @@ function buildSpendChartData(sortedFillUps: FillUp[]) {
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { vehicles, selectedVehicleId } = useAppSelector((s) => s.vehicles);
+  const { vehicles, selectedVehicleId, loading } = useAppSelector((s) => s.vehicles);
   const { recentFillUps } = useAppSelector((s) => s.fillUps);
 
   const selectedVehicle = vehicles.find((v: Vehicle | null | undefined) => v?.id === selectedVehicleId);
@@ -240,6 +241,16 @@ export const Dashboard: React.FC = () => {
   const recentList = sortedFillUps.slice(-5).reverse();
 
   if (!selectedVehicle) {
+    if (loading) {
+      return (
+        <div className="space-y-6">
+          <div className="flex justify-center py-16">
+            <ProgressSpinner />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6">
         <Card>

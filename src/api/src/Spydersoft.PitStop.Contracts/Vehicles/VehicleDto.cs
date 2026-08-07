@@ -1,4 +1,4 @@
-﻿namespace Spydersoft.PitStop.Contracts.Vehicles;
+namespace Spydersoft.PitStop.Contracts.Vehicles;
 
 public class VehicleDto
 {
@@ -11,4 +11,6 @@ public class VehicleDto
     public decimal InitialOdometer { get; set; }
     public decimal? TankCapacityGallons { get; set; }
     public DateOnly StartDate { get; set; }
+    public string? PlateState { get; set; }
+    public string? PlateNumber { get; set; }
 }

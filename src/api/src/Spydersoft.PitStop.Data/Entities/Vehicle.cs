@@ -12,6 +12,8 @@ public class Vehicle
     public decimal InitialOdometer { get; set; }
     public decimal? TankCapacityGallons { get; set; }
     public DateOnly StartDate { get; set; }
+    public string? PlateState { get; set; }
+    public string? PlateNumber { get; set; }
     public bool IsDeleted { get; set; }
 
     public ICollection<FillUp> FillUps { get; set; } = [];

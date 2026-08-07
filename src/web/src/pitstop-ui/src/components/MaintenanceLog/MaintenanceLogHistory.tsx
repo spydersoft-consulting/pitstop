@@ -17,10 +17,11 @@ import { Dropdown } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { deleteMaintenanceLog } from "../../store/slices/maintenanceLogSlice";
 import type { MaintenanceLog } from "../../store/slices/maintenanceLogSlice";
 import { PageHeader } from "../layout/PageHeader";
+import { formatVehicleLabel } from "../../utils/vehicle";
 import { SERVICE_TYPE_OPTIONS, PERFORMED_BY_OPTIONS } from "./maintenanceLogOptions";
 
 const SERVICE_TYPE_LABELS = Object.fromEntries(SERVICE_TYPE_OPTIONS.map((o) => [o.value, o.label]));
@@ -204,6 +205,8 @@ export const MaintenanceLogHistory: React.FC = () => {
   const navigate = useNavigate();
   const { recentMaintenanceLogs } = useAppSelector((s) => s.maintenanceLogs);
   const selectedVehicleId = useAppSelector((s) => s.vehicles.selectedVehicleId);
+  const selectedVehicle = useSelectedVehicle();
+  const vehicleLabel = selectedVehicle ? formatVehicleLabel(selectedVehicle) : undefined;
   const toastRef = useRef<HTMLDivElement>(null);
 
   const [range, setRange] = useState<Date[] | null>(null);
@@ -282,6 +285,7 @@ export const MaintenanceLogHistory: React.FC = () => {
       <div className="space-y-6">
         <PageHeader
           title="Maintenance History"
+          subtitle={vehicleLabel}
           actions={
             <Button
               label="Add Maintenance Log"
@@ -311,6 +315,7 @@ export const MaintenanceLogHistory: React.FC = () => {
       <ConfirmPopup />
       <PageHeader
         title="Maintenance History"
+        subtitle={vehicleLabel}
         actions={
           <Button
             label="Add"

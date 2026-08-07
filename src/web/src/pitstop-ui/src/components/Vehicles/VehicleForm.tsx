@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
 import { Calendar } from "primereact/calendar";
+import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import type { CreateVehicleRequest, UpdateVehicleRequest } from "../../api/generated/types.gen";
+import { US_STATE_OPTIONS } from "./vehicleOptions";
 
 export interface VehicleFormValues {
   name: string;
@@ -15,6 +17,8 @@ export interface VehicleFormValues {
   tankCapacityGallons: number | null;
   initialOdometer: number | null;
   startDate: Date | null;
+  plateState: string;
+  plateNumber: string;
 }
 
 interface Props {
@@ -33,6 +37,8 @@ const defaults: VehicleFormValues = {
   tankCapacityGallons: null,
   initialOdometer: null,
   startDate: null,
+  plateState: "",
+  plateNumber: "",
 };
 
 export const VehicleForm: React.FC<Props> = ({
@@ -71,6 +77,8 @@ export const VehicleForm: React.FC<Props> = ({
         model: values.model.trim(),
         trim: values.trim.trim() || null,
         tankCapacityGallons: values.tankCapacityGallons ?? null,
+        plateState: values.plateState || null,
+        plateNumber: values.plateNumber.trim() || null,
       };
       onSubmit(body);
     } else {
@@ -83,6 +91,8 @@ export const VehicleForm: React.FC<Props> = ({
         tankCapacityGallons: values.tankCapacityGallons ?? null,
         initialOdometer: values.initialOdometer ?? undefined,
         startDate: values.startDate ? values.startDate.toISOString().split("T")[0] : undefined,
+        plateState: values.plateState || null,
+        plateNumber: values.plateNumber.trim() || null,
       };
       onSubmit(body);
     }
@@ -166,6 +176,31 @@ export const VehicleForm: React.FC<Props> = ({
             maxFractionDigits={3}
             className="w-full"
             inputClassName="w-full"
+          />,
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {field(
+          "Plate State",
+          undefined,
+          <Dropdown
+            value={values.plateState || null}
+            options={US_STATE_OPTIONS}
+            onChange={(e) => set("plateState", e.value ?? "")}
+            placeholder="Select state"
+            showClear
+            className="w-full"
+          />,
+        )}
+        {field(
+          "Plate Number",
+          undefined,
+          <InputText
+            value={values.plateNumber}
+            onChange={(e) => set("plateNumber", e.target.value)}
+            placeholder="e.g. 8ABC123"
+            className="w-full"
           />,
         )}
       </div>
