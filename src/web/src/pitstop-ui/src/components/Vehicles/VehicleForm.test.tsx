@@ -25,6 +25,7 @@ const filled: VehicleFormValues = {
   startDate: new Date("2026-01-15T00:00:00Z"),
   plateState: "CA",
   plateNumber: "8ABC123",
+  vin: "1HGCM82633A123456",
 };
 
 describe("VehicleForm", () => {
@@ -57,6 +58,7 @@ describe("VehicleForm", () => {
       tankCapacityGallons: 14,
       initialOdometer: 100,
       startDate: "2026-01-15",
+      vin: "1HGCM82633A123456",
     });
   });
 
@@ -86,5 +88,43 @@ describe("VehicleForm", () => {
 
     const body = onSubmit.mock.calls[0][0];
     expect(body.trim).toBeNull();
+  });
+
+  it("normalizes a blank VIN to null on submit", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({
+      initialValues: { ...filled, vin: "" },
+    });
+
+    await user.click(screen.getByRole("button", { name: /add vehicle/i }));
+
+    const body = onSubmit.mock.calls[0][0];
+    expect(body.vin).toBeNull();
+  });
+
+  it("uppercases the VIN on submit", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({
+      initialValues: { ...filled, vin: "1hgcm82633a123456" },
+    });
+
+    await user.click(screen.getByRole("button", { name: /add vehicle/i }));
+
+    const body = onSubmit.mock.calls[0][0];
+    expect(body.vin).toBe("1HGCM82633A123456");
+  });
+
+  it("shows a validation error for a malformed VIN and blocks submit", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({
+      initialValues: { ...filled, vin: "TOOSHORT" },
+    });
+
+    await user.click(screen.getByRole("button", { name: /add vehicle/i }));
+
+    expect(
+      screen.getByText("VIN must be 17 characters (letters and digits, excluding I, O, and Q)."),
+    ).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });

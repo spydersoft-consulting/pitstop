@@ -52,7 +52,7 @@ public class VehiclesControllerTests
         };
     }
 
-    private Vehicle AddVehicle(string name, string ownerId = TestUserId, string? plateState = null, string? plateNumber = null)
+    private Vehicle AddVehicle(string name, string ownerId = TestUserId, string? plateState = null, string? plateNumber = null, string? vin = null)
     {
         var vehicle = new Vehicle
         {
@@ -65,6 +65,7 @@ public class VehiclesControllerTests
             StartDate = new DateOnly(2022, 1, 1),
             PlateState = plateState,
             PlateNumber = plateNumber,
+            Vin = vin,
         };
         _db.Vehicles.Add(vehicle);
         _db.SaveChanges();
@@ -109,7 +110,7 @@ public class VehiclesControllerTests
     [Test]
     public async Task GetById_ReturnsVehicle_WhenOwnedByCaller()
     {
-        var v = AddVehicle("Mine", plateState: "CA", plateNumber: "8ABC123");
+        var v = AddVehicle("Mine", plateState: "CA", plateNumber: "8ABC123", vin: "1HGCM82633A123456");
 
         var result = await _controller.GetById(v.Id, CancellationToken.None);
 
@@ -119,6 +120,7 @@ public class VehiclesControllerTests
         Assert.That(dto!.Name, Is.EqualTo("Mine"));
         Assert.That(dto.PlateState, Is.EqualTo("CA"));
         Assert.That(dto.PlateNumber, Is.EqualTo("8ABC123"));
+        Assert.That(dto.Vin, Is.EqualTo("1HGCM82633A123456"));
     }
 
     [Test]
@@ -138,6 +140,19 @@ public class VehiclesControllerTests
     }
 
     [Test]
+    public async Task Create_PersistsNewVehicle_IncludingVin()
+    {
+        var request = ValidCreateRequest();
+        request.Vin = "1HGCM82633A123456";
+
+        var result = await _controller.Create(request, CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<CreatedAtActionResult>());
+        var created = await _db.Vehicles.SingleAsync();
+        Assert.That(created.Vin, Is.EqualTo("1HGCM82633A123456"));
+    }
+
+    [Test]
     public async Task Create_AllowsNullPlateFields()
     {
         var result = await _controller.Create(ValidCreateRequest(), CancellationToken.None);
@@ -146,6 +161,7 @@ public class VehiclesControllerTests
         var created = await _db.Vehicles.SingleAsync();
         Assert.That(created.PlateState, Is.Null);
         Assert.That(created.PlateNumber, Is.Null);
+        Assert.That(created.Vin, Is.Null);
     }
 
     [Test]
@@ -188,9 +204,30 @@ public class VehiclesControllerTests
     }
 
     [Test]
+    public async Task Update_UpdatesVin()
+    {
+        var v = AddVehicle("Mine", vin: "1HGCM82633A123456");
+
+        var result = await _controller.Update(
+            v.Id,
+            new UpdateVehicleRequest
+            {
+                Name = "Mine",
+                Make = "Honda",
+                Model = "Accord",
+                Vin = "2HGCM82633A654321",
+            },
+            CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<OkObjectResult>());
+        var updated = await _db.Vehicles.SingleAsync();
+        Assert.That(updated.Vin, Is.EqualTo("2HGCM82633A654321"));
+    }
+
+    [Test]
     public async Task Update_ClearsPlateFields_WhenOmitted()
     {
-        var v = AddVehicle("Mine", plateState: "CA", plateNumber: "OLD123");
+        var v = AddVehicle("Mine", plateState: "CA", plateNumber: "OLD123", vin: "1HGCM82633A123456");
 
         await _controller.Update(
             v.Id,
@@ -200,6 +237,7 @@ public class VehiclesControllerTests
         var updated = await _db.Vehicles.SingleAsync();
         Assert.That(updated.PlateState, Is.Null);
         Assert.That(updated.PlateNumber, Is.Null);
+        Assert.That(updated.Vin, Is.Null);
     }
 
     [Test]

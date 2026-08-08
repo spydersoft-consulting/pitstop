@@ -27,4 +27,7 @@ public class UpdateVehicleRequest
 
     [MaxLength(20)]
     public string? PlateNumber { get; set; }
+
+    [RegularExpression("^[A-HJ-NPR-Z0-9]{17}$", ErrorMessage = "VIN must be 17 characters (letters and digits, excluding I, O, and Q).")]
+    public string? Vin { get; set; }
 }

@@ -38,6 +38,7 @@ export const EditVehicle: React.FC = () => {
     startDate: null,
     plateState: vehicle.plateState ?? "",
     plateNumber: vehicle.plateNumber ?? "",
+    vin: vehicle.vin ?? "",
   };
 
   const handleSubmit = async (values: UpdateVehicleRequest) => {
