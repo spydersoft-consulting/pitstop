@@ -6,7 +6,6 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { InputNumber } from "primereact/inputnumber";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -15,6 +14,7 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { createLocation, deleteLocation, updateLocation } from "../../store/slices/locationSlice";
 import type { Location } from "../../store/slices/locationSlice";
 import { PageHeader } from "../layout/PageHeader";
+import { AddressFields } from "./AddressFields";
 
 // Leaflet's default icon images break when bundled with Vite — point them at the CDN copy.
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
@@ -39,6 +39,7 @@ interface LocationFormState {
   address: string;
   latitude: number | null;
   longitude: number | null;
+  googlePlaceId: string | null;
 }
 
 const emptyForm = (): LocationFormState => ({
@@ -46,6 +47,7 @@ const emptyForm = (): LocationFormState => ({
   address: "",
   latitude: null,
   longitude: null,
+  googlePlaceId: null,
 });
 
 const formFromLocation = (loc: Location): LocationFormState => ({
@@ -53,6 +55,7 @@ const formFromLocation = (loc: Location): LocationFormState => ({
   address: loc.address ?? "",
   latitude: num(loc.latitude),
   longitude: num(loc.longitude),
+  googlePlaceId: loc.googlePlaceId ?? null,
 });
 
 export const Locations: React.FC = () => {
@@ -93,7 +96,7 @@ export const Locations: React.FC = () => {
         address: form.address.trim() || null,
         latitude: form.latitude,
         longitude: form.longitude,
-        googlePlaceId: null,
+        googlePlaceId: form.googlePlaceId,
       };
       if (editingId !== null) {
         await dispatch(updateLocation({ id: editingId, body })).unwrap();
@@ -359,45 +362,25 @@ export const Locations: React.FC = () => {
             <label htmlFor="location-address" className="text-sm font-medium">
               Address
             </label>
-            <InputText
-              id="location-address"
-              value={form.address}
-              onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-              placeholder="Street address (optional)"
-              className="w-full"
+            <AddressFields
+              value={{
+                address: form.address,
+                latitude: form.latitude,
+                longitude: form.longitude,
+                googlePlaceId: form.googlePlaceId,
+              }}
+              onChange={(next) =>
+                setForm((f) => ({
+                  ...f,
+                  address: next.address,
+                  latitude: next.latitude,
+                  longitude: next.longitude,
+                  googlePlaceId: next.googlePlaceId ?? f.googlePlaceId,
+                }))
+              }
+              addressPlaceholder="Street address (optional)"
+              addressInputId="location-address"
             />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="location-latitude" className="text-sm font-medium">
-                Latitude
-              </label>
-              <InputNumber
-                inputId="location-latitude"
-                value={form.latitude}
-                onValueChange={(e) => setForm((f) => ({ ...f, latitude: e.value ?? null }))}
-                placeholder="e.g. 40.3164"
-                minFractionDigits={4}
-                maxFractionDigits={6}
-                className="w-full"
-                inputClassName="w-full"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label htmlFor="location-longitude" className="text-sm font-medium">
-                Longitude
-              </label>
-              <InputNumber
-                inputId="location-longitude"
-                value={form.longitude}
-                onValueChange={(e) => setForm((f) => ({ ...f, longitude: e.value ?? null }))}
-                placeholder="e.g. -79.6837"
-                minFractionDigits={4}
-                maxFractionDigits={6}
-                className="w-full"
-                inputClassName="w-full"
-              />
-            </div>
           </div>
         </div>
       </Dialog>
