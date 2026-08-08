@@ -6,21 +6,22 @@
 
 Represents a tracked vehicle. Owned by a single user, identified by the JWT `sub` claim.
 
-| Column                | Type     | Notes                      |
-| --------------------- | -------- | -------------------------- |
-| `Id`                  | int      | PK, auto-increment         |
-| `OwnerId`             | string   | JWT `sub` claim            |
-| `Name`                | string   | Display name               |
-| `Year`                | int      | Model year                 |
-| `Make`                | string   | e.g. Ford                  |
-| `Model`               | string   | e.g. Bronco                |
-| `Trim`                | string?  | Optional                   |
-| `InitialOdometer`     | decimal  | Odometer at tracking start |
-| `TankCapacityGallons` | decimal? | Optional                   |
-| `StartDate`           | DateOnly | Date tracking began        |
-| `PlateState`          | string?  | 2-letter state code        |
-| `PlateNumber`         | string?  | Optional                   |
-| `IsDeleted`           | bool     | Soft delete flag           |
+| Column                | Type     | Notes                                           |
+| --------------------- | -------- | ----------------------------------------------- |
+| `Id`                  | int      | PK, auto-increment                              |
+| `OwnerId`             | string   | JWT `sub` claim                                 |
+| `Name`                | string   | Display name                                    |
+| `Year`                | int      | Model year                                      |
+| `Make`                | string   | e.g. Ford                                       |
+| `Model`               | string   | e.g. Bronco                                     |
+| `Trim`                | string?  | Optional                                        |
+| `InitialOdometer`     | decimal  | Odometer at tracking start                      |
+| `TankCapacityGallons` | decimal? | Optional                                        |
+| `StartDate`           | DateOnly | Date tracking began                             |
+| `PlateState`          | string?  | 2-letter state code                             |
+| `PlateNumber`         | string?  | Optional                                        |
+| `Vin`                 | string?  | 17-char VIN, ISO 3779 format (excludes I, O, Q) |
+| `IsDeleted`           | bool     | Soft delete flag                                |
 
 ### FillUp
 

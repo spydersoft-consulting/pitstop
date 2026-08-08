@@ -19,6 +19,7 @@ public class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
         builder.Property(v => v.TankCapacityGallons).HasPrecision(6, 2);
         builder.Property(v => v.PlateState).HasMaxLength(2);
         builder.Property(v => v.PlateNumber).HasMaxLength(20);
+        builder.Property(v => v.Vin).HasMaxLength(17);
 
         builder.HasIndex(v => v.OwnerId);
         builder.HasQueryFilter(v => !v.IsDeleted);

@@ -37,8 +37,17 @@ const sampleUpdateRequest: UpdateVehicleRequest = {
 // VehicleForm's own field validation/Calendar interaction is covered by VehicleForm.test.tsx --
 // stub it here so these tests focus on EditVehicle's own not-found/submit/error logic.
 vi.mock("./VehicleForm", () => ({
-  VehicleForm: ({ onSubmit }: { onSubmit: (values: UpdateVehicleRequest) => void }) => (
-    <button onClick={() => onSubmit(sampleUpdateRequest)}>mock-submit</button>
+  VehicleForm: ({
+    onSubmit,
+    initialValues,
+  }: {
+    onSubmit: (values: UpdateVehicleRequest) => void;
+    initialValues?: { vin: string };
+  }) => (
+    <>
+      <span data-testid="initial-vin">{initialValues?.vin}</span>
+      <button onClick={() => onSubmit(sampleUpdateRequest)}>mock-submit</button>
+    </>
   ),
 }));
 
@@ -53,6 +62,7 @@ const sampleVehicle: Vehicle = {
   initialOdometer: 0,
   plateState: "CA",
   plateNumber: "OLD123",
+  vin: "1HGCM82633A123456",
 };
 
 function renderComponent(vehicles: Vehicle[] = [sampleVehicle], entryId = "1") {
@@ -87,6 +97,11 @@ describe("EditVehicle", () => {
   it("renders the edit title", () => {
     renderComponent();
     expect(screen.getByText("Edit Vehicle")).toBeInTheDocument();
+  });
+
+  it("passes the vehicle's VIN through as an initial value", () => {
+    renderComponent();
+    expect(screen.getByTestId("initial-vin")).toHaveTextContent("1HGCM82633A123456");
   });
 
   it("updates the vehicle and navigates back on success", async () => {

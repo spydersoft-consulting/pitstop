@@ -14,6 +14,7 @@ public class Vehicle
     public DateOnly StartDate { get; set; }
     public string? PlateState { get; set; }
     public string? PlateNumber { get; set; }
+    public string? Vin { get; set; }
     public bool IsDeleted { get; set; }
 
     public ICollection<FillUp> FillUps { get; set; } = [];
