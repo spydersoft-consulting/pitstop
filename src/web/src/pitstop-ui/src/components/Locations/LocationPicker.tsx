@@ -5,6 +5,7 @@ import { InputNumber } from "primereact/inputnumber";
 import { Button } from "primereact/button";
 import { locationsApi } from "../../api/locationsApi";
 import type { LocationDto } from "../../api/generated/types.gen";
+import { getAddressLookupProvider, type AddressSuggestion } from "../../services/addressLookup";
 
 export type LocationSelection =
   | { kind: "existing"; id: number; name: string; address: string | null }
@@ -36,10 +37,7 @@ function isAddNew(item: SuggestionItem): item is AddNewItem {
   return (item as AddNewItem).__addNew === true;
 }
 
-type GeoStatus =
-  | { kind: "idle" }
-  | { kind: "fetching" }
-  | { kind: "error"; message: string };
+type GeoStatus = { kind: "idle" } | { kind: "fetching" } | { kind: "error"; message: string };
 
 const GEO_UNSUPPORTED: GeoStatus = {
   kind: "error",
@@ -68,7 +66,11 @@ export const LocationPicker: React.FC<Props> = ({ value, onChange }) => {
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [editing, setEditing] = useState<boolean>(value?.kind === "new");
   const [geoStatus, setGeoStatus] = useState<GeoStatus>({ kind: "idle" });
+  const [addressQuery, setAddressQuery] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [addressLookupError, setAddressLookupError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const addressDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Keep the input text in sync if the parent swaps the value out from underneath us
   // (e.g. clear or external override). Don't fight the user while they're typing — only
@@ -78,6 +80,46 @@ export const LocationPicker: React.FC<Props> = ({ value, onChange }) => {
     setQuery((q) => (q === reflected ? q : reflected));
     setEditing(value?.kind === "new");
   }, [value]);
+
+  useEffect(() => {
+    const reflected = value?.kind === "new" ? (value.address ?? "") : "";
+    setAddressQuery((q) => (q === reflected ? q : reflected));
+  }, [value]);
+
+  const searchAddress = (event: AutoCompleteCompleteEvent) => {
+    const term = (event.query ?? "").trim();
+    if (addressDebounceRef.current) clearTimeout(addressDebounceRef.current);
+    if (!term) {
+      setAddressSuggestions([]);
+      return;
+    }
+    addressDebounceRef.current = setTimeout(async () => {
+      try {
+        setAddressSuggestions(await getAddressLookupProvider().search(term));
+        setAddressLookupError(null);
+      } catch {
+        setAddressSuggestions([]);
+      }
+    }, 250);
+  };
+
+  const handleSelectAddress = async (suggestion: AddressSuggestion) => {
+    if (value?.kind !== "new") return;
+    setAddressQuery(suggestion.description);
+    try {
+      const details = await getAddressLookupProvider().getDetails(suggestion.id);
+      setAddressLookupError(null);
+      onChange({
+        ...value,
+        address: details.formattedAddress,
+        latitude: details.latitude,
+        longitude: details.longitude,
+        googlePlaceId: details.providerPlaceId,
+      });
+    } catch {
+      setAddressLookupError("Couldn't look up that address -- you can still enter it manually below.");
+    }
+  };
 
   const search = (event: AutoCompleteCompleteEvent) => {
     const term = (event.query ?? "").trim();
@@ -141,9 +183,7 @@ export const LocationPicker: React.FC<Props> = ({ value, onChange }) => {
     return (
       <div className="flex flex-col">
         <span className="font-medium">{item.name}</span>
-        {item.address && (
-          <span className="text-xs text-secondary">{item.address}</span>
-        )}
+        {item.address && <span className="text-xs text-secondary">{item.address}</span>}
       </div>
     );
   };
@@ -224,21 +264,32 @@ export const LocationPicker: React.FC<Props> = ({ value, onChange }) => {
 
       {editing && value?.kind === "new" && (
         <div className="rounded-md border border-[var(--border)] bg-[var(--surface-muted)] p-3 flex flex-col gap-2">
-          <div className="text-xs font-medium text-secondary uppercase tracking-wide">
-            New location
-          </div>
+          <div className="text-xs font-medium text-secondary uppercase tracking-wide">New location</div>
           <InputText
             value={value.name}
             onChange={(e) => updateNew("name", e.target.value)}
             placeholder="Name (e.g. Costco Gas)"
             className="w-full"
           />
-          <InputText
-            value={value.address ?? ""}
-            onChange={(e) => updateNew("address", e.target.value || null)}
+          <AutoComplete
+            value={addressQuery}
+            suggestions={addressSuggestions}
+            completeMethod={searchAddress}
+            field="description"
+            delay={0}
             placeholder="Address (optional)"
+            inputClassName="w-full"
             className="w-full"
+            onChange={(e) => {
+              const v = e.value;
+              if (typeof v === "string") {
+                setAddressQuery(v);
+                updateNew("address", v || null);
+              }
+            }}
+            onSelect={(e) => void handleSelectAddress(e.value as AddressSuggestion)}
           />
+          {addressLookupError && <span className="text-xs text-red-500">{addressLookupError}</span>}
           <div className="grid grid-cols-2 gap-2">
             <InputNumber
               value={value.latitude}
@@ -269,16 +320,12 @@ export const LocationPicker: React.FC<Props> = ({ value, onChange }) => {
               loading={geoStatus.kind === "fetching"}
               onClick={useBrowserLocation}
             />
-            {geoStatus.kind === "error" && (
-              <span className="text-xs text-red-500">{geoStatus.message}</span>
-            )}
+            {geoStatus.kind === "error" && <span className="text-xs text-red-500">{geoStatus.message}</span>}
           </div>
         </div>
       )}
 
-      {value?.kind === "existing" && value.address && (
-        <div className="text-xs text-secondary">{value.address}</div>
-      )}
+      {value?.kind === "existing" && value.address && <div className="text-xs text-secondary">{value.address}</div>}
     </div>
   );
 };

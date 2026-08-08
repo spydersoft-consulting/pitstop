@@ -5,6 +5,7 @@ using OidcProxy.Net.OpenIdConnect;
 using Spydersoft.Platform.Hosting.Options;
 using Spydersoft.Platform.Hosting.StartupExtensions;
 using Spydersoft.Platform.Hosting.Telemetry;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,23 @@ var app = builder.Build();
 
 app.UseRouting();
 app.UseSpydersoftRequestLogging();
+
+// Served dynamically rather than as a static wwwroot file so per-environment values (e.g. the
+// address lookup provider/key) can come from configuration -- the same env-var-from-Vault path
+// already used for OidcProxySettings -- instead of needing a separate build-time config.js per
+// environment. Anonymous by default, same as the static file it replaces: the SPA shell (and
+// Landing, pre-login) needs this before any auth check happens.
+app.MapMethods("/config.js", ["GET", "HEAD"], (IConfiguration configuration) =>
+{
+    var config = new
+    {
+        api_url = configuration["Frontend:ApiUrl"] ?? "/api/v1",
+        address_lookup_provider = configuration["AddressLookup:Provider"] ?? "none",
+        google_places_api_key = configuration["AddressLookup:GooglePlacesApiKey"] ?? "",
+    };
+    return Results.Text($"globalThis.__config = {JsonSerializer.Serialize(config)};", "application/javascript");
+});
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
