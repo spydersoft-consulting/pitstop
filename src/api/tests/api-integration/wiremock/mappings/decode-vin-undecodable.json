@@ -1,0 +1,13 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/vehicles/DecodeVinValues/ZZZUNDECADABLE001"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "Results": []
+    }
+  }
+}

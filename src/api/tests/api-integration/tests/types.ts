@@ -8,6 +8,9 @@ export interface VehicleDto {
   initialOdometer: number;
   tankCapacityGallons?: number;
   startDate: string;
+  plateState?: string | null;
+  plateNumber?: string | null;
+  vin?: string | null;
 }
 
 export interface CreateVehicleRequest {
@@ -19,6 +22,9 @@ export interface CreateVehicleRequest {
   initialOdometer?: number;
   tankCapacityGallons?: number;
   startDate: string;
+  plateState?: string;
+  plateNumber?: string;
+  vin?: string;
 }
 
 export interface UpdateVehicleRequest {
@@ -169,6 +175,18 @@ export interface CreateMaintenanceLogRequest {
   nextServiceOdometer?: number;
   nextServiceDate?: string;
   notes?: string;
+}
+
+export interface RecallDto {
+  campaignNumber: string;
+  manufacturer: string;
+  component: string;
+  summary: string;
+  consequence: string;
+  remedy: string;
+  notes?: string | null;
+  parkIt: boolean;
+  parkOutside: boolean;
 }
 
 export interface UpdateMaintenanceLogRequest extends CreateMaintenanceLogRequest {
