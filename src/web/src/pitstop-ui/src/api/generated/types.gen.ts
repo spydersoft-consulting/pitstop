@@ -51,6 +51,7 @@ export type CreateVehicleRequest = {
   startDate?: string;
   plateState?: null | string;
   plateNumber?: null | string;
+  vin?: null | string;
 };
 
 export type FileUrlResponse = {
@@ -228,6 +229,7 @@ export type UpdateVehicleRequest = {
   tankCapacityGallons?: null | number | string;
   plateState?: null | string;
   plateNumber?: null | string;
+  vin?: null | string;
 };
 
 export type VehicleDto = {
@@ -242,6 +244,7 @@ export type VehicleDto = {
   startDate?: string;
   plateState?: null | string;
   plateNumber?: null | string;
+  vin?: null | string;
 };
 
 export type GetApiV1VehiclesByVehicleIdAnalyticsSummaryData = {

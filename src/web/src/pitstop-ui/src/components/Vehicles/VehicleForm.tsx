@@ -8,6 +8,8 @@ import { Button } from "primereact/button";
 import type { CreateVehicleRequest, UpdateVehicleRequest } from "../../api/generated/types.gen";
 import { US_STATE_OPTIONS } from "./vehicleOptions";
 
+const VIN_PATTERN = /^[A-HJ-NPR-Z0-9]{17}$/;
+
 export interface VehicleFormValues {
   name: string;
   year: number | null;
@@ -19,6 +21,7 @@ export interface VehicleFormValues {
   startDate: Date | null;
   plateState: string;
   plateNumber: string;
+  vin: string;
 }
 
 interface Props {
@@ -39,6 +42,7 @@ const defaults: VehicleFormValues = {
   startDate: null,
   plateState: "",
   plateNumber: "",
+  vin: "",
 };
 
 export const VehicleForm: React.FC<Props> = ({
@@ -61,6 +65,9 @@ export const VehicleForm: React.FC<Props> = ({
     if (!values.name.trim()) next.name = "Name is required.";
     if (!values.make.trim()) next.make = "Make is required.";
     if (!values.model.trim()) next.model = "Model is required.";
+    if (values.vin.trim() && !VIN_PATTERN.test(values.vin.trim().toUpperCase())) {
+      next.vin = "VIN must be 17 characters (letters and digits, excluding I, O, and Q).";
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -79,6 +86,7 @@ export const VehicleForm: React.FC<Props> = ({
         tankCapacityGallons: values.tankCapacityGallons ?? null,
         plateState: values.plateState || null,
         plateNumber: values.plateNumber.trim() || null,
+        vin: values.vin.trim().toUpperCase() || null,
       };
       onSubmit(body);
     } else {
@@ -93,6 +101,7 @@ export const VehicleForm: React.FC<Props> = ({
         startDate: values.startDate ? values.startDate.toISOString().split("T")[0] : undefined,
         plateState: values.plateState || null,
         plateNumber: values.plateNumber.trim() || null,
+        vin: values.vin.trim().toUpperCase() || null,
       };
       onSubmit(body);
     }
@@ -201,6 +210,17 @@ export const VehicleForm: React.FC<Props> = ({
             onChange={(e) => set("plateNumber", e.target.value)}
             placeholder="e.g. 8ABC123"
             className="w-full"
+          />,
+        )}
+        {field(
+          "VIN",
+          errors.vin,
+          <InputText
+            value={values.vin}
+            onChange={(e) => set("vin", e.target.value)}
+            placeholder="e.g. 1HGCM82633A123456"
+            maxLength={17}
+            className={errors.vin ? "p-invalid w-full" : "w-full"}
           />,
         )}
       </div>

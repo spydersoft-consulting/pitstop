@@ -1579,6 +1579,10 @@
           "plateNumber": {
             "maxLength": 20,
             "type": ["null", "string"]
+          },
+          "vin": {
+            "pattern": "^[A-HJ-NPR-Z0-9]{17}$",
+            "type": ["null", "string"]
           }
         }
       },
@@ -2254,6 +2258,10 @@
           "plateNumber": {
             "maxLength": 20,
             "type": ["null", "string"]
+          },
+          "vin": {
+            "pattern": "^[A-HJ-NPR-Z0-9]{17}$",
+            "type": ["null", "string"]
           }
         }
       },
@@ -2300,6 +2308,9 @@
             "type": ["null", "string"]
           },
           "plateNumber": {
+            "type": ["null", "string"]
+          },
+          "vin": {
             "type": ["null", "string"]
           }
         }
