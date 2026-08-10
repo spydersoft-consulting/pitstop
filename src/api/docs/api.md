@@ -12,9 +12,9 @@ Authorization: Bearer <token>
 
 ### Scopes
 
-| Scope | Grants access to |
-|---|---|
-| `pitstop:read` | All GET endpoints |
+| Scope           | Grants access to                |
+| --------------- | ------------------------------- |
+| `pitstop:read`  | All GET endpoints               |
 | `pitstop:write` | All POST, PUT, DELETE endpoints |
 
 OIDC discovery: `https://auth.mattgerega.net/.well-known/openid-configuration`  
@@ -33,6 +33,7 @@ All data is scoped to the authenticated user via the JWT `sub` claim. Requests f
 List all vehicles for the current user.
 
 **Response** `200 OK`
+
 ```json
 [
   {
@@ -56,6 +57,7 @@ List all vehicles for the current user.
 ### POST /vehicles
 
 **Request body**
+
 ```json
 {
   "name": "Bronco",
@@ -85,6 +87,45 @@ Soft-deletes the vehicle.
 
 ---
 
+## Recalls
+
+### GET /vehicles/{vehicleId}/recalls
+
+Looks up open NHTSA recalls for a vehicle by its VIN. Requires the vehicle to have a `vin` on file.
+
+Two NHTSA services are chained:
+
+1. The VIN is decoded via [vPIC](https://vpic.nhtsa.dot.gov/api/) (`DecodeVinValues`) to get its make, model, and model year.
+2. Those decoded values are used to query the [recalls API](https://api.nhtsa.gov/) (`recallsByVehicle`), since NHTSA's recall search has no VIN parameter.
+
+Both steps are cached server-side: VIN decode results per VIN (default 30 days, configurable via `Nhtsa:VinDecodeCacheDurationMinutes` — a VIN's make/model/year never changes), and recall results per make/model/year (default 24 hours, configurable via `Nhtsa:CacheDurationMinutes` — recall data changes infrequently).
+
+**Response** `200 OK`
+
+```json
+[
+  {
+    "campaignNumber": "22V123000",
+    "manufacturer": "American Honda Motor Co.",
+    "component": "STEERING",
+    "summary": "Description of the defect.",
+    "consequence": "Description of the safety risk.",
+    "remedy": "Description of the free repair.",
+    "notes": null,
+    "parkIt": false,
+    "parkOutside": false
+  }
+]
+```
+
+**Errors**
+
+- `404` — vehicle doesn't exist or isn't owned by the caller
+- `400` — vehicle has no VIN on file, or the VIN could not be decoded
+- `502` — the vPIC or recalls service is unavailable
+
+---
+
 ## Fill-Ups
 
 ### GET /vehicles/{vehicleId}/fillups
@@ -93,19 +134,20 @@ Paginated fill-up history for a vehicle.
 
 **Query parameters**
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `page` | int | 1 | Page number |
-| `pageSize` | int | 20 | Page size (max 100) |
-| `from` | date | — | Filter from date (inclusive) |
-| `to` | date | — | Filter to date (inclusive) |
-| `orderBy` | string | `filledAt` | `filledAt` or `odometer` |
-| `order` | string | `desc` | `asc` or `desc` |
+| Parameter  | Type   | Default    | Description                  |
+| ---------- | ------ | ---------- | ---------------------------- |
+| `page`     | int    | 1          | Page number                  |
+| `pageSize` | int    | 20         | Page size (max 100)          |
+| `from`     | date   | —          | Filter from date (inclusive) |
+| `to`       | date   | —          | Filter to date (inclusive)   |
+| `orderBy`  | string | `filledAt` | `filledAt` or `odometer`     |
+| `order`    | string | `desc`     | `asc` or `desc`              |
 
 **Response** `200 OK`
+
 ```json
 {
-  "items": [ /* fill-up objects */ ],
+  "items": [/* fill-up objects */],
   "totalCount": 47,
   "page": 1,
   "pageSize": 20
@@ -119,6 +161,7 @@ Paginated fill-up history for a vehicle.
 ### POST /vehicles/{vehicleId}/fillups
 
 **Request body**
+
 ```json
 {
   "filledAt": "2025-04-28T14:30:00-07:00",
@@ -137,6 +180,7 @@ Paginated fill-up history for a vehicle.
 ```
 
 `pricePerGallon` and `totalCost` are both optional but at least one must be present:
+
 - If only `totalCost`: `pricePerGallon = totalCost / gallonsAdded`
 - If only `pricePerGallon`: `totalCost = pricePerGallon * gallonsAdded`
 - If both: stored as-is
@@ -192,6 +236,7 @@ All analytics endpoints require `pitstop:read` scope and return `404` if the veh
 Overall lifetime statistics.
 
 **Response** `200 OK`
+
 ```json
 {
   "vehicleId": 1,
@@ -216,6 +261,7 @@ Fields that require at least one full fill-up with a previous fill-up will be `n
 MPG data points over time with a rolling 10-fill-up average.
 
 **Response** `200 OK`
+
 ```json
 {
   "points": [
@@ -236,13 +282,14 @@ MPG data points over time with a rolling 10-fill-up average.
 Monthly spend grouped by year and month.
 
 **Response** `200 OK`
+
 ```json
 {
   "points": [
     {
       "year": 2025,
       "month": 4,
-      "totalSpend": 152.40,
+      "totalSpend": 152.4,
       "totalGallons": 44.1,
       "fillUpCount": 3
     }

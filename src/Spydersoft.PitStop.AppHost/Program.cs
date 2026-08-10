@@ -44,8 +44,21 @@ if (builder.Environment.EnvironmentName == TestingEnvironmentName)
     var testKey = builder.Configuration["Auth:TestKey"]
         ?? "jRv3YFPH/19t9t5CgsEFgAkykfW5bQhHmceMprLgzlQ=";
 
+    // Recalls lookups call two real NHTSA services (vPIC + recallsByVehicle). A live dependency
+    // in e2e tests would be flaky (network/uptime) and non-deterministic (recall data changes),
+    // so Testing points the API at a WireMock container instead, stocked with canned mappings
+    // from the api-integration test project -- the same reasoning as the mock-oidc container below.
+    var nhtsaMappingsDir = Path.GetFullPath(Path.Combine(
+        builder.Environment.ContentRootPath, "..", "api", "tests", "api-integration", "wiremock", "mappings"));
+    var mockNhtsa = builder.AddContainer("mock-nhtsa", "wiremock/wiremock", "3.9.1")
+        .WithHttpEndpoint(port: 8300, targetPort: 8080, name: "http", isProxied: false)
+        .WithBindMount(nhtsaMappingsDir, "/home/wiremock/mappings");
+
     api.WithEnvironment("DOTNET_ENVIRONMENT", TestingEnvironmentName)
-       .WithEnvironment("Auth__TestKey", testKey);
+       .WithEnvironment("Auth__TestKey", testKey)
+       .WithEnvironment("Nhtsa__BaseUrl", "http://localhost:8300/")
+       .WithEnvironment("Nhtsa__VpicBaseUrl", "http://localhost:8300/")
+       .WaitFor(mockNhtsa);
 
     dataSeeder.WaitFor(api)
         .WithEnvironment("PITSTOP_TEST_KEY", testKey);

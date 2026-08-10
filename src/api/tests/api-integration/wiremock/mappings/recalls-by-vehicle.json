@@ -1,0 +1,31 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/recalls/recallsByVehicle",
+    "queryParameters": {
+      "make": { "equalTo": "Ford" },
+      "model": { "equalTo": "Bronco" },
+      "modelYear": { "equalTo": "2024" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "Count": 1,
+      "results": [
+        {
+          "NHTSACampaignNumber": "24V123000",
+          "Manufacturer": "Ford Motor Company",
+          "Component": "STEERING",
+          "Summary": "Test recall summary.",
+          "Consequence": "Test recall consequence.",
+          "Remedy": "Test recall remedy.",
+          "Notes": null,
+          "parkIt": false,
+          "parkOutSide": false
+        }
+      ]
+    }
+  }
+}

@@ -1,5 +1,6 @@
 using Spydersoft.PitStop.Api;
 using Spydersoft.PitStop.Api.Services;
+using Spydersoft.PitStop.Api.Services.Nhtsa;
 using Spydersoft.PitStop.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +66,15 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<FillUpService>();
 builder.Services.AddScoped<LocationService>();
 builder.Services.AddSpydersoftFileStore(builder.Configuration);
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<INhtsaRecallClient, NhtsaRecallClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Nhtsa:BaseUrl"] ?? "https://api.nhtsa.gov/");
+});
+builder.Services.AddHttpClient<IVinDecoderClient, VpicVinDecoderClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Nhtsa:VpicBaseUrl"] ?? "https://vpic.nhtsa.dot.gov/api/");
+});
 
 var app = builder.Build();
 
