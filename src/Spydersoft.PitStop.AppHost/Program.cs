@@ -170,7 +170,7 @@ static string MockOidcClientsJson(string clientId, string clientSecret) => $$"""
     "ClientId": "{{clientId}}",
     "ClientSecrets": ["{{clientSecret}}"],
     "AllowedGrantTypes": ["authorization_code"],
-    "AllowedScopes": ["openid", "profile", "email", "offline_access", "pitstop:read", "pitstop:write"],
+    "AllowedScopes": ["openid", "profile", "email", "offline_access", "pitstop:read", "pitstop:write", "notification:read", "notification:write"],
     "RedirectUris": ["http://localhost:9080/.auth/login/callback"],
     "PostLogoutRedirectUris": ["http://localhost:9080/"],
     "RequireConsent": false,
@@ -197,7 +197,9 @@ static string MockOidcUsersJson() => """
 static string MockOidcApiScopesJson() => """
 [
   { "Name": "pitstop:read", "DisplayName": "Read PitStop data" },
-  { "Name": "pitstop:write", "DisplayName": "Write PitStop data" }
+  { "Name": "pitstop:write", "DisplayName": "Write PitStop data" },
+  { "Name": "notification:read", "DisplayName": "Read Notification data" },
+  { "Name": "notification:write", "DisplayName": "Write Notification data" }
 ]
 """;
 
