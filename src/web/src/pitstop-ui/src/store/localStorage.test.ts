@@ -3,13 +3,14 @@ import { loadState, saveState } from "./localStorage";
 import type { RootState } from "./store";
 
 const KEY = "pitstop_state";
-const VERSION = 6;
+const VERSION = 7;
 
 const sampleState = (): RootState => ({
   vehicles: { vehicles: [], selectedVehicleId: null, loading: false },
   fillUps: { recentFillUps: [], loading: false },
   locations: { locations: [], loading: false },
   maintenanceLogs: { recentMaintenanceLogs: [], loading: false },
+  notifications: { items: [], unreadCount: 0, loading: false },
 });
 
 describe("localStorage state persistence", () => {
@@ -74,6 +75,17 @@ describe("localStorage state persistence", () => {
       JSON.stringify({
         version: VERSION,
         state: { maintenanceLogs: { recentMaintenanceLogs: 42 } },
+      }),
+    );
+    expect(loadState()).toBeUndefined();
+  });
+
+  it("rejects payloads with the wrong notifications shape", () => {
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        version: VERSION,
+        state: { notifications: { items: 42 } },
       }),
     );
     expect(loadState()).toBeUndefined();

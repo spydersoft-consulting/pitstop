@@ -19,18 +19,24 @@ import { fetchVehicles } from "../store/slices/vehicleSlice";
 import { fetchFillUps } from "../store/slices/fillUpSlice";
 import { fetchMaintenanceLogs } from "../store/slices/maintenanceLogSlice";
 import { fetchLocations } from "../store/slices/locationSlice";
+import { fetchNotifications, fetchUnreadCount } from "../store/slices/notificationSlice";
 import { Locations } from "./Locations/Locations";
 import { useAuth } from "../context";
+import { useNotificationHub } from "../services/useNotificationHub";
 
 export const AppRouter: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isAuthenticated, isLoading } = useAuth();
   const { selectedVehicleId } = useAppSelector((s) => s.vehicles);
 
+  useNotificationHub(isAuthenticated);
+
   useEffect(() => {
     if (isAuthenticated) {
       void dispatch(fetchVehicles());
       void dispatch(fetchLocations());
+      void dispatch(fetchNotifications());
+      void dispatch(fetchUnreadCount());
     }
   }, [dispatch, isAuthenticated]);
 

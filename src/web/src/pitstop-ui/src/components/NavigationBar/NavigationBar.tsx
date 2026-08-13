@@ -17,6 +17,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Sidebar } from "primereact/sidebar";
 import { useAuth, usePageTitle } from "../../context";
+import { NotificationBell } from "./NotificationBell";
 
 interface NavigationBarProps {
   brand?: string;
@@ -173,20 +174,24 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
     ].join(" ")}
     aria-label="Primary"
   >
-    <button
-      type="button"
-      onClick={onNavigateHome}
+    <div
       className={[
-        "flex items-center gap-2 px-3 h-16 border-b border-white/5",
-        "bg-transparent text-content-inverse cursor-pointer",
-        collapsed ? "justify-center" : "",
+        "flex items-center h-16 border-b border-white/5",
+        collapsed ? "justify-center px-3" : "justify-between px-3",
       ].join(" ")}
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-md bg-brand text-brand-fg">
-        <FontAwesomeIcon icon={faGasPump} className="text-lg" />
-      </span>
-      {!collapsed && <span className="font-display text-xl uppercase tracking-wider">{brandName}</span>}
-    </button>
+      <button
+        type="button"
+        onClick={onNavigateHome}
+        className="flex items-center gap-2 bg-transparent text-content-inverse cursor-pointer border-0 p-0"
+      >
+        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-brand text-brand-fg">
+          <FontAwesomeIcon icon={faGasPump} className="text-lg" />
+        </span>
+        {!collapsed && <span className="font-display text-xl uppercase tracking-wider">{brandName}</span>}
+      </button>
+      {!collapsed && isAuthenticated && <NotificationBell />}
+    </div>
 
     <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
       {NAV_ITEMS.map((item) => (
@@ -218,9 +223,10 @@ interface MobileTopBarProps {
   mobileTitle: string;
   onOpenDrawer: () => void;
   onNavigateHome: () => void;
+  isAuthenticated: boolean;
 }
 
-const MobileTopBar: React.FC<MobileTopBarProps> = ({ mobileTitle, onOpenDrawer, onNavigateHome }) => (
+const MobileTopBar: React.FC<MobileTopBarProps> = ({ mobileTitle, onOpenDrawer, onNavigateHome, isAuthenticated }) => (
   <div className="lg:hidden sticky top-0 z-30 bg-surface-inverse text-content-inverse">
     <div className="flex items-center h-14 px-3 gap-2">
       <button
@@ -239,7 +245,10 @@ const MobileTopBar: React.FC<MobileTopBarProps> = ({ mobileTitle, onOpenDrawer, 
       >
         <FontAwesomeIcon icon={faGasPump} className="text-base" />
       </button>
-      <h1 className="font-display text-lg uppercase tracking-wider leading-none truncate min-w-0">{mobileTitle}</h1>
+      <h1 className="font-display text-lg uppercase tracking-wider leading-none truncate min-w-0 flex-1">
+        {mobileTitle}
+      </h1>
+      {isAuthenticated && <NotificationBell />}
     </div>
   </div>
 );
@@ -349,7 +358,12 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ brand }) => {
         onLogin={login}
         onLogout={logout}
       />
-      <MobileTopBar mobileTitle={mobileTitle} onOpenDrawer={() => setDrawerOpen(true)} onNavigateHome={navigateHome} />
+      <MobileTopBar
+        mobileTitle={mobileTitle}
+        onOpenDrawer={() => setDrawerOpen(true)}
+        onNavigateHome={navigateHome}
+        isAuthenticated={isAuthenticated}
+      />
       <MobileDrawer
         brandName={brandName}
         drawerOpen={drawerOpen}
