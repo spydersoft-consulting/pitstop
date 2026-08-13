@@ -29,7 +29,9 @@ const relativeTime = (iso: string): string => {
 // consumer-integration.md -- v1 only ever produces Vehicle-entity recall alerts.
 const entityLink = (notification: Notification): string | undefined => {
   if (notification.entityType === "Vehicle" && notification.entityId) {
-    return `/vehicles/${notification.entityId}/edit`;
+    return notification.type === "recall-alert"
+      ? `/vehicles/${notification.entityId}/recalls`
+      : `/vehicles/${notification.entityId}/edit`;
   }
   return undefined;
 };

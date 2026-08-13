@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updateVehicle } from "../../store/slices/vehicleSlice";
@@ -54,11 +57,35 @@ export const EditVehicle: React.FC = () => {
     }
   };
 
+  const startDate = vehicle.startDate ? new Date(`${vehicle.startDate}T00:00:00`).toLocaleDateString() : "—";
+  const initialOdometer =
+    vehicle.initialOdometer != null ? `${Number(vehicle.initialOdometer).toLocaleString()} mi` : "—";
+
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
-      <PageHeader title="Edit Vehicle" />
+      <PageHeader
+        title="Edit Vehicle"
+        actions={
+          <Button
+            label="Recalls"
+            icon={<FontAwesomeIcon icon={faTriangleExclamation} className="mr-2" />}
+            className="p-button-sm p-button-outlined"
+            onClick={() => navigate(`/vehicles/${id}/recalls`)}
+          />
+        }
+      />
       <Card>
         {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">{error}</div>}
+        <dl className="grid grid-cols-2 gap-3 mb-4 text-sm">
+          <div>
+            <dt className="text-content-muted">Starting Odometer</dt>
+            <dd className="font-numeric">{initialOdometer}</dd>
+          </div>
+          <div>
+            <dt className="text-content-muted">Start Date</dt>
+            <dd>{startDate}</dd>
+          </div>
+        </dl>
         <VehicleForm
           initialValues={initialValues}
           isEdit
