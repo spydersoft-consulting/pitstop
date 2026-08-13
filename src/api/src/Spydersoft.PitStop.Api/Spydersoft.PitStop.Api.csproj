@@ -27,4 +27,8 @@
     <ProjectReference Include="..\Spydersoft.PitStop.Data\Spydersoft.PitStop.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Spydersoft.PitStop.Api.UnitTests" />
+  </ItemGroup>
+
 </Project>
