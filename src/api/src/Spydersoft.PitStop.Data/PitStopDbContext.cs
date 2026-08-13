@@ -11,6 +11,7 @@ public class PitStopDbContext(DbContextOptions<PitStopDbContext> options) : DbCo
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<MaintenanceLog> MaintenanceLogs => Set<MaintenanceLog>();
     public DbSet<MaintenanceLogAttachment> MaintenanceLogAttachments => Set<MaintenanceLogAttachment>();
+    public DbSet<RecallNotification> RecallNotifications => Set<RecallNotification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,5 +20,6 @@ public class PitStopDbContext(DbContextOptions<PitStopDbContext> options) : DbCo
         modelBuilder.ApplyConfiguration(new LocationConfiguration());
         modelBuilder.ApplyConfiguration(new MaintenanceLogConfiguration());
         modelBuilder.ApplyConfiguration(new MaintenanceLogAttachmentConfiguration());
+        modelBuilder.ApplyConfiguration(new RecallNotificationConfiguration());
     }
 }

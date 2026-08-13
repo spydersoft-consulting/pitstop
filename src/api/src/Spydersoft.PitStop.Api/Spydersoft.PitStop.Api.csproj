@@ -16,7 +16,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="IdentityModel" />
     <PackageReference Include="Spydersoft.FileStore.Client" />
+    <PackageReference Include="Spydersoft.Notification.Client" />
     <PackageReference Include="Spydersoft.Platform.Hosting" />
   </ItemGroup>
 

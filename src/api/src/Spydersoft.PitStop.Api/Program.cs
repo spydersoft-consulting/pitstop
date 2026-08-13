@@ -1,11 +1,15 @@
 using Spydersoft.PitStop.Api;
+using Spydersoft.PitStop.Api.Jobs;
 using Spydersoft.PitStop.Api.Services;
 using Spydersoft.PitStop.Api.Services.Nhtsa;
+using Spydersoft.PitStop.Api.Services.Notification;
 using Spydersoft.PitStop.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Spydersoft.FileStore.Client;
+using Spydersoft.Notification.Client;
+using Spydersoft.Notification.Contracts;
 using Spydersoft.Platform.Hosting.StartupExtensions;
 using Spydersoft.Platform.Hosting.Telemetry;
 using System.IdentityModel.Tokens.Jwt;
@@ -75,6 +79,19 @@ builder.Services.AddHttpClient<IVinDecoderClient, VpicVinDecoderClient>(client =
 {
     client.BaseAddress = new Uri(builder.Configuration["Nhtsa:VpicBaseUrl"] ?? "https://vpic.nhtsa.dot.gov/api/");
 });
+
+// Spydersoft.Notification.Client registers INotificationClient/IDeviceClient with no auth of its
+// own (unlike Spydersoft.FileStore.Client) -- layer the same client-credentials handler pattern on
+// top of its typed HttpClient registration for the one client PitStop's backend actually calls.
+builder.Services.AddSpydersoftNotification(builder.Configuration);
+builder.Services.AddOptions<NotificationAuthOptions>().Bind(builder.Configuration.GetSection("Notification"));
+builder.Services.AddHttpClient("Spydersoft.Notification.TokenClient");
+builder.Services.AddTransient<NotificationClientCredentialsHandler>();
+builder.Services.AddHttpClient<INotificationClient, NotificationHttpClient>()
+    .AddHttpMessageHandler<NotificationClientCredentialsHandler>();
+builder.Services.AddOptions<RecallCheckOptions>().Bind(builder.Configuration.GetSection("RecallCheck"));
+builder.Services.AddScoped<RecallCheckRunner>();
+builder.Services.AddHostedService<RecallCheckJob>();
 
 var app = builder.Build();
 

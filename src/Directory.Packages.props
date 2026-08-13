@@ -19,8 +19,10 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.*" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.*" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.*" />
+    <PackageVersion Include="IdentityModel" Version="7.*" />
     <PackageVersion Include="OidcProxy.Net.OpenIdConnect" Version="5.4.1" />
     <PackageVersion Include="Spydersoft.FileStore.Client" Version="1.*" />
+    <PackageVersion Include="Spydersoft.Notification.Client" Version="1.*" />
     <PackageVersion Include="Spydersoft.Platform.Hosting" Version="3.1.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
   </ItemGroup>
