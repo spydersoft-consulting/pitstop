@@ -35,6 +35,8 @@ import type {
   GetApiV1VehiclesByVehicleIdMaintenanceByIdResponses,
   GetApiV1VehiclesByVehicleIdMaintenanceData,
   GetApiV1VehiclesByVehicleIdMaintenanceResponses,
+  GetApiV1VehiclesByVehicleIdRecallsData,
+  GetApiV1VehiclesByVehicleIdRecallsResponses,
   GetApiV1VehiclesData,
   GetApiV1VehiclesResponses,
   PostApiV1LocationsData,
@@ -317,6 +319,15 @@ export const deleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmen
     unknown,
     ThrowOnError
   >({ url: "/api/v1/vehicles/{vehicleId}/maintenance/{id}/attachments/{attachmentId}", ...options });
+
+export const getApiV1VehiclesByVehicleIdRecalls = <ThrowOnError extends boolean = false>(
+  options: Options<GetApiV1VehiclesByVehicleIdRecallsData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdRecallsResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/recalls",
+    ...options,
+  });
 
 export const getApiV1Vehicles = <ThrowOnError extends boolean = false>(
   options?: Options<GetApiV1VehiclesData, ThrowOnError>,

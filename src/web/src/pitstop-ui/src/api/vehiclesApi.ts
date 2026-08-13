@@ -3,8 +3,9 @@ import {
   postApiV1Vehicles,
   putApiV1VehiclesById,
   deleteApiV1VehiclesById,
+  getApiV1VehiclesByVehicleIdRecalls,
 } from "./generated/sdk.gen";
-import type { CreateVehicleRequest, UpdateVehicleRequest, VehicleDto } from "./generated/types.gen";
+import type { CreateVehicleRequest, UpdateVehicleRequest, VehicleDto, RecallDto } from "./generated/types.gen";
 
 export const vehiclesApi = {
   list: async (): Promise<VehicleDto[]> => {
@@ -21,5 +22,9 @@ export const vehiclesApi = {
   },
   delete: async (id: number): Promise<void> => {
     await deleteApiV1VehiclesById({ path: { id } });
+  },
+  recalls: async (vehicleId: number): Promise<RecallDto[]> => {
+    const { data } = await getApiV1VehiclesByVehicleIdRecalls({ path: { vehicleId } });
+    return data ?? [];
   },
 };

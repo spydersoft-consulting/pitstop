@@ -128,7 +128,7 @@ describe("NotificationBell", () => {
     await user.click(await screen.findByText("Recall notice for your Civic"));
 
     expect(notificationApi.markRead).toHaveBeenCalledWith("1");
-    expect(mockNavigate).toHaveBeenCalledWith("/vehicles/42/edit");
+    expect(mockNavigate).toHaveBeenCalledWith("/vehicles/42/recalls");
   });
 
   it("does not re-mark an already-read notification but still navigates", async () => {
@@ -142,7 +142,7 @@ describe("NotificationBell", () => {
     await user.click(await screen.findByText("Already read"));
 
     expect(notificationApi.markRead).not.toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith("/vehicles/7/edit");
+    expect(mockNavigate).toHaveBeenCalledWith("/vehicles/7/recalls");
   });
 
   it("does not navigate for a notification with no linkable entity", async () => {
@@ -158,5 +158,19 @@ describe("NotificationBell", () => {
 
     expect(notificationApi.markRead).toHaveBeenCalledWith("1");
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("navigates to the edit page for a non-recall vehicle notification", async () => {
+    const user = userEvent.setup();
+    vi.mocked(notificationApi.markRead).mockResolvedValue(n("1", { isRead: true }));
+    vi.mocked(notificationApi.list).mockResolvedValueOnce([
+      n("1", { subject: "Fill-up reminder", type: "fill-up-reminder", entityType: "Vehicle", entityId: "42" }),
+    ]);
+    renderBell([], 1);
+
+    await user.click(screen.getByRole("button", { name: /notifications/i }));
+    await user.click(await screen.findByText("Fill-up reminder"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/vehicles/42/edit");
   });
 });

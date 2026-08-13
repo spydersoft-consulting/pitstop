@@ -170,6 +170,18 @@ export type MpgOverTimeResponse = {
   points?: Array<MpgDataPoint>;
 };
 
+export type RecallDto = {
+  campaignNumber?: string;
+  manufacturer?: string;
+  component?: string;
+  summary?: string;
+  consequence?: string;
+  remedy?: string;
+  notes?: null | string;
+  parkIt?: boolean;
+  parkOutside?: boolean;
+};
+
 export type SpendDataPoint = {
   year?: number | string;
   month?: number | string;
@@ -677,6 +689,25 @@ export type DeleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachment
    */
   200: unknown;
 };
+
+export type GetApiV1VehiclesByVehicleIdRecallsData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/recalls";
+};
+
+export type GetApiV1VehiclesByVehicleIdRecallsResponses = {
+  /**
+   * OK
+   */
+  200: Array<RecallDto>;
+};
+
+export type GetApiV1VehiclesByVehicleIdRecallsResponse =
+  GetApiV1VehiclesByVehicleIdRecallsResponses[keyof GetApiV1VehiclesByVehicleIdRecallsResponses];
 
 export type GetApiV1VehiclesData = {
   body?: never;

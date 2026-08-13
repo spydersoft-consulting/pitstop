@@ -13,6 +13,7 @@ import { Analytics } from "./Analytics/Analytics";
 import { Vehicles } from "./Vehicles/Vehicles";
 import { AddVehicle } from "./Vehicles/AddVehicle";
 import { EditVehicle } from "./Vehicles/EditVehicle";
+import { VehicleRecalls } from "./Vehicles/VehicleRecalls";
 import { Landing } from "./Landing/Landing";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchVehicles } from "../store/slices/vehicleSlice";
@@ -74,6 +75,7 @@ export const AppRouter: React.FC = () => {
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/vehicles/new" element={<AddVehicle />} />
           <Route path="/vehicles/:id/edit" element={<EditVehicle />} />
+          <Route path="/vehicles/:id/recalls" element={<VehicleRecalls />} />
           <Route path="/locations" element={<Locations />} />
         </Route>
       </Routes>

@@ -1172,6 +1172,54 @@
         }
       }
     },
+    "/api/v1/vehicles/{vehicleId}/recalls": {
+      "get": {
+        "tags": ["Recalls"],
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecallDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecallDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecallDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Vehicles": {
       "get": {
         "tags": ["Vehicles"],
@@ -2014,6 +2062,38 @@
           }
         }
       },
+      "RecallDto": {
+        "type": "object",
+        "properties": {
+          "campaignNumber": {
+            "type": "string"
+          },
+          "manufacturer": {
+            "type": "string"
+          },
+          "component": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "consequence": {
+            "type": "string"
+          },
+          "remedy": {
+            "type": "string"
+          },
+          "notes": {
+            "type": ["null", "string"]
+          },
+          "parkIt": {
+            "type": "boolean"
+          },
+          "parkOutside": {
+            "type": "boolean"
+          }
+        }
+      },
       "SpendDataPoint": {
         "type": "object",
         "properties": {
@@ -2329,6 +2409,9 @@
     },
     {
       "name": "MaintenanceLogs"
+    },
+    {
+      "name": "Recalls"
     },
     {
       "name": "Vehicles"
