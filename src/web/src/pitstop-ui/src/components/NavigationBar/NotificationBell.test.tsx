@@ -17,6 +17,12 @@ vi.mock("../../api/notificationApi", () => ({
   },
 }));
 
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router-dom")>();
+  return { ...actual, useNavigate: () => mockNavigate };
+});
+
 import { notificationApi } from "../../api/notificationApi";
 
 const n = (id: string, overrides: Partial<Notification> = {}): Notification =>
@@ -58,6 +64,7 @@ function renderBell(items: Notification[] = [], unreadCount = 0) {
 describe("NotificationBell", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
     vi.mocked(notificationApi.list).mockResolvedValue([]);
   });
 
@@ -92,5 +99,64 @@ describe("NotificationBell", () => {
     renderBell([], 0);
     await user.click(screen.getByRole("button", { name: "Notifications" }));
     expect(await screen.findByText("No notifications yet")).toBeInTheDocument();
+  });
+
+  it("marks all read and hides the Mark all read control once unreadCount hits 0", async () => {
+    const user = userEvent.setup();
+    vi.mocked(notificationApi.markAllRead).mockResolvedValue(2);
+    vi.mocked(notificationApi.list).mockResolvedValueOnce([n("1"), n("2")]);
+    renderBell([n("1"), n("2")], 2);
+
+    await user.click(screen.getByRole("button", { name: /notifications/i }));
+    await screen.findByText("Recall notice 1");
+    await user.click(screen.getByText("Mark all read"));
+
+    expect(notificationApi.markAllRead).toHaveBeenCalledTimes(1);
+    await screen.findByRole("button", { name: "Notifications" });
+    expect(screen.queryByText("Mark all read")).not.toBeInTheDocument();
+  });
+
+  it("marks an unread notification read and navigates to its linked vehicle", async () => {
+    const user = userEvent.setup();
+    vi.mocked(notificationApi.markRead).mockResolvedValue(n("1", { isRead: true }));
+    vi.mocked(notificationApi.list).mockResolvedValueOnce([
+      n("1", { subject: "Recall notice for your Civic", entityType: "Vehicle", entityId: "42" }),
+    ]);
+    renderBell([], 1);
+
+    await user.click(screen.getByRole("button", { name: /notifications/i }));
+    await user.click(await screen.findByText("Recall notice for your Civic"));
+
+    expect(notificationApi.markRead).toHaveBeenCalledWith("1");
+    expect(mockNavigate).toHaveBeenCalledWith("/vehicles/42/edit");
+  });
+
+  it("does not re-mark an already-read notification but still navigates", async () => {
+    const user = userEvent.setup();
+    vi.mocked(notificationApi.list).mockResolvedValueOnce([
+      n("1", { subject: "Already read", isRead: true, entityType: "Vehicle", entityId: "7" }),
+    ]);
+    renderBell([], 0);
+
+    await user.click(screen.getByRole("button", { name: /notifications/i }));
+    await user.click(await screen.findByText("Already read"));
+
+    expect(notificationApi.markRead).not.toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith("/vehicles/7/edit");
+  });
+
+  it("does not navigate for a notification with no linkable entity", async () => {
+    const user = userEvent.setup();
+    vi.mocked(notificationApi.markRead).mockResolvedValue(n("1", { isRead: true }));
+    vi.mocked(notificationApi.list).mockResolvedValueOnce([
+      n("1", { subject: "General notice", entityType: null, entityId: null }),
+    ]);
+    renderBell([], 1);
+
+    await user.click(screen.getByRole("button", { name: /notifications/i }));
+    await user.click(await screen.findByText("General notice"));
+
+    expect(notificationApi.markRead).toHaveBeenCalledWith("1");
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });
