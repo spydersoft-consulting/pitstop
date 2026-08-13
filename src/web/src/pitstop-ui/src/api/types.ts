@@ -37,3 +37,55 @@ export interface FillUpListResponse {
   pageSize: number;
   totalPages: number;
 }
+
+export type NotificationPriority = "Low" | "Normal" | "High";
+export type NotificationStatus = "Created" | "Dispatching" | "Dispatched" | "PartiallyFailed";
+
+export interface NotificationDto {
+  id: string;
+  userId: string;
+  source: string;
+  type: string;
+  subject: string;
+  body: string;
+  data?: Record<string, string> | null;
+  priority: NotificationPriority;
+  status: NotificationStatus;
+  isRead: boolean;
+  readAt?: string | null;
+  createdAt: string;
+  entityType?: string | null;
+  entityId?: string | null;
+}
+
+// Pushed over the SignalR hub — a narrower shape than NotificationDto (no status/entity fields).
+export interface NotificationPushDto {
+  id: string;
+  source: string;
+  type: string;
+  subject: string;
+  body: string;
+  priority: NotificationPriority;
+  createdAt: string;
+}
+
+export interface UnreadCountResponse {
+  count: number;
+}
+
+export type DeviceType = "Web" | "Ios" | "Android";
+
+export interface RegisterDeviceRequest {
+  deviceType: DeviceType;
+  label: string;
+  pushToken?: string | null;
+}
+
+export interface DeviceDto {
+  id: string;
+  deviceType: DeviceType;
+  label: string;
+  lastSeenAt: string;
+  registeredAt: string;
+  isActive: boolean;
+}

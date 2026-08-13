@@ -8,6 +8,7 @@ import { vehicleSliceReducer } from "../store/slices/vehicleSlice";
 import { fillUpSliceReducer } from "../store/slices/fillUpSlice";
 import { locationSliceReducer } from "../store/slices/locationSlice";
 import { maintenanceLogSliceReducer } from "../store/slices/maintenanceLogSlice";
+import { notificationSliceReducer } from "../store/slices/notificationSlice";
 import { vehiclesApi } from "../api/vehiclesApi";
 import { locationsApi } from "../api/locationsApi";
 
@@ -24,6 +25,22 @@ vi.mock("../api/locationsApi", () => ({
   locationsApi: { list: vi.fn().mockResolvedValue([]) },
 }));
 
+vi.mock("../api/notificationApi", () => ({
+  notificationApi: {
+    list: vi.fn().mockResolvedValue([]),
+    unreadCount: vi.fn().mockResolvedValue(0),
+    markRead: vi.fn(),
+    markAllRead: vi.fn(),
+    registerDevice: vi.fn(),
+  },
+}));
+
+// The real hook opens a SignalR connection (negotiate over HTTP, then WS) -- irrelevant noise
+// for this file's routing/auth-gating assertions, and jsdom has no server to talk to.
+vi.mock("../services/useNotificationHub", () => ({
+  useNotificationHub: vi.fn(),
+}));
+
 const mockedUseAuth = vi.mocked(useAuth);
 
 function renderAppRouter() {
@@ -33,6 +50,7 @@ function renderAppRouter() {
       fillUps: fillUpSliceReducer,
       locations: locationSliceReducer,
       maintenanceLogs: maintenanceLogSliceReducer,
+      notifications: notificationSliceReducer,
     },
   });
   return render(

@@ -58,6 +58,12 @@ if (builder.Environment.EnvironmentName == TestingEnvironmentName)
        .WithEnvironment("Auth__TestKey", testKey)
        .WithEnvironment("Nhtsa__BaseUrl", "http://localhost:8300/")
        .WithEnvironment("Nhtsa__VpicBaseUrl", "http://localhost:8300/")
+       // AddSpydersoftNotification validates Notification:BaseUrl on host startup (ValidateOnStart) --
+       // an empty value (the appsettings.json default, only ever populated via Helm) crashes the API
+       // process before Kestrel even binds, which starves every Playwright suite of a live webServer.
+       // No real stub is needed: RecallCheckJob catches and logs any downstream call failure, so
+       // reusing the same WireMock container as NHTSA just needs to be a syntactically valid URI.
+       .WithEnvironment("Notification__BaseUrl", "http://localhost:8300/")
        .WaitFor(mockNhtsa);
 
     dataSeeder.WaitFor(api)
@@ -164,7 +170,7 @@ static string MockOidcClientsJson(string clientId, string clientSecret) => $$"""
     "ClientId": "{{clientId}}",
     "ClientSecrets": ["{{clientSecret}}"],
     "AllowedGrantTypes": ["authorization_code"],
-    "AllowedScopes": ["openid", "profile", "email", "offline_access", "pitstop:read", "pitstop:write"],
+    "AllowedScopes": ["openid", "profile", "email", "offline_access", "pitstop:read", "pitstop:write", "notification:read", "notification:write"],
     "RedirectUris": ["http://localhost:9080/.auth/login/callback"],
     "PostLogoutRedirectUris": ["http://localhost:9080/"],
     "RequireConsent": false,
@@ -191,7 +197,9 @@ static string MockOidcUsersJson() => """
 static string MockOidcApiScopesJson() => """
 [
   { "Name": "pitstop:read", "DisplayName": "Read PitStop data" },
-  { "Name": "pitstop:write", "DisplayName": "Write PitStop data" }
+  { "Name": "pitstop:write", "DisplayName": "Write PitStop data" },
+  { "Name": "notification:read", "DisplayName": "Read Notification data" },
+  { "Name": "notification:write", "DisplayName": "Write Notification data" }
 ]
 """;
 

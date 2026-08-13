@@ -2,8 +2,21 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
+import { configureStore } from "@reduxjs/toolkit";
+import { Provider } from "react-redux";
 import { NavigationBar } from "./NavigationBar";
 import { AuthContext } from "../../context/AuthContext";
+import { notificationSliceReducer } from "../../store/slices/notificationSlice";
+
+vi.mock("../../api/notificationApi", () => ({
+  notificationApi: {
+    list: vi.fn().mockResolvedValue([]),
+    unreadCount: vi.fn().mockResolvedValue(0),
+    markRead: vi.fn(),
+    markAllRead: vi.fn(),
+    registerDevice: vi.fn(),
+  },
+}));
 
 interface RenderOpts {
   isAuthenticated?: boolean;
@@ -14,23 +27,26 @@ interface RenderOpts {
 function renderNav({ isAuthenticated = false, userName, brand }: RenderOpts = {}) {
   const login = vi.fn();
   const logout = vi.fn();
+  const store = configureStore({ reducer: { notifications: notificationSliceReducer } });
   return {
     login,
     logout,
     ...render(
       <MemoryRouter>
-        <AuthContext.Provider
-          value={{
-            isLoading: false,
-            isAuthenticated,
-            user: isAuthenticated ? { name: userName ?? "", authenticated: true, exp: 0 } : undefined,
-            login,
-            logout,
-            refreshAuth: async () => undefined,
-          }}
-        >
-          <NavigationBar brand={brand} />
-        </AuthContext.Provider>
+        <Provider store={store}>
+          <AuthContext.Provider
+            value={{
+              isLoading: false,
+              isAuthenticated,
+              user: isAuthenticated ? { name: userName ?? "", authenticated: true, exp: 0 } : undefined,
+              login,
+              logout,
+              refreshAuth: async () => undefined,
+            }}
+          >
+            <NavigationBar brand={brand} />
+          </AuthContext.Provider>
+        </Provider>
       </MemoryRouter>,
     ),
   };

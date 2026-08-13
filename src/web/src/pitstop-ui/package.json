@@ -22,6 +22,7 @@
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.3.1",
     "@hey-api/client-axios": "^0.9.1",
+    "@microsoft/signalr": "^8.0.7",
     "axios": "^1.16.1",
     "chart.js": "^4.5.1",
     "leaflet": "^1.9.4",

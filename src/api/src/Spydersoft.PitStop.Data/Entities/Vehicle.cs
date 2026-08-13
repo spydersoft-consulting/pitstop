@@ -19,4 +19,5 @@ public class Vehicle
 
     public ICollection<FillUp> FillUps { get; set; } = [];
     public ICollection<MaintenanceLog> MaintenanceLogs { get; set; } = [];
+    public ICollection<RecallNotification> RecallNotifications { get; set; } = [];
 }
