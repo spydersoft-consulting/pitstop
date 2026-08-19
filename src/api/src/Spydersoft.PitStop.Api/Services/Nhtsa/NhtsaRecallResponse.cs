@@ -39,4 +39,7 @@ internal sealed class NhtsaRecallResult
 
     [JsonPropertyName("parkOutSide")]
     public bool ParkOutSide { get; set; }
+
+    [JsonPropertyName("ReportReceivedDate")]
+    public string? ReportReceivedDate { get; set; }
 }

@@ -11,4 +11,5 @@ public class RecallDto
     public string? Notes { get; set; }
     public bool ParkIt { get; set; }
     public bool ParkOutside { get; set; }
+    public DateOnly? ReportedDate { get; set; }
 }

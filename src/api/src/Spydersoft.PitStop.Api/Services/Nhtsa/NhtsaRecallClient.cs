@@ -41,5 +41,9 @@ public class NhtsaRecallClient(HttpClient httpClient, IMemoryCache cache, IConfi
         Notes = r.Notes,
         ParkIt = r.ParkIt,
         ParkOutside = r.ParkOutSide,
+        ReportedDate = ParseReportedDate(r.ReportReceivedDate),
     };
+
+    private static DateOnly? ParseReportedDate(string? value) =>
+        DateOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var date) ? date : null;
 }
