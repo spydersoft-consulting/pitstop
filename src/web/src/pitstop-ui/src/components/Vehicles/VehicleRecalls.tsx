@@ -17,48 +17,67 @@ const RecallBadge: React.FC<{ label: string }> = ({ label }) => (
   </span>
 );
 
-const RecallCard: React.FC<{ recall: RecallDto }> = ({ recall }) => (
-  <Card>
-    <div className="flex items-start justify-between gap-3 mb-2">
-      <div>
-        <p className="font-display text-sm uppercase tracking-wide text-content-muted">
-          Campaign {recall.campaignNumber}
-        </p>
-        <p className="font-medium">{recall.component}</p>
-      </div>
-      <div className="flex gap-2 shrink-0">
-        {recall.parkIt && <RecallBadge label="Park It" />}
-        {recall.parkOutside && <RecallBadge label="Park Outside" />}
-      </div>
-    </div>
-    <dl className="space-y-3 text-sm">
-      {recall.summary && (
-        <div>
-          <dt className="text-content-muted mb-1">Summary</dt>
-          <dd>{recall.summary}</dd>
-        </div>
-      )}
-      {recall.consequence && (
-        <div>
-          <dt className="text-content-muted mb-1">Consequence</dt>
-          <dd>{recall.consequence}</dd>
-        </div>
-      )}
-      {recall.remedy && (
-        <div>
-          <dt className="text-content-muted mb-1">Remedy</dt>
-          <dd>{recall.remedy}</dd>
-        </div>
-      )}
-      {recall.notes && (
-        <div>
-          <dt className="text-content-muted mb-1">Notes</dt>
-          <dd className="text-content-muted">{recall.notes}</dd>
-        </div>
-      )}
-    </dl>
-  </Card>
+const PrePurchaseBadge: React.FC = () => (
+  <span className="inline-flex items-center gap-1 rounded-full bg-content-muted/10 text-content-muted text-xs font-medium px-2 py-0.5">
+    Reported before purchase
+  </span>
 );
+
+const formatRecallDate = (value?: string | null) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? null
+    : date.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+};
+
+const RecallCard: React.FC<{ recall: RecallDto; precedesPurchase: boolean }> = ({ recall, precedesPurchase }) => {
+  const formattedDate = formatRecallDate(recall.reportedDate);
+  return (
+    <Card>
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div>
+          <p className="font-display text-sm uppercase tracking-wide text-content-muted">
+            Campaign {recall.campaignNumber}
+            {formattedDate && <> &middot; {formattedDate}</>}
+          </p>
+          <p className="font-medium">{recall.component}</p>
+        </div>
+        <div className="flex gap-2 shrink-0">
+          {precedesPurchase && <PrePurchaseBadge />}
+          {recall.parkIt && <RecallBadge label="Park It" />}
+          {recall.parkOutside && <RecallBadge label="Park Outside" />}
+        </div>
+      </div>
+      <dl className="space-y-3 text-sm">
+        {recall.summary && (
+          <div>
+            <dt className="text-content-muted mb-1">Summary</dt>
+            <dd>{recall.summary}</dd>
+          </div>
+        )}
+        {recall.consequence && (
+          <div>
+            <dt className="text-content-muted mb-1">Consequence</dt>
+            <dd>{recall.consequence}</dd>
+          </div>
+        )}
+        {recall.remedy && (
+          <div>
+            <dt className="text-content-muted mb-1">Remedy</dt>
+            <dd>{recall.remedy}</dd>
+          </div>
+        )}
+        {recall.notes && (
+          <div>
+            <dt className="text-content-muted mb-1">Notes</dt>
+            <dd className="text-content-muted">{recall.notes}</dd>
+          </div>
+        )}
+      </dl>
+    </Card>
+  );
+};
 
 export const VehicleRecalls: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -125,7 +144,13 @@ export const VehicleRecalls: React.FC = () => {
       {!loading && !error && recalls.length > 0 && (
         <div className="space-y-3">
           {recalls.map((recall) => (
-            <RecallCard key={recall.campaignNumber} recall={recall} />
+            <RecallCard
+              key={recall.campaignNumber}
+              recall={recall}
+              precedesPurchase={
+                recall.reportedDate != null && vehicle.startDate != null && recall.reportedDate < vehicle.startDate
+              }
+            />
           ))}
         </div>
       )}

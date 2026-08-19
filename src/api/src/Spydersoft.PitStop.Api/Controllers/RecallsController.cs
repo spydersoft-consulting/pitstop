@@ -41,7 +41,8 @@ public class RecallsController(PitStopDbContext db, IVinDecoderClient vinDecoder
         try
         {
             var recalls = await recallClient.GetRecallsAsync(decoded.Make, decoded.Model, decoded.ModelYear, ct);
-            return Ok(recalls);
+            var sorted = recalls.OrderByDescending(r => r.ReportedDate).ToList();
+            return Ok(sorted);
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
         {

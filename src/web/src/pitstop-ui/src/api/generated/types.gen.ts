@@ -180,6 +180,7 @@ export type RecallDto = {
   notes?: null | string;
   parkIt?: boolean;
   parkOutside?: boolean;
+  reportedDate?: null | string;
 };
 
 export type SpendDataPoint = {
