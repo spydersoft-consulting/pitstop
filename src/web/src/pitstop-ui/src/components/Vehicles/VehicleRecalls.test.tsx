@@ -31,6 +31,7 @@ const sampleVehicle: Vehicle = {
   plateState: "CA",
   plateNumber: "OLD123",
   vin: "1HGCM82633A123456",
+  startDate: "2023-06-01",
 };
 
 const sampleRecall: RecallDto = {
@@ -43,6 +44,7 @@ const sampleRecall: RecallDto = {
   notes: null,
   parkIt: false,
   parkOutside: false,
+  reportedDate: "2024-01-15",
 };
 
 function renderComponent(vehicles: Vehicle[] = [sampleVehicle], entryId = "1") {
@@ -88,6 +90,60 @@ describe("VehicleRecalls", () => {
     renderComponent();
 
     expect(await screen.findByText("Park It")).toBeInTheDocument();
+  });
+
+  it("shows the recall's reported date", async () => {
+    vi.mocked(vehiclesApi.recalls).mockResolvedValue([sampleRecall]);
+    renderComponent();
+
+    expect(await screen.findByText(/january 15, 2024/i)).toBeInTheDocument();
+  });
+
+  it("badges a recall reported before the vehicle's start date", async () => {
+    vi.mocked(vehiclesApi.recalls).mockResolvedValue([{ ...sampleRecall, reportedDate: "2020-01-01" }]);
+    renderComponent();
+
+    expect(await screen.findByText(/reported before purchase/i)).toBeInTheDocument();
+  });
+
+  it("does not badge a recall reported after the vehicle's start date", async () => {
+    vi.mocked(vehiclesApi.recalls).mockResolvedValue([sampleRecall]);
+    renderComponent();
+
+    expect(await screen.findByText("STEERING")).toBeInTheDocument();
+    expect(screen.queryByText(/reported before purchase/i)).not.toBeInTheDocument();
+  });
+
+  it("omits the date and pre-purchase badge when the recall has no reported date", async () => {
+    vi.mocked(vehiclesApi.recalls).mockResolvedValue([{ ...sampleRecall, reportedDate: null }]);
+    renderComponent();
+
+    expect(await screen.findByText("STEERING")).toBeInTheDocument();
+    expect(screen.queryByText(/reported before purchase/i)).not.toBeInTheDocument();
+  });
+
+  it("omits the date when the reported date is unparseable", async () => {
+    vi.mocked(vehiclesApi.recalls).mockResolvedValue([{ ...sampleRecall, reportedDate: "not-a-date" }]);
+    renderComponent();
+
+    expect(await screen.findByText("STEERING")).toBeInTheDocument();
+    expect(screen.getByText(/^campaign 24v123000$/i)).toBeInTheDocument();
+  });
+
+  it("shows a park-outside badge when applicable", async () => {
+    vi.mocked(vehiclesApi.recalls).mockResolvedValue([{ ...sampleRecall, parkOutside: true }]);
+    renderComponent();
+
+    expect(await screen.findByText("Park Outside")).toBeInTheDocument();
+  });
+
+  it("shows notes when present", async () => {
+    vi.mocked(vehiclesApi.recalls).mockResolvedValue([
+      { ...sampleRecall, notes: "Contact your local dealer for details." },
+    ]);
+    renderComponent();
+
+    expect(await screen.findByText("Contact your local dealer for details.")).toBeInTheDocument();
   });
 
   it("shows an empty state when there are no open recalls", async () => {

@@ -28,7 +28,12 @@ const formatRecallDate = (value?: string | null) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? null
-    : date.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    : date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "UTC",
+      });
 };
 
 const RecallCard: React.FC<{ recall: RecallDto; precedesPurchase: boolean }> = ({ recall, precedesPurchase }) => {
