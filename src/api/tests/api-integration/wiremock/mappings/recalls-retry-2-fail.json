@@ -1,0 +1,18 @@
+{
+  "priority": 1,
+  "scenarioName": "recalls-retry-then-success",
+  "requiredScenarioState": "FailedOnce",
+  "newScenarioState": "FailedTwice",
+  "request": {
+    "method": "GET",
+    "urlPath": "/recalls/recallsByVehicle",
+    "queryParameters": {
+      "make": { "equalTo": "Chevrolet" },
+      "model": { "equalTo": "Bolt" },
+      "modelYear": { "equalTo": "2022" }
+    }
+  },
+  "response": {
+    "status": 503
+  }
+}
