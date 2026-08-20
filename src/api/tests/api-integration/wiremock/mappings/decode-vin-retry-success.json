@@ -1,0 +1,13 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/vehicles/DecodeVinValues/1RETRYSUCCESS0001"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "Results": [{ "Make": "Chevrolet", "Model": "Bolt", "ModelYear": "2022" }]
+    }
+  }
+}
