@@ -7,6 +7,12 @@ import type { VehicleDto, CreateVehicleRequest, RecallDto } from "./types";
 const DECODABLE_VIN = "1FMEE5DP5NLA12345";
 const UNDECODABLE_VIN = "ZZZUNDECADABLE001";
 
+// decode-vin-retry-success.json decodes this VIN as Chevrolet/Bolt/2022; the recalls-retry-*.json
+// mappings fail that exact make/model/year query twice with a transient 503 before succeeding on
+// the third attempt (WireMock scenario state), proving the API's resilience handler (SPY-11) really
+// retries instead of just being configured and never exercised.
+const RETRY_THEN_SUCCESS_VIN = "1RETRYSUCCESS0001";
+
 function testVehicle(overrides: Partial<CreateVehicleRequest> = {}): CreateVehicleRequest {
   return {
     name: `Test Vehicle ${crypto.randomUUID().replace(/-/g, "")}`,
@@ -60,4 +66,19 @@ test("GetRecalls_ReturnsValidationProblem_WhenVinCannotBeDecoded", async ({ requ
 test("GetRecalls_ReturnsNotFound_ForNonexistentVehicle", async ({ request }) => {
   const response = await request.get("/api/v1/vehicles/999999999/recalls");
   expect(response.status()).toBe(404);
+});
+
+test("GetRecalls_SucceedsAfterTransientFailures_ViaResilienceRetry", async ({ request }) => {
+  const created: VehicleDto = await (
+    await request.post("/api/v1/vehicles", { data: testVehicle({ vin: RETRY_THEN_SUCCESS_VIN }) })
+  ).json();
+
+  const response = await request.get(`/api/v1/vehicles/${created.id}/recalls`);
+
+  expect(response.status()).toBe(200);
+  const recalls: RecallDto[] = await response.json();
+  expect(recalls).toHaveLength(1);
+  expect(recalls[0].campaignNumber).toBe("22V456000");
+
+  await request.delete(`/api/v1/vehicles/${created.id}`);
 });
