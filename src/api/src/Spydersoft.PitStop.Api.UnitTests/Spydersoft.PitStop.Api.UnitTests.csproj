@@ -4,13 +4,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RunSettingsFilePath>$(MSBuildProjectDirectory)\coverlet.runsettings</RunSettingsFilePath>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
