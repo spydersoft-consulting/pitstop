@@ -63,6 +63,7 @@ stages:
 
       executeTests: true
       testProjects: "**/*.UnitTests/*.csproj"
+      testRunner: mtp
 
       sonarProjectKey: spydersoft-consulting_pitstop
       sonarProjectName: pitstop
