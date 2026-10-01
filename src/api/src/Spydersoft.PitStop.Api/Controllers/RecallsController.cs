@@ -4,6 +4,8 @@ using Spydersoft.PitStop.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
 
 namespace Spydersoft.PitStop.Api.Controllers;
 
@@ -30,7 +32,7 @@ public class RecallsController(PitStopDbContext db, IVinDecoderClient vinDecoder
         {
             decoded = await vinDecoder.DecodeAsync(vehicle.Vin, ct);
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or BrokenCircuitException or TimeoutRejectedException)
         {
             return RecallServiceUnavailable();
         }
@@ -44,7 +46,7 @@ public class RecallsController(PitStopDbContext db, IVinDecoderClient vinDecoder
             var sorted = recalls.OrderByDescending(r => r.ReportedDate).ToList();
             return Ok(sorted);
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or BrokenCircuitException or TimeoutRejectedException)
         {
             return RecallServiceUnavailable();
         }

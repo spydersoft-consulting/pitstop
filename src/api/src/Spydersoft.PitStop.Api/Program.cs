@@ -74,11 +74,11 @@ builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<INhtsaRecallClient, NhtsaRecallClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Nhtsa:BaseUrl"] ?? "https://api.nhtsa.gov/");
-});
+}).AddNhtsaResilienceHandler();
 builder.Services.AddHttpClient<IVinDecoderClient, VpicVinDecoderClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Nhtsa:VpicBaseUrl"] ?? "https://vpic.nhtsa.dot.gov/api/");
-});
+}).AddNhtsaResilienceHandler();
 
 // Spydersoft.Notification.Client registers INotificationClient/IDeviceClient with no auth of its
 // own (unlike Spydersoft.FileStore.Client) -- layer the same client-credentials handler pattern on

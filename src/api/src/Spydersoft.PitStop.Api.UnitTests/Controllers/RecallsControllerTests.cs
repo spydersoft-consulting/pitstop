@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
 using Spydersoft.PitStop.Api.Controllers;
 using Spydersoft.PitStop.Api.UnitTests.Support;
 using Spydersoft.PitStop.Contracts.Recalls;
@@ -138,11 +140,23 @@ public class RecallsControllerTests
         Assert.That(_recallClient.LastQuery, Is.Null);
     }
 
-    [Test]
-    public async Task GetAll_ReturnsBadGateway_WhenVinDecodeServiceUnavailable()
+    // Covers both a direct HTTP failure and the exceptions the NHTSA clients' resilience pipeline
+    // throws once its retries are exhausted (BrokenCircuitException when the circuit is open,
+    // TimeoutRejectedException when the per-attempt/total timeout elapses) -- all four should
+    // surface identically as a clean 502, not an unhandled 500.
+    private static readonly object[] TransientFailures =
+    [
+        new HttpRequestException("boom"),
+        new InvalidOperationException("boom"),
+        new BrokenCircuitException("circuit open"),
+        new TimeoutRejectedException("attempt timed out"),
+    ];
+
+    [TestCaseSource(nameof(TransientFailures))]
+    public async Task GetAll_ReturnsBadGateway_WhenVinDecodeServiceUnavailable(Exception failure)
     {
         var v = AddVehicle("Mine");
-        _vinDecoder.FailWith = new HttpRequestException("boom");
+        _vinDecoder.FailWith = failure;
 
         var result = await _controller.GetAll(v.Id, CancellationToken.None);
 
@@ -152,11 +166,11 @@ public class RecallsControllerTests
         Assert.That(_recallClient.LastQuery, Is.Null);
     }
 
-    [Test]
-    public async Task GetAll_ReturnsBadGateway_WhenRecallServiceUnavailable()
+    [TestCaseSource(nameof(TransientFailures))]
+    public async Task GetAll_ReturnsBadGateway_WhenRecallServiceUnavailable(Exception failure)
     {
         var v = AddVehicle("Mine");
-        _recallClient.FailWith = new HttpRequestException("boom");
+        _recallClient.FailWith = failure;
 
         var result = await _controller.GetAll(v.Id, CancellationToken.None);
 

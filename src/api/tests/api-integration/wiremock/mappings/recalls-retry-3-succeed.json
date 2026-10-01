@@ -1,0 +1,34 @@
+{
+  "priority": 1,
+  "scenarioName": "recalls-retry-then-success",
+  "requiredScenarioState": "FailedTwice",
+  "newScenarioState": "Succeeded",
+  "request": {
+    "method": "GET",
+    "urlPath": "/recalls/recallsByVehicle",
+    "queryParameters": {
+      "make": { "equalTo": "Chevrolet" },
+      "model": { "equalTo": "Bolt" },
+      "modelYear": { "equalTo": "2022" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "Count": 1,
+      "results": [
+        {
+          "NHTSACampaignNumber": "22V456000",
+          "Manufacturer": "General Motors",
+          "Component": "BATTERY",
+          "Summary": "Retry-after-transient-failure recall.",
+          "Consequence": "Test consequence.",
+          "Remedy": "Test remedy.",
+          "Notes": null,
+          "parkIt": false,
+          "parkOutSide": false
+        }
+      ]
+    }
+  }
+}
