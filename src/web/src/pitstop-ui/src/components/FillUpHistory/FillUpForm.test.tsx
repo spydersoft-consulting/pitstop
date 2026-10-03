@@ -76,6 +76,37 @@ describe("FillUpForm", () => {
     expect(screen.getByPlaceholderText("e.g. 3.459")).toHaveValue("$3.500");
   });
 
+  it("derives total cost from gallons and price per gallon on blur", async () => {
+    const user = userEvent.setup();
+    renderForm({ initialValues: { ...filled, gallonsAdded: 10, pricePerGallon: 3.5, totalCost: null } });
+
+    await user.click(screen.getByPlaceholderText("e.g. 3.459"));
+    await user.tab();
+
+    expect(screen.getByPlaceholderText("e.g. 42.71")).toHaveValue("$35.00");
+  });
+
+  it("does not derive anything without gallons", async () => {
+    const user = userEvent.setup();
+    renderForm({ initialValues: { ...filled, gallonsAdded: null, pricePerGallon: null, totalCost: 35 } });
+
+    await user.click(screen.getByPlaceholderText("e.g. 42.71"));
+    await user.tab();
+
+    expect(screen.getByPlaceholderText("e.g. 3.459")).toHaveValue("");
+  });
+
+  it("leaves both values alone when price and total are already entered", async () => {
+    const user = userEvent.setup();
+    renderForm({ initialValues: { ...filled, gallonsAdded: 10, pricePerGallon: 3.459, totalCost: 40 } });
+
+    await user.click(screen.getByPlaceholderText("e.g. 42.71"));
+    await user.tab();
+
+    expect(screen.getByPlaceholderText("e.g. 3.459")).toHaveValue("$3.459");
+    expect(screen.getByPlaceholderText("e.g. 42.71")).toHaveValue("$40.00");
+  });
+
   it("submits a payload with no location when none is selected", async () => {
     const user = userEvent.setup();
     const { onSubmit } = renderForm({
