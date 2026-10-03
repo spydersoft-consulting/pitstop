@@ -10,7 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="OidcProxy.Net.OpenIdConnect" />
+		<PackageReference Include="Spydersoft.OidcProxy.Net.OpenIdConnect" />
 		<PackageReference Include="Spydersoft.Platform.Hosting" />
 	</ItemGroup>
 

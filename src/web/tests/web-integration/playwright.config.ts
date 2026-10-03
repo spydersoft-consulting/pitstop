@@ -23,6 +23,10 @@ export default defineConfig({
     command: `dotnet run --project "${appHostProject}" --launch-profile Testing`,
     url: `${baseUrl}/livez`,
     timeout: 180_000,
+    // Without these the AppHost's output is discarded, so a startup failure only shows up as
+    // "Timed out waiting from config.webServer" with nothing to diagnose it from.
+    stdout: "pipe",
+    stderr: "pipe",
     reuseExistingServer: !process.env.CI,
   },
 });

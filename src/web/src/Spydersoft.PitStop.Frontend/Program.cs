@@ -5,6 +5,7 @@ using OidcProxy.Net.OpenIdConnect;
 using Spydersoft.Platform.Hosting.Options;
 using Spydersoft.Platform.Hosting.StartupExtensions;
 using Spydersoft.Platform.Hosting.Telemetry;
+using StackExchange.Redis;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +25,17 @@ var config = builder.Configuration
 
 if (config != null)
 {
-    builder.Services.AddOidcProxy(config);
+    // Sessions (and the data-protection keys that sign the cookie) live in Redis when it's
+    // configured, so they survive pod restarts and deploys. Without it -- local dev, tests --
+    // OidcProxy falls back to in-memory sessions.
+    var redisConnectionString = builder.Configuration["Redis:ConnectionString"];
+    builder.Services.AddOidcProxy(config, options =>
+    {
+        if (!string.IsNullOrWhiteSpace(redisConnectionString))
+        {
+            options.ConfigureRedisBackBone(ConnectionMultiplexer.Connect(redisConnectionString));
+        }
+    });
 }
 else
 {
