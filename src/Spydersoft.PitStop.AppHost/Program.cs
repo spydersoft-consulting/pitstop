@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 const string TestingEnvironmentName = "Testing";
 const string HttpsScheme = "https";
 
@@ -162,7 +164,35 @@ if (mockOidc is not null)
     web.WaitFor(mockOidc);
 }
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+if (builder.Environment.EnvironmentName == TestingEnvironmentName)
+{
+    // Child-resource logs only go to the Aspire dashboard, which nobody sees in CI. Echo them to
+    // the console so a web server that never comes up is diagnosable from the pipeline log.
+    EchoResourceLogs(app);
+}
+
+await app.RunAsync();
+
+static void EchoResourceLogs(DistributedApplication app)
+{
+    var logger = app.Services.GetRequiredService<ResourceLoggerService>();
+    var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+    foreach (var name in model.Resources.Select(resource => resource.Name))
+    {
+        _ = Task.Run(async () =>
+        {
+            await foreach (var batch in logger.WatchAsync(name))
+            {
+                foreach (var line in batch)
+                {
+                    Console.WriteLine($"[{name}] {line.Content}");
+                }
+            }
+        });
+    }
+}
 
 static string MockOidcClientsJson(string clientId, string clientSecret) => $$"""
 [
