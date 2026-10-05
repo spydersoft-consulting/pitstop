@@ -179,23 +179,32 @@ static void EchoResourceLogs(DistributedApplication app)
 {
     var logger = app.Services.GetRequiredService<ResourceLoggerService>();
     var notifications = app.Services.GetRequiredService<ResourceNotificationService>();
-    var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-    _ = Task.Run(() => EchoResourceStates(notifications));
-    foreach (var name in model.Resources.Select(resource => resource.Name))
-    {
-        _ = Task.Run(() => EchoLogs(logger, name));
-    }
+    _ = Task.Run(() => EchoResourceStates(notifications, logger));
 }
 
-static async Task EchoResourceStates(ResourceNotificationService notifications)
+// Logs are keyed by the replica's resource id (e.g. "web-ab12cd"), not the model resource name, so
+// log watchers are started the first time a resource id shows up in the state stream.
+static async Task EchoResourceStates(ResourceNotificationService notifications, ResourceLoggerService logger)
 {
+    var lastStates = new Dictionary<string, string?>();
     try
     {
         await foreach (var resourceEvent in notifications.WatchAsync())
         {
-            var snapshot = resourceEvent.Snapshot;
-            Console.WriteLine($"[state] {resourceEvent.Resource.Name}: {snapshot.State?.Text} (exit code {snapshot.ExitCode})");
+            var id = resourceEvent.ResourceId;
+            var state = resourceEvent.Snapshot.State?.Text;
+            if (!lastStates.TryGetValue(id, out var previous))
+            {
+                _ = Task.Run(() => EchoLogs(logger, id));
+            }
+            else if (previous == state)
+            {
+                continue;
+            }
+
+            lastStates[id] = state;
+            Console.WriteLine($"[state] {id}: {state} (exit code {resourceEvent.Snapshot.ExitCode})");
         }
     }
     catch (Exception ex)
@@ -204,21 +213,21 @@ static async Task EchoResourceStates(ResourceNotificationService notifications)
     }
 }
 
-static async Task EchoLogs(ResourceLoggerService logger, string name)
+static async Task EchoLogs(ResourceLoggerService logger, string resourceId)
 {
     try
     {
-        await foreach (var batch in logger.WatchAsync(name))
+        await foreach (var batch in logger.WatchAsync(resourceId))
         {
             foreach (var line in batch)
             {
-                Console.WriteLine($"[{name}] {line.Content}");
+                Console.WriteLine($"[{resourceId}] {line.Content}");
             }
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[{name}] log watcher failed: {ex}");
+        Console.WriteLine($"[{resourceId}] log watcher failed: {ex}");
     }
 }
 
