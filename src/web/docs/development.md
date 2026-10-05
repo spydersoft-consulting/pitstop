@@ -24,13 +24,13 @@ This installs root devDependencies (Prettier, lint-staged, Husky) and the `pitst
 
 You need three things from your identity provider:
 
-| Setting           | Value                                                                                    |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| Client type       | Confidential web client                                                                  |
-| Grant type        | Authorization Code with PKCE                                                             |
-| Redirect URI      | `https://localhost:9081/.auth/login/callback` (dev) — your hosted URL for prod           |
-| Post-logout URI   | `https://localhost:9081/`                                                                |
-| Required scopes   | `openid`, `profile`, `email`, plus the scopes the API expects (`pitstop:read`, `pitstop:write` by default) |
+| Setting         | Value                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| Client type     | Confidential web client                                                                                    |
+| Grant type      | Authorization Code with PKCE                                                                               |
+| Redirect URI    | `https://localhost:9081/oauth2/callback` (dev) — your hosted URL for prod                                  |
+| Post-logout URI | `https://localhost:9081/`                                                                                  |
+| Required scopes | `openid`, `profile`, `email`, plus the scopes the API expects (`pitstop:read`, `pitstop:write` by default) |
 
 The API scopes (`pitstop:read`, `pitstop:write`) are defined by the data API. See [pitstop-api/docs/infrastructure.md](https://github.com/spydersoft-consulting/pitstop-api/blob/main/docs/infrastructure.md) for the matching API-side registration.
 
@@ -66,14 +66,14 @@ dotnet run --project src/Spydersoft.PitStop.Web.AppHost
 
 This starts:
 
-| Component          | URL                       | Notes                                    |
-| ------------------ | ------------------------- | ---------------------------------------- |
-| Vite dev server    | `https://localhost:5200`  | The React UI with HMR                    |
-| BFF (ASP.NET Core) | `https://localhost:9081`  | OIDC handler and YARP reverse proxy      |
-| BFF (HTTP)         | `http://localhost:9080`   |                                          |
-| Aspire dashboard   | (auto-opens)              | Logs, metrics, traces for both processes |
+| Component          | URL                      | Notes                                    |
+| ------------------ | ------------------------ | ---------------------------------------- |
+| Vite dev server    | `https://localhost:5200` | The React UI with HMR                    |
+| BFF (ASP.NET Core) | `https://localhost:9081` | OIDC handler and YARP reverse proxy      |
+| BFF (HTTP)         | `http://localhost:9080`  |                                          |
+| Aspire dashboard   | (auto-opens)             | Logs, metrics, traces for both processes |
 
-**Day-to-day workflow:** open `https://localhost:5200`. The Vite dev server proxies `/pitstop`, `/.auth`, `/livez`, and `/readyz` to the BFF, so login and API calls work the same way as in production.
+**Day-to-day workflow:** open `https://localhost:5200`. The Vite dev server proxies `/pitstop`, `/oauth2`, `/livez`, and `/readyz` to the BFF, so login and API calls work the same way as in production.
 
 The first run will prompt `dotnet dev-certs` to generate a localhost certificate for the Vite server (see `vite.config.mts`).
 
@@ -123,12 +123,12 @@ yarn api:generate         # regenerates from the existing pitstop.json
 
 ## Linting and formatting
 
-| Concern                    | Tool                                  | Enforced when         |
-| -------------------------- | ------------------------------------- | --------------------- |
-| TypeScript / React         | ESLint + `eslint-plugin-react-hooks`  | pre-commit on staged files |
-| Prettier formatting        | Prettier                              | pre-commit            |
-| JSON / YAML / Markdown     | Prettier                              | pre-commit            |
-| Line endings               | LF (see `.editorconfig`)              | editor                |
+| Concern                | Tool                                 | Enforced when              |
+| ---------------------- | ------------------------------------ | -------------------------- |
+| TypeScript / React     | ESLint + `eslint-plugin-react-hooks` | pre-commit on staged files |
+| Prettier formatting    | Prettier                             | pre-commit                 |
+| JSON / YAML / Markdown | Prettier                             | pre-commit                 |
+| Line endings           | LF (see `.editorconfig`)             | editor                     |
 
 Run manually:
 
@@ -203,4 +203,4 @@ src/pitstop-ui/
 
 **`401 Unauthorized` from `/pitstop/*`** — your OIDC client probably doesn't have the API scopes (`pitstop:read`, `pitstop:write`) listed in `appsettings.json`. Either grant those scopes on the client, or trim the scope list in `OidcProxySettings.Oidc.Scopes` to match what your provider allows.
 
-**Login loop / token never persists** — check that the redirect URI registered in your identity provider matches *exactly*, including scheme, port, and trailing path (`/.auth/login/callback`).
+**Login loop / token never persists** — check that the redirect URI registered in your identity provider matches _exactly_, including scheme, port, and trailing path (`/oauth2/callback`).

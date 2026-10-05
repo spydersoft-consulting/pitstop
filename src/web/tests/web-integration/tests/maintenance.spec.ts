@@ -4,7 +4,7 @@ const MOCK_USERNAME = "testuser";
 const MOCK_PASSWORD = "Test123!";
 
 async function login(page: Page) {
-  await page.goto("/.auth/login");
+  await page.goto("/oauth2/sign_in");
   await page.getByLabel("Username").fill(MOCK_USERNAME);
   await page.getByLabel("Password").fill(MOCK_PASSWORD);
   await page.getByRole("button", { name: "Login" }).click();

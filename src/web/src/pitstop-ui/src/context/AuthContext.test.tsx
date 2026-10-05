@@ -49,7 +49,7 @@ describe("AuthProvider", () => {
     await waitFor(() => expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("true"));
     expect(screen.getByTestId("user")).toHaveTextContent("Jane Doe");
     expect(localStorage.getItem("isAuthenticated")).toBe("true");
-    expect(mockedAxios.get).toHaveBeenCalledWith("/.auth/me");
+    expect(mockedAxios.get).toHaveBeenCalledWith("/oauth2/userinfo");
   });
 
   it("skips the mount fetch when a fresh cached user is present", async () => {
@@ -109,7 +109,7 @@ describe("AuthProvider", () => {
     expect(window.location.href).toBe("");
   });
 
-  it("redirects through /.auth/login when a previously-authenticated session lapses", async () => {
+  it("redirects through /oauth2/sign_in when a previously-authenticated session lapses", async () => {
     mockedAxios.get.mockResolvedValueOnce({
       data: { name: "Jane Doe", exp: Math.floor(Date.now() / 1000) + 3600 },
     });
@@ -122,7 +122,7 @@ describe("AuthProvider", () => {
       screen.getByText("refresh").click();
     });
 
-    await waitFor(() => expect(window.location.href).toBe("/.auth/login"));
+    await waitFor(() => expect(window.location.href).toBe("/oauth2/sign_in"));
     expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("false");
     expect(localStorage.getItem("isAuthenticated")).toBeNull();
     // Setting location.href doesn't navigate synchronously -- isLoading must stay true
@@ -145,7 +145,7 @@ describe("AuthProvider", () => {
       notifyUnauthorized();
     });
 
-    await waitFor(() => expect(window.location.href).toBe("/.auth/login"));
+    await waitFor(() => expect(window.location.href).toBe("/oauth2/sign_in"));
     expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("false");
     expect(screen.getByTestId("isLoading")).toHaveTextContent("true");
   });
@@ -163,7 +163,7 @@ describe("AuthProvider", () => {
     });
 
     expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("false");
-    expect(window.location.href).toBe("/.auth/end-session");
+    expect(window.location.href).toBe("/oauth2/sign_out");
     expect(screen.getByTestId("isLoading")).toHaveTextContent("true");
   });
 
@@ -207,6 +207,6 @@ describe("AuthProvider", () => {
     });
 
     await waitFor(() => expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("false"));
-    expect(window.location.href).toBe("/.auth/login");
+    expect(window.location.href).toBe("/oauth2/sign_in");
   });
 });
