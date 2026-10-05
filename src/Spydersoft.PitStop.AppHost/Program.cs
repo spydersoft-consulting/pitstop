@@ -178,19 +178,47 @@ await app.RunAsync();
 static void EchoResourceLogs(DistributedApplication app)
 {
     var logger = app.Services.GetRequiredService<ResourceLoggerService>();
+    var notifications = app.Services.GetRequiredService<ResourceNotificationService>();
     var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+
+    _ = Task.Run(() => EchoResourceStates(notifications));
     foreach (var name in model.Resources.Select(resource => resource.Name))
     {
-        _ = Task.Run(async () =>
+        _ = Task.Run(() => EchoLogs(logger, name));
+    }
+}
+
+static async Task EchoResourceStates(ResourceNotificationService notifications)
+{
+    try
+    {
+        await foreach (var resourceEvent in notifications.WatchAsync())
         {
-            await foreach (var batch in logger.WatchAsync(name))
+            var snapshot = resourceEvent.Snapshot;
+            Console.WriteLine($"[state] {resourceEvent.Resource.Name}: {snapshot.State?.Text} (exit code {snapshot.ExitCode})");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[state] watcher failed: {ex}");
+    }
+}
+
+static async Task EchoLogs(ResourceLoggerService logger, string name)
+{
+    try
+    {
+        await foreach (var batch in logger.WatchAsync(name))
+        {
+            foreach (var line in batch)
             {
-                foreach (var line in batch)
-                {
-                    Console.WriteLine($"[{name}] {line.Content}");
-                }
+                Console.WriteLine($"[{name}] {line.Content}");
             }
-        });
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[{name}] log watcher failed: {ex}");
     }
 }
 
