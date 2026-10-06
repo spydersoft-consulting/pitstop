@@ -32,7 +32,12 @@ test.describe("OIDC login via mock IdP", () => {
   test("logs out and /oauth2/userinfo returns 401 again", async ({ page }) => {
     await login(page);
 
-    await page.goto("/oauth2/sign_out");
+    // Don't follow the redirect to the IdP: the browser would land back on the SPA, which sees an
+    // unauthenticated user and starts a new login, and the mock IdP still has its own session, so
+    // it signs the user straight back in. This test is about the proxy ending its session.
+    const signOut = await page.request.get("/oauth2/sign_out", { maxRedirects: 0 });
+    expect(signOut.status()).toBe(302);
+    expect(signOut.headers()["location"]).toContain("/connect/endsession");
 
     const response = await page.request.get("/oauth2/userinfo");
     expect(response.status()).toBe(401);
