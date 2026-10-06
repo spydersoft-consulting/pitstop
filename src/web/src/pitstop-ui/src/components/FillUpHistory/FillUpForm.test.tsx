@@ -50,9 +50,61 @@ describe("FillUpForm", () => {
 
     expect(screen.getByText("Odometer reading is required.")).toBeInTheDocument();
     expect(screen.getByText("Gallons added is required.")).toBeInTheDocument();
-    expect(screen.getByText("Price per gallon is required.")).toBeInTheDocument();
-    expect(screen.getByText("Total cost is required.")).toBeInTheDocument();
+    expect(screen.getAllByText("Enter price per gallon or total cost.")).toHaveLength(2);
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("accepts gallons and total cost without a price per gallon", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({
+      initialValues: { ...filled, pricePerGallon: null },
+    });
+
+    await user.click(screen.getByRole("button", { name: /add fill-up/i }));
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ pricePerGallon: null, totalCost: 42.71 });
+  });
+
+  it("derives price per gallon from gallons and total cost on blur", async () => {
+    const user = userEvent.setup();
+    renderForm({ initialValues: { ...filled, gallonsAdded: 10, pricePerGallon: null, totalCost: 35 } });
+
+    await user.click(screen.getByPlaceholderText("e.g. 42.71"));
+    await user.tab();
+
+    expect(screen.getByPlaceholderText("e.g. 3.459")).toHaveValue("$3.500");
+  });
+
+  it("derives total cost from gallons and price per gallon on blur", async () => {
+    const user = userEvent.setup();
+    renderForm({ initialValues: { ...filled, gallonsAdded: 10, pricePerGallon: 3.5, totalCost: null } });
+
+    await user.click(screen.getByPlaceholderText("e.g. 3.459"));
+    await user.tab();
+
+    expect(screen.getByPlaceholderText("e.g. 42.71")).toHaveValue("$35.00");
+  });
+
+  it("does not derive anything without gallons", async () => {
+    const user = userEvent.setup();
+    renderForm({ initialValues: { ...filled, gallonsAdded: null, pricePerGallon: null, totalCost: 35 } });
+
+    await user.click(screen.getByPlaceholderText("e.g. 42.71"));
+    await user.tab();
+
+    expect(screen.getByPlaceholderText("e.g. 3.459")).toHaveValue("");
+  });
+
+  it("leaves both values alone when price and total are already entered", async () => {
+    const user = userEvent.setup();
+    renderForm({ initialValues: { ...filled, gallonsAdded: 10, pricePerGallon: 3.459, totalCost: 40 } });
+
+    await user.click(screen.getByPlaceholderText("e.g. 42.71"));
+    await user.tab();
+
+    expect(screen.getByPlaceholderText("e.g. 3.459")).toHaveValue("$3.459");
+    expect(screen.getByPlaceholderText("e.g. 42.71")).toHaveValue("$40.00");
   });
 
   it("submits a payload with no location when none is selected", async () => {
@@ -161,8 +213,6 @@ describe("FillUpForm", () => {
 
   it("uses the Save Changes label when in edit mode", () => {
     renderForm({ initialValues: filled, isEdit: true });
-    expect(
-      screen.getByRole("button", { name: /save changes/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /save changes/i })).toBeInTheDocument();
   });
 });

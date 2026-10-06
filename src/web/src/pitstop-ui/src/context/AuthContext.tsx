@@ -61,17 +61,17 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
 
   // Start in a loading state unless we have a still-fresh cached session, so
   // consumers (e.g. AppRouter) can hold off rendering the logged-out view
-  // until the mount-time /.auth/me check below has had a chance to resolve.
+  // until the mount-time /oauth2/userinfo check below has had a chance to resolve.
   const [isLoading, setIsLoading] = useState(() => {
     const saved = localStorage.getItem("user");
     const cached = saved ? (JSON.parse(saved) as UserInfo) : undefined;
     return !(cached && isFresh(cached.exp));
   });
   const inflight = useRef<Promise<void> | null>(null);
-  // Guards against a second /.auth/login or /.auth/end-session redirect firing while the
+  // Guards against a second /oauth2/sign_in or /oauth2/sign_out redirect firing while the
   // first is still in flight (location.href assignments don't navigate synchronously). A
   // duplicate redirect isn't just redundant -- OIDC's state/nonce is generated fresh per
-  // request, so two concurrent /.auth/login round trips can genuinely fail with a state
+  // request, so two concurrent /oauth2/sign_in round trips can genuinely fail with a state
   // mismatch at the IdP.
   const isRedirecting = useRef(false);
 
@@ -84,7 +84,7 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
     localStorage.removeItem("user");
 
     // A session that was valid a moment ago going invalid means the access/refresh
-    // token expired server-side. Send the browser through /.auth/login: if the
+    // token expired server-side. Send the browser through /oauth2/sign_in: if the
     // upstream IdP session cookie is still alive this is a silent SSO round-trip
     // that drops the user straight back into the app; if it isn't, it lands them on
     // the IdP's real login page. Either way beats stranding them on Landing with a
@@ -106,7 +106,7 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
 
     setIsLoading(true);
     const p = axios
-      .get<Record<string, unknown>>("/.auth/me")
+      .get<Record<string, unknown>>("/oauth2/userinfo")
       .then((r) => {
         const userInfo: UserInfo = {
           name: resolveDisplayName(r.data),
@@ -165,7 +165,7 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
   const login = () => {
     if (isRedirecting.current) return;
     isRedirecting.current = true;
-    globalThis.location.href = "/.auth/login";
+    globalThis.location.href = "/oauth2/sign_in";
   };
 
   const logout = () => {
@@ -175,7 +175,7 @@ export const AuthProvider = (props: { children: React.ReactNode }) => {
     // Same reasoning as the redirect branch in clearAuthState: this navigation isn't
     // instant either, so keep the spinner up rather than flashing Landing first.
     setIsLoading(true);
-    globalThis.location.href = "/.auth/end-session";
+    globalThis.location.href = "/oauth2/sign_out";
   };
 
   const refreshAuth = () => fetchUser();

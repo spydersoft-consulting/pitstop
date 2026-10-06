@@ -63,9 +63,14 @@ export const FillUpForm: React.FC<Props> = ({
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
-  const autoTotalCost = () => {
-    if (values.gallonsAdded != null && values.pricePerGallon != null && values.totalCost == null) {
-      set("totalCost", Number.parseFloat((values.gallonsAdded * values.pricePerGallon).toFixed(2)));
+  // Any two of gallons / price per gallon / total cost determine the third.
+  const autoFillMissing = () => {
+    const { gallonsAdded, pricePerGallon, totalCost } = values;
+    if (gallonsAdded == null || gallonsAdded <= 0) return;
+    if (pricePerGallon != null && totalCost == null) {
+      set("totalCost", Number.parseFloat((gallonsAdded * pricePerGallon).toFixed(2)));
+    } else if (totalCost != null && pricePerGallon == null) {
+      set("pricePerGallon", Number.parseFloat((totalCost / gallonsAdded).toFixed(3)));
     }
   };
 
@@ -74,8 +79,10 @@ export const FillUpForm: React.FC<Props> = ({
     if (!values.filledAt) next.filledAt = "Date is required.";
     if (values.odometerReading == null) next.odometerReading = "Odometer reading is required.";
     if (values.gallonsAdded == null) next.gallonsAdded = "Gallons added is required.";
-    if (values.pricePerGallon == null) next.pricePerGallon = "Price per gallon is required.";
-    if (values.totalCost == null) next.totalCost = "Total cost is required.";
+    if (values.pricePerGallon == null && values.totalCost == null) {
+      next.pricePerGallon = "Enter price per gallon or total cost.";
+      next.totalCost = "Enter price per gallon or total cost.";
+    }
     if (values.location?.kind === "new" && !values.location.name.trim()) {
       next.location = "Location name is required.";
     }
@@ -107,8 +114,8 @@ export const FillUpForm: React.FC<Props> = ({
       odometerReading: values.odometerReading!,
       gallonsAdded: values.gallonsAdded!,
       fuelGrade: values.fuelGrade.trim() || "MidGrade",
-      pricePerGallon: values.pricePerGallon!,
-      totalCost: values.totalCost!,
+      pricePerGallon: values.pricePerGallon,
+      totalCost: values.totalCost,
       isFullFillUp: values.isFullFillUp,
       ...locationFields(values.location),
       notes: values.notes.trim() || null,
@@ -172,7 +179,7 @@ export const FillUpForm: React.FC<Props> = ({
           <InputNumber
             value={values.gallonsAdded}
             onValueChange={(e) => set("gallonsAdded", e.value ?? null)}
-            onBlur={autoTotalCost}
+            onBlur={autoFillMissing}
             placeholder="e.g. 12.345"
             minFractionDigits={3}
             maxFractionDigits={3}
@@ -181,12 +188,12 @@ export const FillUpForm: React.FC<Props> = ({
           />,
         )}
         {field(
-          "Price / Gallon *",
+          "Price / Gallon",
           errors.pricePerGallon,
           <InputNumber
             value={values.pricePerGallon}
             onValueChange={(e) => set("pricePerGallon", e.value ?? null)}
-            onBlur={autoTotalCost}
+            onBlur={autoFillMissing}
             placeholder="e.g. 3.459"
             mode="currency"
             currency="USD"
@@ -197,11 +204,12 @@ export const FillUpForm: React.FC<Props> = ({
           />,
         )}
         {field(
-          "Total Cost *",
+          "Total Cost",
           errors.totalCost,
           <InputNumber
             value={values.totalCost}
             onValueChange={(e) => set("totalCost", e.value ?? null)}
+            onBlur={autoFillMissing}
             placeholder="e.g. 42.71"
             mode="currency"
             currency="USD"

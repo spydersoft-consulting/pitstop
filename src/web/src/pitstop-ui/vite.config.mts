@@ -67,7 +67,7 @@ export default defineConfig({
         target: "https://127.0.0.1:9081/",
         secure: false,
       },
-      "^/.auth": {
+      "^/oauth2": {
         target: "https://127.0.0.1:9081/",
         secure: false,
       },

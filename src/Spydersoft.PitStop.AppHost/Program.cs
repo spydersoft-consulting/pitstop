@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 const string TestingEnvironmentName = "Testing";
 const string HttpsScheme = "https";
 
@@ -162,7 +164,72 @@ if (mockOidc is not null)
     web.WaitFor(mockOidc);
 }
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+if (builder.Environment.EnvironmentName == TestingEnvironmentName)
+{
+    // Child-resource logs only go to the Aspire dashboard, which nobody sees in CI. Echo them to
+    // the console so a web server that never comes up is diagnosable from the pipeline log.
+    EchoResourceLogs(app);
+}
+
+await app.RunAsync();
+
+static void EchoResourceLogs(DistributedApplication app)
+{
+    var logger = app.Services.GetRequiredService<ResourceLoggerService>();
+    var notifications = app.Services.GetRequiredService<ResourceNotificationService>();
+
+    _ = Task.Run(() => EchoResourceStates(notifications, logger));
+}
+
+// Logs are keyed by the replica's resource id (e.g. "web-ab12cd"), not the model resource name, so
+// log watchers are started the first time a resource id shows up in the state stream.
+static async Task EchoResourceStates(ResourceNotificationService notifications, ResourceLoggerService logger)
+{
+    var lastStates = new Dictionary<string, string?>();
+    try
+    {
+        await foreach (var resourceEvent in notifications.WatchAsync())
+        {
+            var id = resourceEvent.ResourceId;
+            var state = resourceEvent.Snapshot.State?.Text;
+            if (!lastStates.TryGetValue(id, out var previous))
+            {
+                _ = Task.Run(() => EchoLogs(logger, id));
+            }
+            else if (previous == state)
+            {
+                continue;
+            }
+
+            lastStates[id] = state;
+            Console.WriteLine($"[state] {id}: {state} (exit code {resourceEvent.Snapshot.ExitCode})");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[state] watcher failed: {ex}");
+    }
+}
+
+static async Task EchoLogs(ResourceLoggerService logger, string resourceId)
+{
+    try
+    {
+        await foreach (var batch in logger.WatchAsync(resourceId))
+        {
+            foreach (var line in batch)
+            {
+                Console.WriteLine($"[{resourceId}] {line.Content}");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[{resourceId}] log watcher failed: {ex}");
+    }
+}
 
 static string MockOidcClientsJson(string clientId, string clientSecret) => $$"""
 [
@@ -171,7 +238,7 @@ static string MockOidcClientsJson(string clientId, string clientSecret) => $$"""
     "ClientSecrets": ["{{clientSecret}}"],
     "AllowedGrantTypes": ["authorization_code"],
     "AllowedScopes": ["openid", "profile", "email", "offline_access", "pitstop:read", "pitstop:write", "notification:read", "notification:write"],
-    "RedirectUris": ["http://localhost:9080/.auth/login/callback"],
+    "RedirectUris": ["http://localhost:9080/oauth2/callback"],
     "PostLogoutRedirectUris": ["http://localhost:9080/"],
     "RequireConsent": false,
     "RequirePkce": false,
