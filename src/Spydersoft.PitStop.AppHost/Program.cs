@@ -110,6 +110,11 @@ if (useMockOidc)
     clientId = mockClientId;
     clientSecret = mockClientSecret;
     authority = "http://localhost:8200";
+
+    // The API validates bearer tokens against the real IdP unless told otherwise (only the Testing
+    // environment trusted the mock), so under Local every proxied call 401'd and the SPA looped
+    // through sign-in. Testing sets the same value, so this is a no-op there.
+    api.WithEnvironment("Auth__MockOidcAuthority", authority);
 }
 else
 {
@@ -238,8 +243,8 @@ static string MockOidcClientsJson(string clientId, string clientSecret) => $$"""
     "ClientSecrets": ["{{clientSecret}}"],
     "AllowedGrantTypes": ["authorization_code"],
     "AllowedScopes": ["openid", "profile", "email", "offline_access", "pitstop:read", "pitstop:write", "notification:read", "notification:write"],
-    "RedirectUris": ["http://localhost:9080/oauth2/callback"],
-    "PostLogoutRedirectUris": ["http://localhost:9080/"],
+    "RedirectUris": ["http://localhost:9080/oauth2/callback", "https://localhost:9081/oauth2/callback", "https://localhost:5200/oauth2/callback"],
+    "PostLogoutRedirectUris": ["http://localhost:9080/", "https://localhost:9081/", "https://localhost:5200/"],
     "RequireConsent": false,
     "RequirePkce": false,
     "AllowOfflineAccess": true

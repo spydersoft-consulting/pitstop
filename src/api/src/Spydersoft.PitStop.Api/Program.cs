@@ -51,6 +51,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 IssuerSigningKeys = [new SymmetricSecurityKey(Convert.FromBase64String(testKey))]
             };
         }
+        else if (builder.Configuration["Auth:MockOidcAuthority"] is { Length: > 0 } mockAuthority)
+        {
+            // Interactive local dev (AppHost "Local" profile): trust the mock IdP's tokens, validated
+            // via its discovery document (issuer + signature + lifetime). Unlike Testing there is no
+            // symmetric test key. Only active when AppHost sets Auth:MockOidcAuthority.
+            options.Authority = mockAuthority;
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters = new TokenValidationParameters { ValidateAudience = false };
+        }
         else
         {
             options.Authority = builder.Configuration["Auth:Authority"];
