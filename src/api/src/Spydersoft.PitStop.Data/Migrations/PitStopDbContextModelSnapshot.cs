@@ -17,7 +17,7 @@ namespace Spydersoft.PitStop.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.11")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -150,19 +150,8 @@ namespace Spydersoft.PitStop.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<bool>("IsWarrantyWork")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal?>("LaborCost")
-                        .HasPrecision(8, 2)
-                        .HasColumnType("numeric(8,2)");
 
                     b.Property<int?>("LocationId")
                         .HasColumnType("integer");
@@ -175,10 +164,6 @@ namespace Spydersoft.PitStop.Data.Migrations
                         .HasPrecision(10, 1)
                         .HasColumnType("numeric(10,1)");
 
-                    b.Property<decimal?>("PartsCost")
-                        .HasPrecision(8, 2)
-                        .HasColumnType("numeric(8,2)");
-
                     b.Property<string>("PerformedBy")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -186,15 +171,6 @@ namespace Spydersoft.PitStop.Data.Migrations
 
                     b.Property<DateOnly>("ServiceDate")
                         .HasColumnType("date");
-
-                    b.Property<string>("ServiceType")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<decimal?>("TotalCost")
-                        .HasPrecision(8, 2)
-                        .HasColumnType("numeric(8,2)");
 
                     b.Property<int>("VehicleId")
                         .HasColumnType("integer");
@@ -242,6 +218,50 @@ namespace Spydersoft.PitStop.Data.Migrations
                     b.HasIndex("MaintenanceLogId");
 
                     b.ToTable("MaintenanceLogAttachments");
+                });
+
+            modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.MaintenanceLogItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsWarrantyWork")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("LaborCost")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)");
+
+                    b.Property<int>("MaintenanceLogId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("PartsCost")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<decimal?>("TotalCost")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaintenanceLogId");
+
+                    b.HasIndex("ServiceType");
+
+                    b.ToTable("MaintenanceLogItems");
                 });
 
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.RecallNotification", b =>
@@ -386,6 +406,17 @@ namespace Spydersoft.PitStop.Data.Migrations
                     b.Navigation("MaintenanceLog");
                 });
 
+            modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.MaintenanceLogItem", b =>
+                {
+                    b.HasOne("Spydersoft.PitStop.Data.Entities.MaintenanceLog", "MaintenanceLog")
+                        .WithMany("Items")
+                        .HasForeignKey("MaintenanceLogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MaintenanceLog");
+                });
+
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.RecallNotification", b =>
                 {
                     b.HasOne("Spydersoft.PitStop.Data.Entities.Vehicle", "Vehicle")
@@ -407,6 +438,8 @@ namespace Spydersoft.PitStop.Data.Migrations
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.MaintenanceLog", b =>
                 {
                     b.Navigation("Attachments");
+
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.Vehicle", b =>

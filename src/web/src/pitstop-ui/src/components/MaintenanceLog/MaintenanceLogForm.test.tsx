@@ -24,15 +24,19 @@ function renderForm(props: Partial<React.ComponentProps<typeof MaintenanceLogFor
 const filled: MaintenanceLogFormValues = {
   serviceDate: new Date(2026, 0, 15),
   odometerReading: 45230,
-  serviceType: "BrakePads",
-  description: "Front brake pads replaced",
   performedBy: "Shop",
-  isWarrantyWork: false,
   location: null,
-  partsCost: 120,
-  laborCost: 80,
-  totalCost: null,
   notes: "Squeaking resolved",
+  items: [
+    {
+      serviceType: "BrakePads",
+      description: "Front brake pads replaced",
+      isWarrantyWork: false,
+      partsCost: 120,
+      laborCost: 80,
+      totalCost: null,
+    },
+  ],
 };
 
 describe("MaintenanceLogForm", () => {
@@ -62,16 +66,20 @@ describe("MaintenanceLogForm", () => {
     expect(body).toMatchObject({
       serviceDate: "2026-01-15",
       odometerReading: 45230,
-      serviceType: "BrakePads",
-      description: "Front brake pads replaced",
       performedBy: "Shop",
-      isWarrantyWork: false,
       locationId: null,
       location: null,
-      partsCost: 120,
-      laborCost: 80,
-      totalCost: null,
       notes: null,
+      items: [
+        {
+          serviceType: "BrakePads",
+          description: "Front brake pads replaced",
+          isWarrantyWork: false,
+          partsCost: 120,
+          laborCost: 80,
+          totalCost: null,
+        },
+      ],
     });
   });
 
@@ -142,6 +150,118 @@ describe("MaintenanceLogForm", () => {
 
     expect(screen.getByText("Location name is required.")).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("submits several services, each with its own warranty flag and cost", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({
+      initialValues: {
+        ...filled,
+        items: [
+          { ...filled.items[0], serviceType: "OilChange", description: "", partsCost: 30, laborCost: 20 },
+          {
+            ...filled.items[0],
+            serviceType: "Recall",
+            description: " NHTSA 24V-123 ",
+            isWarrantyWork: true,
+            partsCost: null,
+            laborCost: null,
+          },
+        ],
+      },
+    });
+
+    expect(screen.getByTestId("visit-total")).toHaveTextContent("Visit total: $50.00");
+    await user.click(screen.getByRole("button", { name: /add maintenance log/i }));
+
+    const body = onSubmit.mock.calls[0][0];
+    expect(body.items).toEqual([
+      {
+        serviceType: "OilChange",
+        description: null,
+        isWarrantyWork: false,
+        partsCost: 30,
+        laborCost: 20,
+        totalCost: null,
+      },
+      {
+        serviceType: "Recall",
+        description: "NHTSA 24V-123",
+        isWarrantyWork: true,
+        partsCost: null,
+        laborCost: null,
+        totalCost: null,
+      },
+    ]);
+  });
+
+  it("adds and removes service rows", async () => {
+    const user = userEvent.setup();
+    renderForm({ initialValues: filled });
+
+    expect(screen.queryByRole("button", { name: /remove service/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /add another service/i }));
+    expect(screen.getByTestId("service-item-1")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /remove service 2/i }));
+    expect(screen.queryByTestId("service-item-1")).not.toBeInTheDocument();
+  });
+
+  it("submits several services, each with its own warranty flag and cost", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({
+      initialValues: {
+        ...filled,
+        items: [
+          { ...filled.items[0], serviceType: "OilChange", description: "", partsCost: 30, laborCost: 20 },
+          {
+            ...filled.items[0],
+            serviceType: "Recall",
+            description: " NHTSA 24V-123 ",
+            isWarrantyWork: true,
+            partsCost: null,
+            laborCost: null,
+          },
+        ],
+      },
+    });
+
+    expect(screen.getByTestId("visit-total")).toHaveTextContent("Visit total: $50.00");
+    await user.click(screen.getByRole("button", { name: /add maintenance log/i }));
+
+    const body = onSubmit.mock.calls[0][0];
+    expect(body.items).toEqual([
+      {
+        serviceType: "OilChange",
+        description: null,
+        isWarrantyWork: false,
+        partsCost: 30,
+        laborCost: 20,
+        totalCost: null,
+      },
+      {
+        serviceType: "Recall",
+        description: "NHTSA 24V-123",
+        isWarrantyWork: true,
+        partsCost: null,
+        laborCost: null,
+        totalCost: null,
+      },
+    ]);
+  });
+
+  it("adds and removes service rows", async () => {
+    const user = userEvent.setup();
+    renderForm({ initialValues: filled });
+
+    expect(screen.queryByRole("button", { name: /remove service/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /add another service/i }));
+    expect(screen.getByTestId("service-item-1")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /remove service 2/i }));
+    expect(screen.queryByTestId("service-item-1")).not.toBeInTheDocument();
   });
 
   it("uses the Save Changes label when in edit mode", () => {

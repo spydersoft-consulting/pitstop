@@ -1,18 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faChartLine,
-  faGasPump,
-  faGaugeHigh,
-  faDollarSign,
-  faCar,
-} from "@fortawesome/free-solid-svg-icons";
+import { faChartLine, faGasPump, faGaugeHigh, faDollarSign, faCar } from "@fortawesome/free-solid-svg-icons";
 import { Card } from "primereact/card";
 import { Chart } from "primereact/chart";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useAppSelector } from "../../store/hooks";
 import { analyticsApi } from "../../api/analyticsApi";
+import { SERVICE_TYPE_OPTIONS } from "../MaintenanceLog/maintenanceLogOptions";
 import type {
+  MaintenanceCostResponse,
   MpgOverTimeResponse,
   SpendResponse,
   SummaryResponse,
@@ -26,10 +22,7 @@ const num = (v: number | string | null | undefined): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-const MONTH_LABELS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const monthLabel = (year: number | string | undefined, month: number | string | undefined) => {
   const m = num(month);
@@ -46,20 +39,11 @@ interface ChartCardProps {
   children: React.ReactNode;
 }
 
-const ChartCard: React.FC<ChartCardProps> = ({
-  title,
-  currentValue,
-  hasData,
-  children,
-}) => (
+const ChartCard: React.FC<ChartCardProps> = ({ title, currentValue, hasData, children }) => (
   <Card>
     <div className="flex items-baseline justify-between gap-2 mb-3">
-      <h2 className="font-display text-base uppercase tracking-wide text-content">
-        {title}
-      </h2>
-      {currentValue && (
-        <span className="font-numeric text-lg text-brand">{currentValue}</span>
-      )}
+      <h2 className="font-display text-base uppercase tracking-wide text-content">{title}</h2>
+      {currentValue && <span className="font-numeric text-lg text-brand">{currentValue}</span>}
     </div>
     {hasData ? (
       <div className="h-56">{children}</div>
@@ -81,6 +65,17 @@ const chartOptions = {
   },
 };
 
+const SERVICE_TYPE_LABELS = Object.fromEntries(SERVICE_TYPE_OPTIONS.map((o) => [o.value, o.label]));
+
+const horizontalBarOptions = {
+  ...chartOptions,
+  indexAxis: "y" as const,
+  scales: {
+    x: { grid: { color: "#eef0f3" }, ticks: { color: "#5b6470" } },
+    y: { grid: { display: false }, ticks: { color: "#5b6470" } },
+  },
+};
+
 const chartOptionsWithLegend = {
   ...chartOptions,
   plugins: { legend: { display: true, position: "top" as const } },
@@ -94,6 +89,7 @@ export const Analytics: React.FC = () => {
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
   const [mpg, setMpg] = useState<MpgOverTimeResponse | null>(null);
   const [spend, setSpend] = useState<SpendResponse | null>(null);
+  const [maintenanceCost, setMaintenanceCost] = useState<MaintenanceCostResponse | null>(null);
 
   useEffect(() => {
     if (selectedVehicleId == null) return;
@@ -104,12 +100,14 @@ export const Analytics: React.FC = () => {
       analyticsApi.summary(selectedVehicleId),
       analyticsApi.mpg(selectedVehicleId),
       analyticsApi.spend(selectedVehicleId),
+      analyticsApi.maintenanceCost(selectedVehicleId),
     ])
-      .then(([s, m, sp]) => {
+      .then(([s, m, sp, mc]) => {
         if (cancelled) return;
         setSummary(s);
         setMpg(m);
         setSpend(sp);
+        setMaintenanceCost(mc);
       })
       .catch((e: unknown) => {
         if (cancelled) return;
@@ -216,6 +214,31 @@ export const Analytics: React.FC = () => {
     };
   }, [spend]);
 
+  const maintenanceCostPoints = useMemo(
+    () => (maintenanceCost?.points ?? []).filter((p) => (num(p.totalCost) ?? 0) > 0).slice(0, 8),
+    [maintenanceCost],
+  );
+
+  const maintenanceCostChart = useMemo(
+    () => ({
+      labels: maintenanceCostPoints.map((p) => {
+        const label = (p.serviceType && SERVICE_TYPE_LABELS[p.serviceType]) || p.serviceType || "";
+        return `${label} (${num(p.count) ?? 0})`;
+      }),
+      datasets: [
+        {
+          label: "Cost ($)",
+          data: maintenanceCostPoints.map((p) => num(p.totalCost) ?? 0),
+          backgroundColor: "#0f1115",
+          borderRadius: 4,
+        },
+      ],
+    }),
+    [maintenanceCostPoints],
+  );
+
+  const totalMaintenanceCost = (maintenanceCost?.points ?? []).reduce((sum, p) => sum + (num(p.totalCost) ?? 0), 0);
+
   /* ---------- current-value summaries on each chart card ---------- */
 
   const lastSpendPoint = (() => {
@@ -224,16 +247,12 @@ export const Analytics: React.FC = () => {
   })();
   const lastSpendValue = num(lastSpendPoint?.totalSpend);
   const lastPpg =
-    lastSpendPoint &&
-    (num(lastSpendPoint.totalGallons) ?? 0) > 0
-      ? (num(lastSpendPoint.totalSpend) ?? 0) /
-        (num(lastSpendPoint.totalGallons) ?? 1)
+    lastSpendPoint && (num(lastSpendPoint.totalGallons) ?? 0) > 0
+      ? (num(lastSpendPoint.totalSpend) ?? 0) / (num(lastSpendPoint.totalGallons) ?? 1)
       : null;
   const lastGpf =
-    lastSpendPoint &&
-    (num(lastSpendPoint.fillUpCount) ?? 0) > 0
-      ? (num(lastSpendPoint.totalGallons) ?? 0) /
-        (num(lastSpendPoint.fillUpCount) ?? 1)
+    lastSpendPoint && (num(lastSpendPoint.fillUpCount) ?? 0) > 0
+      ? (num(lastSpendPoint.totalGallons) ?? 0) / (num(lastSpendPoint.fillUpCount) ?? 1)
       : null;
   const rollingMpg = num(summary?.rollingAvgMpg10) ?? num(summary?.overallMpg);
 
@@ -289,9 +308,7 @@ export const Analytics: React.FC = () => {
         <Card>
           <div className="text-center py-12 text-content-muted">
             <FontAwesomeIcon icon={faChartLine} className="text-4xl mb-3" />
-            <p className="text-lg">
-              Log at least two fill-ups to see analytics.
-            </p>
+            <p className="text-lg">Log at least two fill-ups to see analytics.</p>
           </div>
         </Card>
       </div>
@@ -304,53 +321,27 @@ export const Analytics: React.FC = () => {
 
       {/* KPI tiles */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <KpiTile
-          icon={faGasPump}
-          label="Total fill-ups"
-          value={totalFillUps.toString()}
-        />
-        <KpiTile
-          icon={faDollarSign}
-          label="Total spend"
-          value={`$${totalSpend.toFixed(2)}`}
-        />
-        <KpiTile
-          icon={faGaugeHigh}
-          label="Overall MPG"
-          value={overallMpg === null ? "—" : overallMpg.toFixed(1)}
-        />
+        <KpiTile icon={faGasPump} label="Total fill-ups" value={totalFillUps.toString()} />
+        <KpiTile icon={faDollarSign} label="Total spend" value={`$${totalSpend.toFixed(2)}`} />
+        <KpiTile icon={faGaugeHigh} label="Overall MPG" value={overallMpg === null ? "—" : overallMpg.toFixed(1)} />
       </div>
 
       {/* Bento chart grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <ChartCard
           title="MPG Trend"
-          currentValue={
-            rollingMpg === null ? undefined : `${rollingMpg.toFixed(1)} mpg`
-          }
+          currentValue={rollingMpg === null ? undefined : `${rollingMpg.toFixed(1)} mpg`}
           hasData={(mpg?.points?.length ?? 0) > 1}
         >
-          <Chart
-            type="line"
-            data={mpgChart}
-            options={chartOptionsWithLegend}
-            className="h-full w-full"
-          />
+          <Chart type="line" data={mpgChart} options={chartOptionsWithLegend} className="h-full w-full" />
         </ChartCard>
 
         <ChartCard
           title="Monthly Spend"
-          currentValue={
-            lastSpendValue === null ? undefined : `$${lastSpendValue.toFixed(0)}`
-          }
+          currentValue={lastSpendValue === null ? undefined : `$${lastSpendValue.toFixed(0)}`}
           hasData={(spend?.points?.length ?? 0) > 0}
         >
-          <Chart
-            type="bar"
-            data={spendChart}
-            options={chartOptions}
-            className="h-full w-full"
-          />
+          <Chart type="bar" data={spendChart} options={chartOptions} className="h-full w-full" />
         </ChartCard>
 
         <ChartCard
@@ -358,12 +349,7 @@ export const Analytics: React.FC = () => {
           currentValue={lastPpg === null ? undefined : `$${lastPpg.toFixed(3)}`}
           hasData={(spend?.points?.length ?? 0) > 1}
         >
-          <Chart
-            type="line"
-            data={pricePerGallonChart}
-            options={chartOptions}
-            className="h-full w-full"
-          />
+          <Chart type="line" data={pricePerGallonChart} options={chartOptions} className="h-full w-full" />
         </ChartCard>
 
         <ChartCard
@@ -371,12 +357,15 @@ export const Analytics: React.FC = () => {
           currentValue={lastGpf === null ? undefined : lastGpf.toFixed(2)}
           hasData={(spend?.points?.length ?? 0) > 0}
         >
-          <Chart
-            type="bar"
-            data={gallonsPerFillChart}
-            options={chartOptions}
-            className="h-full w-full"
-          />
+          <Chart type="bar" data={gallonsPerFillChart} options={chartOptions} className="h-full w-full" />
+        </ChartCard>
+
+        <ChartCard
+          title="Maintenance Cost by Type"
+          currentValue={totalMaintenanceCost > 0 ? `$${totalMaintenanceCost.toFixed(0)}` : undefined}
+          hasData={maintenanceCostPoints.length > 0}
+        >
+          <Chart type="bar" data={maintenanceCostChart} options={horizontalBarOptions} className="h-full w-full" />
         </ChartCard>
       </div>
     </div>

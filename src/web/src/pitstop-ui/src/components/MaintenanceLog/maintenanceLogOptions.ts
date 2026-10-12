@@ -1,3 +1,5 @@
+import type { MaintenanceLogItemFormValues } from "./MaintenanceLogForm";
+
 export const SERVICE_TYPE_OPTIONS = [
   { label: "Oil Change", value: "OilChange" },
   { label: "Tire Rotation", value: "TireRotation" },
@@ -19,3 +21,12 @@ export const PERFORMED_BY_OPTIONS = [
   { label: "Self", value: "Self" },
   { label: "Shop", value: "Shop" },
 ];
+
+export const emptyItem = (): MaintenanceLogItemFormValues => ({
+  serviceType: "OilChange",
+  description: "",
+  isWarrantyWork: false,
+  partsCost: null,
+  laborCost: null,
+  totalCost: null,
+});

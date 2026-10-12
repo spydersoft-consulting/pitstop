@@ -127,6 +127,61 @@
         }
       }
     },
+    "/api/v1/vehicles/{vehicleId}/analytics/maintenance-cost": {
+      "get": {
+        "tags": ["Analytics"],
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceCostResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceCostResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceCostResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/vehicles/{vehicleId}/fillups": {
       "get": {
         "tags": ["FillUps"],
@@ -1511,7 +1566,7 @@
         }
       },
       "CreateMaintenanceLogRequest": {
-        "required": ["serviceType", "performedBy"],
+        "required": ["performedBy", "items"],
         "type": "object",
         "properties": {
           "serviceDate": {
@@ -1524,18 +1579,8 @@
             "type": ["number", "string"],
             "format": "double"
           },
-          "serviceType": {
-            "type": "string"
-          },
-          "description": {
-            "maxLength": 200,
-            "type": ["null", "string"]
-          },
           "performedBy": {
             "type": "string"
-          },
-          "isWarrantyWork": {
-            "type": "boolean"
           },
           "locationId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -1552,27 +1597,17 @@
               }
             ]
           },
-          "partsCost": {
-            "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": ["null", "number", "string"],
-            "format": "double"
-          },
-          "laborCost": {
-            "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": ["null", "number", "string"],
-            "format": "double"
-          },
-          "totalCost": {
-            "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": ["null", "number", "string"],
-            "format": "double"
-          },
           "notes": {
             "maxLength": 1000,
             "type": ["null", "string"]
+          },
+          "items": {
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceLogItemRequest"
+            }
           }
         }
       },
@@ -1921,6 +1956,50 @@
           }
         }
       },
+      "MaintenanceCostDataPoint": {
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string"
+          },
+          "count": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": ["integer", "string"],
+            "format": "int32"
+          },
+          "warrantyCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": ["integer", "string"],
+            "format": "int32"
+          },
+          "totalCost": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["number", "string"],
+            "format": "double"
+          },
+          "partsCost": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["number", "string"],
+            "format": "double"
+          },
+          "laborCost": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["number", "string"],
+            "format": "double"
+          }
+        }
+      },
+      "MaintenanceCostResponse": {
+        "type": "object",
+        "properties": {
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceCostDataPoint"
+            }
+          }
+        }
+      },
       "MaintenanceLogDto": {
         "type": "object",
         "properties": {
@@ -1943,17 +2022,8 @@
             "type": ["number", "string"],
             "format": "double"
           },
-          "serviceType": {
-            "type": "string"
-          },
-          "description": {
-            "type": ["null", "string"]
-          },
           "performedBy": {
             "type": "string"
-          },
-          "isWarrantyWork": {
-            "type": "boolean"
           },
           "location": {
             "oneOf": [
@@ -1964,6 +2034,45 @@
                 "$ref": "#/components/schemas/LocationSummaryDto"
               }
             ]
+          },
+          "notes": {
+            "type": ["null", "string"]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceLogItemDto"
+            }
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceAttachmentDto"
+            }
+          },
+          "computedTotalCost": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["null", "number", "string"],
+            "format": "double"
+          }
+        }
+      },
+      "MaintenanceLogItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": ["integer", "string"],
+            "format": "int32"
+          },
+          "serviceType": {
+            "type": "string"
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "isWarrantyWork": {
+            "type": "boolean"
           },
           "partsCost": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
@@ -1980,16 +2089,41 @@
             "type": ["null", "number", "string"],
             "format": "double"
           },
-          "notes": {
+          "computedTotalCost": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["null", "number", "string"],
+            "format": "double"
+          }
+        }
+      },
+      "MaintenanceLogItemRequest": {
+        "required": ["serviceType"],
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 200,
             "type": ["null", "string"]
           },
-          "attachments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MaintenanceAttachmentDto"
-            }
+          "isWarrantyWork": {
+            "type": "boolean"
           },
-          "computedTotalCost": {
+          "partsCost": {
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["null", "number", "string"],
+            "format": "double"
+          },
+          "laborCost": {
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["null", "number", "string"],
+            "format": "double"
+          },
+          "totalCost": {
+            "minimum": 0,
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": ["null", "number", "string"],
             "format": "double"
@@ -2091,6 +2225,10 @@
           },
           "parkOutside": {
             "type": "boolean"
+          },
+          "reportedDate": {
+            "type": ["null", "string"],
+            "format": "date"
           }
         }
       },
@@ -2232,7 +2370,7 @@
         }
       },
       "UpdateMaintenanceLogRequest": {
-        "required": ["serviceType", "performedBy"],
+        "required": ["performedBy", "items"],
         "type": "object",
         "properties": {
           "serviceDate": {
@@ -2245,18 +2383,8 @@
             "type": ["number", "string"],
             "format": "double"
           },
-          "serviceType": {
-            "type": "string"
-          },
-          "description": {
-            "maxLength": 200,
-            "type": ["null", "string"]
-          },
           "performedBy": {
             "type": "string"
-          },
-          "isWarrantyWork": {
-            "type": "boolean"
           },
           "locationId": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -2273,27 +2401,17 @@
               }
             ]
           },
-          "partsCost": {
-            "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": ["null", "number", "string"],
-            "format": "double"
-          },
-          "laborCost": {
-            "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": ["null", "number", "string"],
-            "format": "double"
-          },
-          "totalCost": {
-            "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": ["null", "number", "string"],
-            "format": "double"
-          },
           "notes": {
             "maxLength": 1000,
             "type": ["null", "string"]
+          },
+          "items": {
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceLogItemRequest"
+            }
           }
         }
       },

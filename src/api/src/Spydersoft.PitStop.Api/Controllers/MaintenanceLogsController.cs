@@ -47,7 +47,7 @@ public class MaintenanceLogsController(
         {
             if (!Enum.TryParse<MaintenanceType>(listQuery.ServiceType, ignoreCase: true, out var serviceType))
                 return ValidationProblem($"Invalid serviceType '{listQuery.ServiceType}'.");
-            query = query.Where(m => m.ServiceType == serviceType);
+            query = query.Where(m => m.Items.Any(i => i.ServiceType == serviceType));
         }
 
         if (!string.IsNullOrEmpty(listQuery.PerformedBy))
@@ -69,6 +69,7 @@ public class MaintenanceLogsController(
 
         var items = await query
             .Include(m => m.Location)
+            .Include(m => m.Items)
             .Include(m => m.Attachments)
             .Skip((listQuery.Page - 1) * pageSize)
             .Take(pageSize)
@@ -92,6 +93,7 @@ public class MaintenanceLogsController(
 
         var log = await Db.MaintenanceLogs
             .Include(m => m.Location)
+            .Include(m => m.Items)
             .Include(m => m.Attachments)
             .FirstOrDefaultAsync(m => m.Id == id && m.VehicleId == vehicleId, ct);
         return log is null ? NotFound() : Ok(MapToDto(log));
@@ -105,10 +107,11 @@ public class MaintenanceLogsController(
         if (!await VehicleExistsAsync(vehicleId, ownerId, ct))
             return NotFound();
 
-        if (!Enum.TryParse<MaintenanceType>(request.ServiceType, ignoreCase: true, out var serviceType))
-            return ValidationProblem($"Invalid serviceType '{request.ServiceType}'.");
         if (!Enum.TryParse<ServicePerformedBy>(request.PerformedBy, ignoreCase: true, out var performedBy))
             return ValidationProblem($"Invalid performedBy '{request.PerformedBy}'.");
+        var (items, itemsError) = BuildItems(request.Items);
+        if (itemsError is not null)
+            return ValidationProblem(itemsError);
 
         var (location, error) = await locationService.ResolveForFillUpAsync(
             ownerId, request.LocationId, request.Location, ct);
@@ -116,7 +119,8 @@ public class MaintenanceLogsController(
             return ValidationProblem(error);
 
         var log = new MaintenanceLog { VehicleId = vehicleId };
-        ApplyRequest(log, request, serviceType, performedBy);
+        ApplyRequest(log, request.ServiceDate, request.OdometerReading, request.Notes, performedBy);
+        log.Items = items;
 
         if (location is not null)
         {
@@ -139,13 +143,15 @@ public class MaintenanceLogsController(
         if (!await VehicleExistsAsync(vehicleId, ownerId, ct))
             return NotFound();
 
-        if (!Enum.TryParse<MaintenanceType>(request.ServiceType, ignoreCase: true, out var serviceType))
-            return ValidationProblem($"Invalid serviceType '{request.ServiceType}'.");
         if (!Enum.TryParse<ServicePerformedBy>(request.PerformedBy, ignoreCase: true, out var performedBy))
             return ValidationProblem($"Invalid performedBy '{request.PerformedBy}'.");
+        var (items, itemsError) = BuildItems(request.Items);
+        if (itemsError is not null)
+            return ValidationProblem(itemsError);
 
         var log = await Db.MaintenanceLogs
             .Include(m => m.Location)
+            .Include(m => m.Items)
             .FirstOrDefaultAsync(m => m.Id == id && m.VehicleId == vehicleId, ct);
         if (log is null)
             return NotFound();
@@ -156,7 +162,9 @@ public class MaintenanceLogsController(
             return ValidationProblem(error);
 
         var oldLocation = log.Location;
-        ApplyRequest(log, request, serviceType, performedBy);
+        ApplyRequest(log, request.ServiceDate, request.OdometerReading, request.Notes, performedBy);
+        Db.MaintenanceLogItems.RemoveRange(log.Items);
+        log.Items = items;
 
         if (oldLocation?.Id != newLocation?.Id)
         {
@@ -194,68 +202,87 @@ public class MaintenanceLogsController(
         return NoContent();
     }
 
-    private static void ApplyRequest(MaintenanceLog log, CreateMaintenanceLogRequest request, MaintenanceType serviceType, ServicePerformedBy performedBy)
+    private static void ApplyRequest(MaintenanceLog log, DateOnly serviceDate, decimal odometerReading, string? notes, ServicePerformedBy performedBy)
     {
-        log.ServiceDate = request.ServiceDate;
-        log.OdometerReading = request.OdometerReading;
-        log.ServiceType = serviceType;
-        log.Description = request.Description;
+        log.ServiceDate = serviceDate;
+        log.OdometerReading = odometerReading;
         log.PerformedBy = performedBy;
-        log.IsWarrantyWork = request.IsWarrantyWork;
-        log.PartsCost = request.PartsCost;
-        log.LaborCost = request.LaborCost;
-        log.TotalCost = request.TotalCost;
-        log.Notes = request.Notes;
+        log.Notes = notes;
     }
 
-    private static void ApplyRequest(MaintenanceLog log, UpdateMaintenanceLogRequest request, MaintenanceType serviceType, ServicePerformedBy performedBy)
+    private static (List<MaintenanceLogItem> Items, string? Error) BuildItems(List<MaintenanceLogItemRequest> requests)
     {
-        log.ServiceDate = request.ServiceDate;
-        log.OdometerReading = request.OdometerReading;
-        log.ServiceType = serviceType;
-        log.Description = request.Description;
-        log.PerformedBy = performedBy;
-        log.IsWarrantyWork = request.IsWarrantyWork;
-        log.PartsCost = request.PartsCost;
-        log.LaborCost = request.LaborCost;
-        log.TotalCost = request.TotalCost;
-        log.Notes = request.Notes;
-    }
-
-    private static MaintenanceLogDto MapToDto(MaintenanceLog m) => new()
-    {
-        Id = m.Id,
-        VehicleId = m.VehicleId,
-        ServiceDate = m.ServiceDate,
-        OdometerReading = m.OdometerReading,
-        ServiceType = m.ServiceType.ToString(),
-        Description = m.Description,
-        PerformedBy = m.PerformedBy.ToString(),
-        IsWarrantyWork = m.IsWarrantyWork,
-        Location = m.Location is null ? null : new LocationSummaryDto
+        var items = new List<MaintenanceLogItem>(requests.Count);
+        foreach (var r in requests)
         {
-            Id = m.Location.Id,
-            Name = m.Location.Name,
-            Address = m.Location.Address,
-        },
-        PartsCost = m.PartsCost,
-        LaborCost = m.LaborCost,
-        TotalCost = m.TotalCost,
-        Notes = m.Notes,
-        Attachments = m.Attachments
-            .Where(a => a.IsConfirmed)
-            .Select(a => new MaintenanceAttachmentDto
+            if (!Enum.TryParse<MaintenanceType>(r.ServiceType, ignoreCase: true, out var serviceType))
+                return ([], $"Invalid serviceType '{r.ServiceType}'.");
+
+            items.Add(new MaintenanceLogItem
             {
-                Id = a.Id,
-                FileId = a.FileId,
-                FileName = a.FileName,
-                ContentType = a.ContentType,
+                ServiceType = serviceType,
+                Description = r.Description,
+                IsWarrantyWork = r.IsWarrantyWork,
+                PartsCost = r.PartsCost,
+                LaborCost = r.LaborCost,
+                TotalCost = r.TotalCost,
+            });
+        }
+        return (items, null);
+    }
+
+    private static decimal? ComputeItemCost(MaintenanceLogItem i) =>
+        i.TotalCost ?? (i.PartsCost.HasValue || i.LaborCost.HasValue
+            ? (i.PartsCost ?? 0) + (i.LaborCost ?? 0)
+            : null);
+
+    private static MaintenanceLogDto MapToDto(MaintenanceLog m)
+    {
+        var items = m.Items
+            .OrderBy(i => i.Id)
+            .Select(i => new MaintenanceLogItemDto
+            {
+                Id = i.Id,
+                ServiceType = i.ServiceType.ToString(),
+                Description = i.Description,
+                IsWarrantyWork = i.IsWarrantyWork,
+                PartsCost = i.PartsCost,
+                LaborCost = i.LaborCost,
+                TotalCost = i.TotalCost,
+                ComputedTotalCost = ComputeItemCost(i),
             })
-            .ToList(),
-        ComputedTotalCost = m.TotalCost ?? (m.PartsCost.HasValue || m.LaborCost.HasValue
-            ? (m.PartsCost ?? 0) + (m.LaborCost ?? 0)
-            : null)
-    };
+            .ToList();
+
+        var itemCosts = items.Where(i => i.ComputedTotalCost.HasValue).ToList();
+
+        return new MaintenanceLogDto
+        {
+            Id = m.Id,
+            VehicleId = m.VehicleId,
+            ServiceDate = m.ServiceDate,
+            OdometerReading = m.OdometerReading,
+            PerformedBy = m.PerformedBy.ToString(),
+            Location = m.Location is null ? null : new LocationSummaryDto
+            {
+                Id = m.Location.Id,
+                Name = m.Location.Name,
+                Address = m.Location.Address,
+            },
+            Notes = m.Notes,
+            Items = items,
+            Attachments = m.Attachments
+                .Where(a => a.IsConfirmed)
+                .Select(a => new MaintenanceAttachmentDto
+                {
+                    Id = a.Id,
+                    FileId = a.FileId,
+                    FileName = a.FileName,
+                    ContentType = a.ContentType,
+                })
+                .ToList(),
+            ComputedTotalCost = itemCosts.Count > 0 ? itemCosts.Sum(i => i.ComputedTotalCost.GetValueOrDefault()) : null,
+        };
+    }
 
     [HttpPost("{id:int}/attachments/initiate")]
     [Authorize(Policy = AuthorizationPolicies.Write)]

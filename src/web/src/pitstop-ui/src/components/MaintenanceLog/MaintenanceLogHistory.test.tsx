@@ -52,9 +52,8 @@ const maintenanceLog = (overrides: Partial<MaintenanceLog> = {}): MaintenanceLog
   vehicleId: 1,
   serviceDate: "2026-01-15",
   odometerReading: 45230,
-  serviceType: "OilChange",
   performedBy: "Self",
-  isWarrantyWork: false,
+  items: [{ id: 1, serviceType: "OilChange", isWarrantyWork: false, computedTotalCost: 65.5 }],
   computedTotalCost: 65.5,
   attachments: [],
   ...overrides,
@@ -101,7 +100,9 @@ describe("MaintenanceLogHistory", () => {
   });
 
   it("renders formatted values, including a warranty badge, for a populated list", () => {
-    renderComponent([maintenanceLog({ isWarrantyWork: true })]);
+    renderComponent([
+      maintenanceLog({ items: [{ id: 1, serviceType: "OilChange", isWarrantyWork: true, computedTotalCost: 65.5 }] }),
+    ]);
 
     expect(screen.getAllByText("$65.50").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/45,230 mi/).length).toBeGreaterThan(0);

@@ -8,21 +8,15 @@ public class MaintenanceLog
 
     public DateOnly ServiceDate { get; set; }
     public decimal OdometerReading { get; set; }
-    public MaintenanceType ServiceType { get; set; }
-    public string? Description { get; set; }
     public ServicePerformedBy PerformedBy { get; set; }
-    public bool IsWarrantyWork { get; set; }
 
     public int? LocationId { get; set; }
     public Location? Location { get; set; }
-
-    public decimal? PartsCost { get; set; }
-    public decimal? LaborCost { get; set; }
-    public decimal? TotalCost { get; set; }
 
     public string? Notes { get; set; }
 
     public bool IsDeleted { get; set; }
 
+    public List<MaintenanceLogItem> Items { get; set; } = [];
     public List<MaintenanceLogAttachment> Attachments { get; set; } = [];
 }

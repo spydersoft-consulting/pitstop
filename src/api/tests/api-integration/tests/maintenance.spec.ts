@@ -33,8 +33,8 @@ function testLog(odometer: number, overrides: Partial<CreateMaintenanceLogReques
   return {
     serviceDate: "2026-01-15",
     odometerReading: odometer,
-    serviceType: "OilChange",
     performedBy: "Self",
+    items: [{ serviceType: "OilChange" }],
     ...overrides,
   };
 }
@@ -48,19 +48,47 @@ test("CreateMaintenanceLog_Returns201", async ({ request }) => {
   const dto: MaintenanceLogDto = await response.json();
   expect(dto.id).toBeGreaterThan(0);
   expect(dto.vehicleId).toBe(vehicleId);
-  expect(dto.serviceType).toBe("OilChange");
+  expect(dto.items).toHaveLength(1);
+  expect(dto.items[0].serviceType).toBe("OilChange");
   expect(dto.performedBy).toBe("Self");
 });
 
-test("CreateMaintenanceLog_WithRecallTypeAndWarrantyFlag_Returns201", async ({ request }) => {
+test("CreateMaintenanceLog_WithMultipleItems_PersistsEachWithOwnWarrantyAndCost", async ({ request }) => {
   const response = await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
-    data: testLog(1500, { serviceType: "Recall", isWarrantyWork: true }),
+    data: testLog(1200, {
+      items: [
+        { serviceType: "OilChange", partsCost: 30, laborCost: 20 },
+        { serviceType: "TireRotation", totalCost: 25 },
+        { serviceType: "Recall", description: "NHTSA 24V-123", isWarrantyWork: true },
+      ],
+    }),
   });
 
   expect(response.status()).toBe(201);
   const dto: MaintenanceLogDto = await response.json();
-  expect(dto.serviceType).toBe("Recall");
-  expect(dto.isWarrantyWork).toBe(true);
+  expect(dto.items.map((i) => i.serviceType)).toEqual(["OilChange", "TireRotation", "Recall"]);
+  expect(dto.items.map((i) => i.isWarrantyWork)).toEqual([false, false, true]);
+  expect(dto.items.map((i) => i.computedTotalCost ?? null)).toEqual([50, 25, null]);
+  expect(dto.computedTotalCost).toBe(75);
+});
+
+test("CreateMaintenanceLog_WithNoItems_Returns400", async ({ request }) => {
+  const response = await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
+    data: testLog(1300, { items: [] }),
+  });
+
+  expect(response.status()).toBe(400);
+});
+
+test("CreateMaintenanceLog_WithRecallTypeAndWarrantyFlag_Returns201", async ({ request }) => {
+  const response = await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
+    data: testLog(1500, { items: [{ serviceType: "Recall", isWarrantyWork: true }] }),
+  });
+
+  expect(response.status()).toBe(201);
+  const dto: MaintenanceLogDto = await response.json();
+  expect(dto.items[0].serviceType).toBe("Recall");
+  expect(dto.items[0].isWarrantyWork).toBe(true);
 });
 
 test("GetMaintenanceLog_ById_ReturnsExpectedFields", async ({ request }) => {
@@ -98,10 +126,10 @@ test("ListMaintenanceLogs_ReturnsPaginatedResults", async ({ request }) => {
 
 test("ListMaintenanceLogs_FiltersByServiceType", async ({ request }) => {
   await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
-    data: testLog(4000, { serviceType: "OilChange" }),
+    data: testLog(4000, { items: [{ serviceType: "OilChange" }] }),
   });
   await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
-    data: testLog(4100, { serviceType: "TireRotation" }),
+    data: testLog(4100, { items: [{ serviceType: "OilChange" }, { serviceType: "TireRotation" }] }),
   });
 
   const response = await request.get(`/api/v1/vehicles/${vehicleId}/maintenance`, {
@@ -110,7 +138,7 @@ test("ListMaintenanceLogs_FiltersByServiceType", async ({ request }) => {
 
   expect(response.status()).toBe(200);
   const list: MaintenanceLogListResponse = await response.json();
-  expect(list.items.every((i) => i.serviceType === "TireRotation")).toBe(true);
+  expect(list.items.every((l) => l.items.some((i) => i.serviceType === "TireRotation"))).toBe(true);
   expect(list.items.length).toBeGreaterThanOrEqual(1);
 });
 
@@ -140,8 +168,8 @@ test("UpdateMaintenanceLog_ReturnsUpdatedOdometer", async ({ request }) => {
   const update: UpdateMaintenanceLogRequest = {
     serviceDate: created.serviceDate,
     odometerReading: 6100,
-    serviceType: "OilChange",
     performedBy: "Self",
+    items: [{ serviceType: "OilChange" }],
   };
   const response = await request.put(`/api/v1/vehicles/${vehicleId}/maintenance/${created.id}`, { data: update });
 
@@ -161,7 +189,7 @@ test("DeleteMaintenanceLog_Returns204ThenNotFound", async ({ request }) => {
 
 test("CreateMaintenanceLog_InvalidServiceType_Returns400", async ({ request }) => {
   const response = await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
-    data: testLog(8000, { serviceType: "NotAType" }),
+    data: testLog(8000, { items: [{ serviceType: "NotAType" }] }),
   });
 
   expect(response.status()).toBe(400);
@@ -178,20 +206,22 @@ test("CreateMaintenanceLog_InvalidPerformedBy_Returns400", async ({ request }) =
 test("CreateMaintenanceLog_ComputedTotalCost_SumsPartsAndLabor", async ({ request }) => {
   const dto: MaintenanceLogDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
-      data: testLog(8500, { partsCost: 20, laborCost: 15 }),
+      data: testLog(8500, { items: [{ serviceType: "OilChange", partsCost: 20, laborCost: 15 }] }),
     })
   ).json();
 
+  expect(dto.items[0].computedTotalCost).toBe(35);
   expect(dto.computedTotalCost).toBe(35);
 });
 
 test("CreateMaintenanceLog_ComputedTotalCost_PrefersExplicitTotal", async ({ request }) => {
   const dto: MaintenanceLogDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
-      data: testLog(8600, { partsCost: 20, laborCost: 15, totalCost: 50 }),
+      data: testLog(8600, { items: [{ serviceType: "OilChange", partsCost: 20, laborCost: 15, totalCost: 50 }] }),
     })
   ).json();
 
+  expect(dto.items[0].computedTotalCost).toBe(50);
   expect(dto.computedTotalCost).toBe(50);
 });
 
@@ -201,7 +231,7 @@ test("CreateMaintenanceLog_WithLocationId_AttachesAndIncrementsUseCount", async 
 
   const dto: MaintenanceLogDto = await (
     await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
-      data: testLog(9000, { locationId: loc.id, serviceType: "BrakePads", performedBy: "Shop" }),
+      data: testLog(9000, { locationId: loc.id, items: [{ serviceType: "BrakePads" }], performedBy: "Shop" }),
     })
   ).json();
 
@@ -260,8 +290,8 @@ test("UpdateMaintenanceLog_ChangingLocation_MovesUsageCount", async ({ request }
   const update: UpdateMaintenanceLogRequest = {
     serviceDate: created.serviceDate,
     odometerReading: 11000,
-    serviceType: "OilChange",
     performedBy: "Shop",
+    items: [{ serviceType: "OilChange" }],
     locationId: newLoc.id,
   };
   await request.put(`/api/v1/vehicles/${vehicleId}/maintenance/${created.id}`, { data: update });

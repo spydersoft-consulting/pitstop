@@ -28,16 +28,11 @@ export type CreateLocationRequest = {
 export type CreateMaintenanceLogRequest = {
   serviceDate?: string;
   odometerReading?: number | string;
-  serviceType: string;
-  description?: null | string;
   performedBy: string;
-  isWarrantyWork?: boolean;
   locationId?: null | number | string;
   location?: null | CreateLocationRequest;
-  partsCost?: null | number | string;
-  laborCost?: null | number | string;
-  totalCost?: null | number | string;
   notes?: null | string;
+  items: Array<MaintenanceLogItemRequest>;
 };
 
 export type CreateVehicleRequest = {
@@ -133,22 +128,50 @@ export type MaintenanceAttachmentDto = {
   contentType?: string;
 };
 
+export type MaintenanceCostDataPoint = {
+  serviceType?: string;
+  count?: number | string;
+  warrantyCount?: number | string;
+  totalCost?: number | string;
+  partsCost?: number | string;
+  laborCost?: number | string;
+};
+
+export type MaintenanceCostResponse = {
+  points?: Array<MaintenanceCostDataPoint>;
+};
+
 export type MaintenanceLogDto = {
   id?: number | string;
   vehicleId?: number | string;
   serviceDate?: string;
   odometerReading?: number | string;
+  performedBy?: string;
+  location?: null | LocationSummaryDto;
+  notes?: null | string;
+  items?: Array<MaintenanceLogItemDto>;
+  attachments?: Array<MaintenanceAttachmentDto>;
+  computedTotalCost?: null | number | string;
+};
+
+export type MaintenanceLogItemDto = {
+  id?: number | string;
   serviceType?: string;
   description?: null | string;
-  performedBy?: string;
   isWarrantyWork?: boolean;
-  location?: null | LocationSummaryDto;
   partsCost?: null | number | string;
   laborCost?: null | number | string;
   totalCost?: null | number | string;
-  notes?: null | string;
-  attachments?: Array<MaintenanceAttachmentDto>;
   computedTotalCost?: null | number | string;
+};
+
+export type MaintenanceLogItemRequest = {
+  serviceType: string;
+  description?: null | string;
+  isWarrantyWork?: boolean;
+  partsCost?: null | number | string;
+  laborCost?: null | number | string;
+  totalCost?: null | number | string;
 };
 
 export type MaintenanceLogListResponse = {
@@ -221,16 +244,11 @@ export type UpdateLocationRequest = {
 export type UpdateMaintenanceLogRequest = {
   serviceDate?: string;
   odometerReading?: number | string;
-  serviceType: string;
-  description?: null | string;
   performedBy: string;
-  isWarrantyWork?: boolean;
   locationId?: null | number | string;
   location?: null | CreateLocationRequest;
-  partsCost?: null | number | string;
-  laborCost?: null | number | string;
-  totalCost?: null | number | string;
   notes?: null | string;
+  items: Array<MaintenanceLogItemRequest>;
 };
 
 export type UpdateVehicleRequest = {
@@ -316,6 +334,28 @@ export type GetApiV1VehiclesByVehicleIdAnalyticsSpendResponses = {
 
 export type GetApiV1VehiclesByVehicleIdAnalyticsSpendResponse =
   GetApiV1VehiclesByVehicleIdAnalyticsSpendResponses[keyof GetApiV1VehiclesByVehicleIdAnalyticsSpendResponses];
+
+export type GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+  };
+  query?: {
+    startDate?: string;
+    endDate?: string;
+  };
+  url: "/api/v1/vehicles/{vehicleId}/analytics/maintenance-cost";
+};
+
+export type GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostResponses = {
+  /**
+   * OK
+   */
+  200: MaintenanceCostResponse;
+};
+
+export type GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostResponse =
+  GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostResponses[keyof GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostResponses];
 
 export type GetApiV1VehiclesByVehicleIdFillupsData = {
   body?: never;

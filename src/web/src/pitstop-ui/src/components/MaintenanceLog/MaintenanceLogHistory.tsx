@@ -20,6 +20,7 @@ import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { deleteMaintenanceLog } from "../../store/slices/maintenanceLogSlice";
 import type { MaintenanceLog } from "../../store/slices/maintenanceLogSlice";
+import type { MaintenanceLogItemDto as MaintenanceLogItem } from "../../api/generated/types.gen";
 import { PageHeader } from "../layout/PageHeader";
 import { formatVehicleLabel } from "../../utils/vehicle";
 import { SERVICE_TYPE_OPTIONS, PERFORMED_BY_OPTIONS } from "./maintenanceLogOptions";
@@ -40,6 +41,27 @@ const WarrantyBadge: React.FC = () => (
   <span className="inline-block rounded-full bg-brand/10 text-brand text-xs font-medium px-2 py-0.5 ml-2 align-middle">
     Warranty
   </span>
+);
+
+const itemsOf = (row: MaintenanceLog): MaintenanceLogItem[] => row.items ?? [];
+
+const itemsSummary = (row: MaintenanceLog): string => {
+  const items = itemsOf(row);
+  return items.length > 0 ? items.map((i) => serviceTypeLabel(i.serviceType)).join(", ") : "—";
+};
+
+const ServiceChips: React.FC<{ row: MaintenanceLog }> = ({ row }) => (
+  <div className="flex flex-wrap gap-1">
+    {itemsOf(row).map((item, index) => (
+      <span
+        key={item.id ?? index}
+        className="inline-flex items-center rounded-full border border-border bg-surface px-2 py-0.5 text-xs"
+      >
+        {serviceTypeLabel(item.serviceType)}
+        {item.isWarrantyWork && <WarrantyBadge />}
+      </span>
+    ))}
+  </div>
 );
 
 interface FiltersProps {
@@ -147,8 +169,7 @@ const MobileMaintenanceLogCard: React.FC<MobileCardProps> = ({ row, expanded, on
         <div className="min-w-0 flex-1">
           <p className="font-medium">{fmtDate(row.serviceDate)}</p>
           <p className="text-sm text-content-muted truncate">
-            {serviceTypeLabel(row.serviceType)} · {row.performedBy ?? "—"}
-            {row.isWarrantyWork && <WarrantyBadge />}
+            {itemsSummary(row)} · {row.performedBy ?? "—"}
           </p>
         </div>
         <div className="text-right shrink-0">
@@ -168,12 +189,24 @@ const MobileMaintenanceLogCard: React.FC<MobileCardProps> = ({ row, expanded, on
               <span className="truncate text-right">{row.location.name}</span>
             </div>
           )}
-          {row.description && (
-            <div>
-              <span className="text-content-muted block mb-1">Description</span>
-              <span className="block">{row.description}</span>
-            </div>
-          )}
+          <div>
+            <span className="text-content-muted block mb-1">Services</span>
+            <ul className="space-y-1">
+              {itemsOf(row).map((item, index) => {
+                const itemCost = num(item.computedTotalCost);
+                return (
+                  <li key={item.id ?? index} className="flex justify-between gap-2">
+                    <span className="min-w-0">
+                      {serviceTypeLabel(item.serviceType)}
+                      {item.isWarrantyWork && <WarrantyBadge />}
+                      {item.description && <span className="block text-xs text-content-muted">{item.description}</span>}
+                    </span>
+                    {itemCost !== null && <span className="font-numeric shrink-0">${itemCost.toFixed(2)}</span>}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
           {row.notes && (
             <div>
               <span className="text-content-muted block mb-1">Notes</span>
@@ -219,7 +252,7 @@ export const MaintenanceLogHistory: React.FC = () => {
     const from = range?.[0] ?? null;
     const to = range?.[1] ?? null;
     return recentMaintenanceLogs.filter((f) => {
-      if (serviceType && f.serviceType !== serviceType) return false;
+      if (serviceType && !itemsOf(f).some((i) => i.serviceType === serviceType)) return false;
       if (performedBy && f.performedBy !== performedBy) return false;
       if (!f.serviceDate) return true;
       const t = new Date(`${f.serviceDate}T00:00:00`).getTime();
@@ -252,12 +285,7 @@ export const MaintenanceLogHistory: React.FC = () => {
   };
 
   const dateTemplate = (row: MaintenanceLog) => fmtDate(row.serviceDate);
-  const serviceTypeTemplate = (row: MaintenanceLog) => (
-    <>
-      {serviceTypeLabel(row.serviceType)}
-      {row.isWarrantyWork && <WarrantyBadge />}
-    </>
-  );
+  const serviceTypeTemplate = (row: MaintenanceLog) => <ServiceChips row={row} />;
   const costTemplate = (row: MaintenanceLog) => `$${(num(row.computedTotalCost) ?? 0).toFixed(2)}`;
   const odometerTemplate = (row: MaintenanceLog) => `${(num(row.odometerReading) ?? 0).toLocaleString()} mi`;
 
@@ -387,7 +415,7 @@ export const MaintenanceLogHistory: React.FC = () => {
               emptyMessage="No maintenance logs match the current filter."
             >
               <Column field="serviceDate" header="Date" body={dateTemplate} sortable />
-              <Column field="serviceType" header="Service" body={serviceTypeTemplate} sortable />
+              <Column header="Services" body={serviceTypeTemplate} />
               <Column field="odometerReading" header="Odometer" body={odometerTemplate} sortable />
               <Column field="performedBy" header="Performed By" sortable />
               <Column field="computedTotalCost" header="Cost" body={costTemplate} sortable />

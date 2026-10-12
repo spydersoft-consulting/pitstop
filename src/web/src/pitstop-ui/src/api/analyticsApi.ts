@@ -2,8 +2,10 @@ import {
   getApiV1VehiclesByVehicleIdAnalyticsSummary,
   getApiV1VehiclesByVehicleIdAnalyticsMpg,
   getApiV1VehiclesByVehicleIdAnalyticsSpend,
+  getApiV1VehiclesByVehicleIdAnalyticsMaintenanceCost,
 } from "./generated/sdk.gen";
 import type {
+  MaintenanceCostResponse,
   MpgOverTimeResponse,
   SpendResponse,
   SummaryResponse,
@@ -25,6 +27,16 @@ export const analyticsApi = {
   spend: async (vehicleId: number): Promise<SpendResponse> => {
     const { data } = await getApiV1VehiclesByVehicleIdAnalyticsSpend({
       path: { vehicleId },
+    });
+    return data ?? { points: [] };
+  },
+  maintenanceCost: async (
+    vehicleId: number,
+    query?: { startDate?: string; endDate?: string },
+  ): Promise<MaintenanceCostResponse> => {
+    const { data } = await getApiV1VehiclesByVehicleIdAnalyticsMaintenanceCost({
+      path: { vehicleId },
+      query,
     });
     return data ?? { points: [] };
   },

@@ -58,9 +58,8 @@ const existingLog: MaintenanceLog = {
   vehicleId: 1,
   serviceDate: "2026-01-01",
   odometerReading: 45230,
-  serviceType: "OilChange",
   performedBy: "Self",
-  isWarrantyWork: false,
+  items: [{ id: 1, serviceType: "OilChange", isWarrantyWork: false, partsCost: 20, laborCost: 15 }],
   attachments: [],
 } as unknown as MaintenanceLog;
 
