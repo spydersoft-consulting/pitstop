@@ -227,6 +227,43 @@ Same body as POST.
 
 ---
 
+## Maintenance Logs
+
+A maintenance log is one shop visit (or DIY session). It holds the date, odometer, who did the work,
+location, notes and attachments, plus one or more **items** — the individual services performed.
+Cost and warranty status are tracked per item, so a single visit can mix paid and warranty work.
+
+Routes are nested under `/vehicles/{vehicleId}/maintenance`: `GET` (paged list), `GET /{id}`, `POST`,
+`PUT /{id}` and `DELETE /{id}` (soft delete).
+
+### POST /vehicles/{vehicleId}/maintenance
+
+**Request body**
+
+```json
+{
+  "serviceDate": "2026-01-15",
+  "odometerReading": 45230,
+  "performedBy": "Shop",
+  "locationId": 7,
+  "notes": "Dealer visit",
+  "items": [
+    { "serviceType": "OilChange", "partsCost": 30.0, "laborCost": 20.0 },
+    { "serviceType": "TireRotation", "totalCost": 25.0 },
+    { "serviceType": "Recall", "description": "NHTSA 24V-123", "isWarrantyWork": true }
+  ]
+}
+```
+
+- `items` is required: 1–20 entries. `PUT` replaces the whole item set.
+- `serviceType`: `OilChange`, `TireRotation`, `AirFilter`, `CabinFilter`, `BrakePads`, `BrakeFluid`,
+  `SparkPlugs`, `Battery`, `WiperBlades`, `WasherFluid`, `Coolant`, `TransmissionFluid`, `Other`, `Recall`.
+- An item's `computedTotalCost` is `totalCost` when set, otherwise `partsCost + laborCost` (null when neither
+  is given). The log's `computedTotalCost` is the sum of its items.
+- The list endpoint's `serviceType` filter returns visits that contain **any** item of that type.
+
+---
+
 ## Analytics
 
 All analytics endpoints require `pitstop:read` scope and return `404` if the vehicle doesn't exist or isn't owned by the caller.
@@ -296,6 +333,30 @@ Monthly spend grouped by year and month.
   ]
 }
 ```
+
+### GET /vehicles/{vehicleId}/analytics/maintenance-cost
+
+Maintenance spend grouped by service type, across every item on every visit. Optional `startDate` /
+`endDate` (`yyyy-MM-dd`) filter on the visit date. Points are ordered by `totalCost` descending.
+
+**Response** `200 OK`
+
+```json
+{
+  "points": [
+    {
+      "serviceType": "OilChange",
+      "count": 2,
+      "warrantyCount": 0,
+      "totalCost": 110.0,
+      "partsCost": 35.0,
+      "laborCost": 20.0
+    }
+  ]
+}
+```
+
+`totalCost` uses each item's total override when set, otherwise parts + labor.
 
 ---
 

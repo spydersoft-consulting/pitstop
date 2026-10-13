@@ -4,6 +4,7 @@ import { Card } from "primereact/card";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { updateMaintenanceLog } from "../../store/slices/maintenanceLogSlice";
 import { MaintenanceLogForm, type MaintenanceLogFormValues } from "./MaintenanceLogForm";
+import { emptyItem } from "./maintenanceLogOptions";
 import { MaintenanceLogAttachments } from "./MaintenanceLogAttachments";
 import type { UpdateMaintenanceLogRequest } from "../../api/generated/types.gen";
 import { PageHeader } from "../layout/PageHeader";
@@ -36,10 +37,7 @@ export const EditMaintenanceLog: React.FC = () => {
   const initialValues: MaintenanceLogFormValues = {
     serviceDate: parseDateOnly(maintenanceLog.serviceDate),
     odometerReading: Number(maintenanceLog.odometerReading) || null,
-    serviceType: maintenanceLog.serviceType ?? "OilChange",
-    description: maintenanceLog.description ?? "",
     performedBy: maintenanceLog.performedBy ?? "Self",
-    isWarrantyWork: maintenanceLog.isWarrantyWork ?? false,
     location: maintenanceLog.location
       ? {
           kind: "existing",
@@ -48,10 +46,17 @@ export const EditMaintenanceLog: React.FC = () => {
           address: maintenanceLog.location.address ?? null,
         }
       : null,
-    partsCost: maintenanceLog.partsCost != null ? Number(maintenanceLog.partsCost) : null,
-    laborCost: maintenanceLog.laborCost != null ? Number(maintenanceLog.laborCost) : null,
-    totalCost: maintenanceLog.totalCost != null ? Number(maintenanceLog.totalCost) : null,
     notes: maintenanceLog.notes ?? "",
+    items: maintenanceLog.items?.length
+      ? maintenanceLog.items.map((item) => ({
+          serviceType: item.serviceType ?? "OilChange",
+          description: item.description ?? "",
+          isWarrantyWork: item.isWarrantyWork ?? false,
+          partsCost: item.partsCost != null ? Number(item.partsCost) : null,
+          laborCost: item.laborCost != null ? Number(item.laborCost) : null,
+          totalCost: item.totalCost != null ? Number(item.totalCost) : null,
+        }))
+      : [emptyItem()],
   };
 
   const handleSubmit = async (values: UpdateMaintenanceLogRequest) => {

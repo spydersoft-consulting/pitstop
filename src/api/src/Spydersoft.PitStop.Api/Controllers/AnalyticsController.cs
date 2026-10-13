@@ -110,4 +110,42 @@ public class AnalyticsController(PitStopDbContext db) : PitStopControllerBase(db
 
         return Ok(new SpendResponse { Points = points });
     }
+
+    [HttpGet("maintenance-cost")]
+    public async Task<ActionResult<MaintenanceCostResponse>> GetMaintenanceCost(
+        int vehicleId,
+        [FromQuery] DateOnly? startDate,
+        [FromQuery] DateOnly? endDate,
+        CancellationToken ct)
+    {
+        if (!await VehicleExistsAsync(vehicleId, GetCurrentUserId(), ct))
+            return NotFound();
+
+        var query = Db.MaintenanceLogItems.Where(i => i.MaintenanceLog.VehicleId == vehicleId);
+        if (startDate.HasValue)
+            query = query.Where(i => i.MaintenanceLog.ServiceDate >= startDate.Value);
+        if (endDate.HasValue)
+            query = query.Where(i => i.MaintenanceLog.ServiceDate <= endDate.Value);
+
+        var items = await query
+            .Select(i => new { i.ServiceType, i.IsWarrantyWork, i.PartsCost, i.LaborCost, i.TotalCost })
+            .ToListAsync(ct);
+
+        var points = items
+            .GroupBy(i => i.ServiceType)
+            .Select(g => new MaintenanceCostDataPoint
+            {
+                ServiceType = g.Key.ToString(),
+                Count = g.Count(),
+                WarrantyCount = g.Count(i => i.IsWarrantyWork),
+                TotalCost = g.Sum(i => i.TotalCost ?? (i.PartsCost ?? 0) + (i.LaborCost ?? 0)),
+                PartsCost = g.Sum(i => i.PartsCost ?? 0),
+                LaborCost = g.Sum(i => i.LaborCost ?? 0),
+            })
+            .OrderByDescending(p => p.TotalCost)
+            .ThenBy(p => p.ServiceType)
+            .ToList();
+
+        return Ok(new MaintenanceCostResponse { Points = points });
+    }
 }

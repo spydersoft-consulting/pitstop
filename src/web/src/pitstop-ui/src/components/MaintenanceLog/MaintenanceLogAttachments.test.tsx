@@ -24,8 +24,8 @@ const log = (overrides: Partial<MaintenanceLog> = {}): MaintenanceLog =>
     vehicleId: 1,
     serviceDate: "2026-01-01",
     odometerReading: 1000,
-    serviceType: "OilChange",
     performedBy: "Self",
+    items: [{ id: 1, serviceType: "OilChange" }],
     attachments: [],
     ...overrides,
   }) as MaintenanceLog;

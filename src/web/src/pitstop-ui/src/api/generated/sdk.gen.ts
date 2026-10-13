@@ -19,6 +19,8 @@ import type {
   GetApiV1LocationsResponses,
   GetApiV1VehiclesByIdData,
   GetApiV1VehiclesByIdResponses,
+  GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostData,
+  GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostResponses,
   GetApiV1VehiclesByVehicleIdAnalyticsMpgData,
   GetApiV1VehiclesByVehicleIdAnalyticsMpgResponses,
   GetApiV1VehiclesByVehicleIdAnalyticsSpendData,
@@ -103,6 +105,15 @@ export const getApiV1VehiclesByVehicleIdAnalyticsSpend = <ThrowOnError extends b
   (options.client ?? client).get<GetApiV1VehiclesByVehicleIdAnalyticsSpendResponses, unknown, ThrowOnError>({
     responseType: "json",
     url: "/api/v1/vehicles/{vehicleId}/analytics/spend",
+    ...options,
+  });
+
+export const getApiV1VehiclesByVehicleIdAnalyticsMaintenanceCost = <ThrowOnError extends boolean = false>(
+  options: Options<GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/analytics/maintenance-cost",
     ...options,
   });
 

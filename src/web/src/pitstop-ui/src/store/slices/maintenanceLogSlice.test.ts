@@ -39,11 +39,8 @@ const m = (id: number, overrides: Partial<MaintenanceLog> = {}): MaintenanceLog 
     vehicleId: 1,
     serviceDate: "2026-01-01",
     odometerReading: 1000 + id,
-    serviceType: "OilChange",
     performedBy: "Self",
-    partsCost: 20,
-    laborCost: 0,
-    totalCost: null,
+    items: [{ id: id * 10, serviceType: "OilChange", partsCost: 20, laborCost: 0, computedTotalCost: 20 }],
     computedTotalCost: 20,
     ...overrides,
   }) as MaintenanceLog;
@@ -110,8 +107,8 @@ describe("maintenanceLogSlice thunks", () => {
         body: {
           serviceDate: "2026-02-01",
           odometerReading: 1002,
-          serviceType: "TireRotation",
           performedBy: "Shop",
+          items: [{ serviceType: "TireRotation" }],
         },
       }),
     );
@@ -123,7 +120,7 @@ describe("maintenanceLogSlice thunks", () => {
   it("updateMaintenanceLog.fulfilled replaces the matching entry", async () => {
     const store = makeStore();
     vi.mocked(maintenanceLogsApi.list).mockResolvedValue({
-      items: [m(1, { totalCost: 30 }), m(2)],
+      items: [m(1, { computedTotalCost: 30 }), m(2)],
       totalCount: 2,
       page: 1,
       pageSize: 100,
@@ -131,7 +128,7 @@ describe("maintenanceLogSlice thunks", () => {
     });
     await store.dispatch(fetchMaintenanceLogs(1));
 
-    vi.mocked(maintenanceLogsApi.update).mockResolvedValue(m(1, { totalCost: 99 }));
+    vi.mocked(maintenanceLogsApi.update).mockResolvedValue(m(1, { computedTotalCost: 99 }));
     await store.dispatch(
       updateMaintenanceLog({
         vehicleId: 1,
@@ -139,15 +136,14 @@ describe("maintenanceLogSlice thunks", () => {
         body: {
           serviceDate: "2026-01-01",
           odometerReading: 1001,
-          serviceType: "OilChange",
           performedBy: "Self",
-          totalCost: 99,
+          items: [{ serviceType: "OilChange", totalCost: 99 }],
         },
       }),
     );
 
     const updated = store.getState().maintenanceLogs.recentMaintenanceLogs.find((x) => x.id === 1);
-    expect(updated?.totalCost).toBe(99);
+    expect(updated?.computedTotalCost).toBe(99);
   });
 
   it("deleteMaintenanceLog.fulfilled removes the matching entry", async () => {

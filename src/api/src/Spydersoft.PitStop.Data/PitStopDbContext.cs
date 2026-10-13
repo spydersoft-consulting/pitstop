@@ -10,6 +10,7 @@ public class PitStopDbContext(DbContextOptions<PitStopDbContext> options) : DbCo
     public DbSet<FillUp> FillUps => Set<FillUp>();
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<MaintenanceLog> MaintenanceLogs => Set<MaintenanceLog>();
+    public DbSet<MaintenanceLogItem> MaintenanceLogItems => Set<MaintenanceLogItem>();
     public DbSet<MaintenanceLogAttachment> MaintenanceLogAttachments => Set<MaintenanceLogAttachment>();
     public DbSet<RecallNotification> RecallNotifications => Set<RecallNotification>();
 
@@ -19,6 +20,7 @@ public class PitStopDbContext(DbContextOptions<PitStopDbContext> options) : DbCo
         modelBuilder.ApplyConfiguration(new FillUpConfiguration());
         modelBuilder.ApplyConfiguration(new LocationConfiguration());
         modelBuilder.ApplyConfiguration(new MaintenanceLogConfiguration());
+        modelBuilder.ApplyConfiguration(new MaintenanceLogItemConfiguration());
         modelBuilder.ApplyConfiguration(new MaintenanceLogAttachmentConfiguration());
         modelBuilder.ApplyConfiguration(new RecallNotificationConfiguration());
     }

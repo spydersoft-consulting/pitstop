@@ -84,8 +84,8 @@ describe("AddMaintenanceLog", () => {
       vehicleId: 1,
       serviceDate: "2026-01-01",
       odometerReading: 45230,
-      serviceType: "OilChange",
       performedBy: "Self",
+      items: [{ id: 1, serviceType: "OilChange", isWarrantyWork: false }],
     });
     renderComponent(1);
 

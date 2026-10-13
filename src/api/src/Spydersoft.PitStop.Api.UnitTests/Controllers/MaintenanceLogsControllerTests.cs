@@ -17,6 +17,10 @@ public class MaintenanceLogsControllerTests
 {
     private const string TestUserId = TestDataHelpers.TestUserId;
 
+    private static readonly string[] MultiItemServiceTypes = ["OilChange", "TireRotation", "Recall"];
+    private static readonly bool[] MultiItemWarrantyFlags = [false, false, true];
+    private static readonly string[] ReplacedItemServiceTypes = ["BrakePads"];
+
     private PitStopDbContext _db = null!;
     private LocationService _locationService = null!;
     private FakeFileStoreClient _fileStore = null!;
@@ -60,8 +64,8 @@ public class MaintenanceLogsControllerTests
     {
         ServiceDate = new DateOnly(2026, 1, 1),
         OdometerReading = odometer,
-        ServiceType = "OilChange",
         PerformedBy = "Self",
+        Items = [new MaintenanceLogItemRequest { ServiceType = "OilChange" }],
     };
 
     [Test]
@@ -73,8 +77,8 @@ public class MaintenanceLogsControllerTests
             VehicleId = v.Id,
             ServiceDate = new DateOnly(2026, 1, 1),
             OdometerReading = 1000,
-            ServiceType = MaintenanceType.OilChange,
             PerformedBy = ServicePerformedBy.Self,
+            Items = [new MaintenanceLogItem { ServiceType = MaintenanceType.OilChange }],
         });
         await _db.SaveChangesAsync();
 
@@ -110,7 +114,7 @@ public class MaintenanceLogsControllerTests
         var v = await CreateVehicleAsync();
 
         var request = TestRequest();
-        request.ServiceType = "NotAType";
+        request.Items[0].ServiceType = "NotAType";
 
         var result = await _controller.Create(v.Id, request, CancellationToken.None);
 
@@ -197,9 +201,9 @@ public class MaintenanceLogsControllerTests
         {
             ServiceDate = new DateOnly(2026, 2, 1),
             OdometerReading = 2000,
-            ServiceType = "OilChange",
             PerformedBy = "Shop",
             LocationId = newLoc.Id,
+            Items = [new MaintenanceLogItemRequest { ServiceType = "OilChange" }],
         };
         await _controller.Update(v.Id, created.Id, update, CancellationToken.None);
 
@@ -249,28 +253,118 @@ public class MaintenanceLogsControllerTests
         var v = await CreateVehicleAsync();
 
         var request = TestRequest();
-        request.ServiceType = "Recall";
-        request.IsWarrantyWork = true;
+        request.Items[0].ServiceType = "Recall";
+        request.Items[0].IsWarrantyWork = true;
 
         var result = await _controller.Create(v.Id, request, CancellationToken.None);
 
         var dto = (MaintenanceLogDto)((CreatedAtActionResult)result.Result!).Value!;
-        Assert.That(dto.ServiceType, Is.EqualTo("Recall"));
-        Assert.That(dto.IsWarrantyWork, Is.True);
+        Assert.That(dto.Items, Has.Count.EqualTo(1));
+        Assert.That(dto.Items[0].ServiceType, Is.EqualTo("Recall"));
+        Assert.That(dto.Items[0].IsWarrantyWork, Is.True);
     }
 
     [Test]
-    public async Task GetById_ComputesTotalCost_FromPartsAndLabor()
+    public async Task Create_PersistsMultipleItems_WithIndependentWarrantyFlags()
     {
         var v = await CreateVehicleAsync();
         var request = TestRequest();
-        request.PartsCost = 20.00m;
-        request.LaborCost = 15.00m;
+        request.Items =
+        [
+            new MaintenanceLogItemRequest { ServiceType = "OilChange", PartsCost = 30m, LaborCost = 20m },
+            new MaintenanceLogItemRequest { ServiceType = "TireRotation", TotalCost = 25m },
+            new MaintenanceLogItemRequest { ServiceType = "Recall", Description = "NHTSA 24V-123", IsWarrantyWork = true },
+        ];
+
+        var result = await _controller.Create(v.Id, request, CancellationToken.None);
+
+        var dto = (MaintenanceLogDto)((CreatedAtActionResult)result.Result!).Value!;
+        Assert.That(dto.Items.Select(i => i.ServiceType), Is.EqualTo(MultiItemServiceTypes));
+        Assert.That(dto.Items.Select(i => i.IsWarrantyWork), Is.EqualTo(MultiItemWarrantyFlags));
+        Assert.That(dto.Items[2].Description, Is.EqualTo("NHTSA 24V-123"));
+        Assert.That(await _db.MaintenanceLogItems.CountAsync(), Is.EqualTo(3));
+    }
+
+    [Test]
+    public async Task GetById_ComputesItemCost_FromPartsAndLabor()
+    {
+        var v = await CreateVehicleAsync();
+        var request = TestRequest();
+        request.Items[0].PartsCost = 20.00m;
+        request.Items[0].LaborCost = 15.00m;
 
         var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
             v.Id, request, CancellationToken.None)).Result!).Value!;
 
+        Assert.That(created.Items[0].ComputedTotalCost, Is.EqualTo(35.00m));
         Assert.That(created.ComputedTotalCost, Is.EqualTo(35.00m));
+    }
+
+    [Test]
+    public async Task Create_ComputedTotal_SumsItems_AndPrefersItemTotalOverride()
+    {
+        var v = await CreateVehicleAsync();
+        var request = TestRequest();
+        request.Items =
+        [
+            new MaintenanceLogItemRequest { ServiceType = "OilChange", PartsCost = 20m, LaborCost = 15m },
+            new MaintenanceLogItemRequest { ServiceType = "TireRotation", PartsCost = 5m, TotalCost = 40m },
+            new MaintenanceLogItemRequest { ServiceType = "Recall", IsWarrantyWork = true },
+        ];
+
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, request, CancellationToken.None)).Result!).Value!;
+
+        Assert.That(created.Items[2].ComputedTotalCost, Is.Null);
+        Assert.That(created.ComputedTotalCost, Is.EqualTo(75m));
+    }
+
+    [Test]
+    public async Task Create_ComputedTotal_IsNull_WhenNoItemHasCost()
+    {
+        var v = await CreateVehicleAsync();
+
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+
+        Assert.That(created.ComputedTotalCost, Is.Null);
+    }
+
+    [Test]
+    public async Task Update_ReplacesItemSet()
+    {
+        var v = await CreateVehicleAsync();
+        var request = TestRequest();
+        request.Items =
+        [
+            new MaintenanceLogItemRequest { ServiceType = "OilChange" },
+            new MaintenanceLogItemRequest { ServiceType = "TireRotation" },
+        ];
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, request, CancellationToken.None)).Result!).Value!;
+
+        var update = UpdateRequest();
+        update.Items =
+        [
+            new MaintenanceLogItemRequest { ServiceType = "BrakePads", PartsCost = 120m },
+        ];
+        var result = await _controller.Update(v.Id, created.Id, update, CancellationToken.None);
+
+        var dto = (MaintenanceLogDto)((OkObjectResult)result.Result!).Value!;
+        Assert.That(dto.Items.Select(i => i.ServiceType), Is.EqualTo(ReplacedItemServiceTypes));
+        Assert.That(await _db.MaintenanceLogItems.CountAsync(), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Delete_SoftDeletedLog_HidesItems()
+    {
+        var v = await CreateVehicleAsync();
+        var created = (MaintenanceLogDto)((CreatedAtActionResult)(await _controller.Create(
+            v.Id, TestRequest(), CancellationToken.None)).Result!).Value!;
+
+        await _controller.Delete(v.Id, created.Id, CancellationToken.None);
+
+        Assert.That(await _db.MaintenanceLogItems.CountAsync(), Is.EqualTo(0));
     }
 
     [Test]
@@ -295,7 +389,7 @@ public class MaintenanceLogsControllerTests
         var v = await CreateVehicleAsync();
         await _controller.Create(v.Id, TestRequest(), CancellationToken.None);
         var recall = TestRequest();
-        recall.ServiceType = "Recall";
+        recall.Items[0].ServiceType = "Recall";
         await _controller.Create(v.Id, recall, CancellationToken.None);
 
         var result = await _controller.GetAll(
@@ -305,7 +399,30 @@ public class MaintenanceLogsControllerTests
 
         var response = (MaintenanceLogListResponse)((OkObjectResult)result.Result!).Value!;
         Assert.That(response.TotalCount, Is.EqualTo(1));
-        Assert.That(response.Items[0].ServiceType, Is.EqualTo("Recall"));
+        Assert.That(response.Items[0].Items[0].ServiceType, Is.EqualTo("Recall"));
+    }
+
+    [Test]
+    public async Task GetAll_FiltersByServiceType_MatchesAnyItemInVisit()
+    {
+        var v = await CreateVehicleAsync();
+        var multi = TestRequest();
+        multi.Items =
+        [
+            new MaintenanceLogItemRequest { ServiceType = "OilChange" },
+            new MaintenanceLogItemRequest { ServiceType = "TireRotation" },
+        ];
+        await _controller.Create(v.Id, multi, CancellationToken.None);
+        await _controller.Create(v.Id, TestRequest(), CancellationToken.None);
+
+        var result = await _controller.GetAll(
+            v.Id,
+            new MaintenanceLogQuery { ServiceType = "TireRotation" },
+            CancellationToken.None);
+
+        var response = (MaintenanceLogListResponse)((OkObjectResult)result.Result!).Value!;
+        Assert.That(response.TotalCount, Is.EqualTo(1));
+        Assert.That(response.Items[0].Items, Has.Count.EqualTo(2));
     }
 
     [Test]
@@ -441,7 +558,7 @@ public class MaintenanceLogsControllerTests
     {
         var v = await CreateVehicleAsync();
         var request = UpdateRequest();
-        request.ServiceType = "NotAType";
+        request.Items[0].ServiceType = "NotAType";
 
         var result = await _controller.Update(v.Id, 1, request, CancellationToken.None);
 
@@ -743,8 +860,8 @@ public class MaintenanceLogsControllerTests
     {
         ServiceDate = new DateOnly(2026, 1, 1),
         OdometerReading = 1500m,
-        ServiceType = "OilChange",
         PerformedBy = "Self",
+        Items = [new MaintenanceLogItemRequest { ServiceType = "OilChange" }],
     };
 
     private static InitiateAttachmentUploadRequest InitiateRequest() => new()

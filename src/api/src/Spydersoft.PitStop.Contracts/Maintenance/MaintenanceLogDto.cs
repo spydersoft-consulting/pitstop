@@ -8,18 +8,13 @@ public class MaintenanceLogDto
     public int VehicleId { get; set; }
     public DateOnly ServiceDate { get; set; }
     public decimal OdometerReading { get; set; }
-    public string ServiceType { get; set; } = string.Empty;
-    public string? Description { get; set; }
     public string PerformedBy { get; set; } = string.Empty;
-    public bool IsWarrantyWork { get; set; }
     public LocationSummaryDto? Location { get; set; }
-    public decimal? PartsCost { get; set; }
-    public decimal? LaborCost { get; set; }
-    public decimal? TotalCost { get; set; }
     public string? Notes { get; set; }
 
+    public List<MaintenanceLogItemDto> Items { get; set; } = [];
     public List<MaintenanceAttachmentDto> Attachments { get; set; } = [];
 
-    // Computed
+    // Computed: sum of item costs; null when no item has a cost
     public decimal? ComputedTotalCost { get; set; }
 }

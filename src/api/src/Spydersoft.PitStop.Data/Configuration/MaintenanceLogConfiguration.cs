@@ -10,15 +10,10 @@ public class MaintenanceLogConfiguration : IEntityTypeConfiguration<MaintenanceL
     {
         builder.HasKey(m => m.Id);
 
-        builder.Property(m => m.ServiceType).HasConversion<string>().HasMaxLength(30);
         builder.Property(m => m.PerformedBy).HasConversion<string>().HasMaxLength(20);
 
         builder.Property(m => m.OdometerReading).HasPrecision(10, 1);
-        builder.Property(m => m.PartsCost).HasPrecision(8, 2);
-        builder.Property(m => m.LaborCost).HasPrecision(8, 2);
-        builder.Property(m => m.TotalCost).HasPrecision(8, 2);
 
-        builder.Property(m => m.Description).HasMaxLength(200);
         builder.Property(m => m.Notes).HasMaxLength(1000);
 
         builder.HasOne(m => m.Vehicle)

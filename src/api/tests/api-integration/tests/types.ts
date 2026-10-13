@@ -141,40 +141,59 @@ export interface CreateLocationRequest {
   googlePlaceId?: string;
 }
 
+export interface MaintenanceLogItemDto {
+  id: number;
+  serviceType: string;
+  description?: string | null;
+  isWarrantyWork: boolean;
+  partsCost?: number | null;
+  laborCost?: number | null;
+  totalCost?: number | null;
+  computedTotalCost?: number | null;
+}
+
+export interface MaintenanceLogItemRequest {
+  serviceType: string;
+  description?: string;
+  isWarrantyWork?: boolean;
+  partsCost?: number;
+  laborCost?: number;
+  totalCost?: number;
+}
+
 export interface MaintenanceLogDto {
   id: number;
   vehicleId: number;
   serviceDate: string;
   odometerReading: number;
-  serviceType: string;
-  description?: string | null;
   performedBy: string;
-  isWarrantyWork?: boolean;
   location?: LocationSummaryDto | null;
-  partsCost?: number | null;
-  laborCost?: number | null;
-  totalCost?: number | null;
-  nextServiceOdometer?: number | null;
-  nextServiceDate?: string | null;
   notes?: string | null;
+  items: MaintenanceLogItemDto[];
   computedTotalCost?: number | null;
 }
 
 export interface CreateMaintenanceLogRequest {
   serviceDate?: string;
   odometerReading: number;
-  serviceType: string;
-  description?: string;
   performedBy: string;
-  isWarrantyWork?: boolean;
   locationId?: number;
   location?: CreateLocationRequest;
-  partsCost?: number;
-  laborCost?: number;
-  totalCost?: number;
-  nextServiceOdometer?: number;
-  nextServiceDate?: string;
   notes?: string;
+  items: MaintenanceLogItemRequest[];
+}
+
+export interface MaintenanceCostDataPoint {
+  serviceType: string;
+  count: number;
+  warrantyCount: number;
+  totalCost: number;
+  partsCost: number;
+  laborCost: number;
+}
+
+export interface MaintenanceCostResponse {
+  points: MaintenanceCostDataPoint[];
 }
 
 export interface RecallDto {
