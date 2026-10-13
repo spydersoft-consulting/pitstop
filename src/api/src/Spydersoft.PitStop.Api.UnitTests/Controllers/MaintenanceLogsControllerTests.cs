@@ -17,6 +17,10 @@ public class MaintenanceLogsControllerTests
 {
     private const string TestUserId = TestDataHelpers.TestUserId;
 
+    private static readonly string[] MultiItemServiceTypes = ["OilChange", "TireRotation", "Recall"];
+    private static readonly bool[] MultiItemWarrantyFlags = [false, false, true];
+    private static readonly string[] ReplacedItemServiceTypes = ["BrakePads"];
+
     private PitStopDbContext _db = null!;
     private LocationService _locationService = null!;
     private FakeFileStoreClient _fileStore = null!;
@@ -275,8 +279,8 @@ public class MaintenanceLogsControllerTests
         var result = await _controller.Create(v.Id, request, CancellationToken.None);
 
         var dto = (MaintenanceLogDto)((CreatedAtActionResult)result.Result!).Value!;
-        Assert.That(dto.Items.Select(i => i.ServiceType), Is.EqualTo(new[] { "OilChange", "TireRotation", "Recall" }));
-        Assert.That(dto.Items.Select(i => i.IsWarrantyWork), Is.EqualTo(new[] { false, false, true }));
+        Assert.That(dto.Items.Select(i => i.ServiceType), Is.EqualTo(MultiItemServiceTypes));
+        Assert.That(dto.Items.Select(i => i.IsWarrantyWork), Is.EqualTo(MultiItemWarrantyFlags));
         Assert.That(dto.Items[2].Description, Is.EqualTo("NHTSA 24V-123"));
         Assert.That(await _db.MaintenanceLogItems.CountAsync(), Is.EqualTo(3));
     }
@@ -347,7 +351,7 @@ public class MaintenanceLogsControllerTests
         var result = await _controller.Update(v.Id, created.Id, update, CancellationToken.None);
 
         var dto = (MaintenanceLogDto)((OkObjectResult)result.Result!).Value!;
-        Assert.That(dto.Items.Select(i => i.ServiceType), Is.EqualTo(new[] { "BrakePads" }));
+        Assert.That(dto.Items.Select(i => i.ServiceType), Is.EqualTo(ReplacedItemServiceTypes));
         Assert.That(await _db.MaintenanceLogItems.CountAsync(), Is.EqualTo(1));
     }
 

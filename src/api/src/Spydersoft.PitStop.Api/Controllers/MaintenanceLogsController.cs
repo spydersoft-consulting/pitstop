@@ -71,6 +71,7 @@ public class MaintenanceLogsController(
             .Include(m => m.Location)
             .Include(m => m.Items)
             .Include(m => m.Attachments)
+            .AsSplitQuery()
             .Skip((listQuery.Page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(ct);
@@ -95,6 +96,7 @@ public class MaintenanceLogsController(
             .Include(m => m.Location)
             .Include(m => m.Items)
             .Include(m => m.Attachments)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(m => m.Id == id && m.VehicleId == vehicleId, ct);
         return log is null ? NotFound() : Ok(MapToDto(log));
     }

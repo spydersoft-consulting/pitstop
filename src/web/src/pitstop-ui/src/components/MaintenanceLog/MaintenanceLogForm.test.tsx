@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
@@ -195,60 +195,76 @@ describe("MaintenanceLogForm", () => {
     ]);
   });
 
-  it("adds and removes service rows", async () => {
-    const user = userEvent.setup();
-    renderForm({ initialValues: filled });
-
-    expect(screen.queryByRole("button", { name: /remove service/i })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /add another service/i }));
-    expect(screen.getByTestId("service-item-1")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /remove service 2/i }));
-    expect(screen.queryByTestId("service-item-1")).not.toBeInTheDocument();
-  });
-
-  it("submits several services, each with its own warranty flag and cost", async () => {
+  it("edits a service's type, description, costs and warranty flag", async () => {
     const user = userEvent.setup();
     const { onSubmit } = renderForm({
       initialValues: {
         ...filled,
-        items: [
-          { ...filled.items[0], serviceType: "OilChange", description: "", partsCost: 30, laborCost: 20 },
-          {
-            ...filled.items[0],
-            serviceType: "Recall",
-            description: " NHTSA 24V-123 ",
-            isWarrantyWork: true,
-            partsCost: null,
-            laborCost: null,
-          },
-        ],
+        items: [{ ...filled.items[0], description: "", partsCost: null, laborCost: null }],
+      },
+    });
+    const row = screen.getByTestId("service-item-0");
+
+    await user.click(
+      within(screen.getByTestId("service-type-0")).getAllByText("Brake Pads")[0].closest(".p-dropdown")!,
+    );
+    await user.click(document.querySelector<HTMLElement>('li[aria-label="Coolant"]')!);
+    await user.type(within(row).getByPlaceholderText("Optional description"), "  Flush and fill ");
+    await user.type(within(row).getByPlaceholderText("e.g. 45.00"), "40");
+    await user.type(within(row).getByPlaceholderText("e.g. 60.00"), "25");
+    await user.tab();
+    await user.click(within(row).getByLabelText("Covered under warranty"));
+
+    expect(screen.getByTestId("visit-total")).toHaveTextContent("Visit total: $65.00");
+
+    await user.click(screen.getByRole("button", { name: /add maintenance log/i }));
+
+    expect(onSubmit.mock.calls[0][0].items).toEqual([
+      {
+        serviceType: "Coolant",
+        description: "Flush and fill",
+        isWarrantyWork: true,
+        partsCost: 40,
+        laborCost: 25,
+        totalCost: null,
+      },
+    ]);
+  });
+
+  it("prefers a service's total-cost override over parts plus labor in the visit total", () => {
+    renderForm({
+      initialValues: {
+        ...filled,
+        items: [{ ...filled.items[0], partsCost: 20, laborCost: 15, totalCost: 50 }],
       },
     });
 
     expect(screen.getByTestId("visit-total")).toHaveTextContent("Visit total: $50.00");
+  });
+
+  it("hides the visit total when no service has a cost", () => {
+    renderForm({
+      initialValues: {
+        ...filled,
+        items: [{ ...filled.items[0], partsCost: null, laborCost: null, totalCost: null }],
+      },
+    });
+
+    expect(screen.queryByTestId("visit-total")).not.toBeInTheDocument();
+  });
+
+  it("updates visit-level fields", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({ initialValues: { ...filled, notes: "" } });
+
+    await user.click(screen.getByTestId("performed-by").querySelector(".p-dropdown")!);
+    await user.click(document.querySelector<HTMLElement>('li[aria-label="Self"]')!);
+    await user.type(screen.getByPlaceholderText("Optional notes"), "  Checked tires ");
     await user.click(screen.getByRole("button", { name: /add maintenance log/i }));
 
     const body = onSubmit.mock.calls[0][0];
-    expect(body.items).toEqual([
-      {
-        serviceType: "OilChange",
-        description: null,
-        isWarrantyWork: false,
-        partsCost: 30,
-        laborCost: 20,
-        totalCost: null,
-      },
-      {
-        serviceType: "Recall",
-        description: "NHTSA 24V-123",
-        isWarrantyWork: true,
-        partsCost: null,
-        laborCost: null,
-        totalCost: null,
-      },
-    ]);
+    expect(body.performedBy).toBe("Self");
+    expect(body.notes).toBe("Checked tires");
   });
 
   it("adds and removes service rows", async () => {
