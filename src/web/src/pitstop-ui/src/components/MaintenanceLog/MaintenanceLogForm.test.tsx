@@ -280,6 +280,29 @@ describe("MaintenanceLogForm", () => {
     expect(screen.queryByTestId("service-item-1")).not.toBeInTheDocument();
   });
 
+  it("keeps the surviving rows' DOM when an earlier row is removed", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({ initialValues: filled });
+    await user.click(screen.getByRole("button", { name: /add another service/i }));
+    await user.type(
+      within(screen.getByTestId("service-item-1")).getByPlaceholderText("Optional description"),
+      "second",
+    );
+    const secondRow = screen.getByTestId("service-item-1");
+
+    await user.click(screen.getByRole("button", { name: "Remove service 1" }));
+
+    // The remaining row is the same element, now at position 0 -- not the first row reused with new data.
+    expect(screen.getByTestId("service-item-0")).toBe(secondRow);
+    expect(screen.queryByTestId("service-item-1")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /add maintenance log/i }));
+    const items = onSubmit.mock.calls[0][0].items;
+    expect(items).toHaveLength(1);
+    expect(items[0].description).toBe("second");
+    expect(items[0]).not.toHaveProperty("uid");
+  });
+
   it("uses the Save Changes label when in edit mode", () => {
     renderForm({ initialValues: filled, isEdit: true });
     expect(screen.getByRole("button", { name: /save changes/i })).toBeInTheDocument();

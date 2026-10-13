@@ -25,6 +25,8 @@ const toDateOnlyString = (d: Date): string => {
 };
 
 export interface MaintenanceLogItemFormValues {
+  /** Client-only React key for the row; assigned by the form and never sent to the API. */
+  uid?: string;
   serviceType: string;
   description: string;
   isWarrantyWork: boolean;
@@ -75,6 +77,14 @@ const defaults: MaintenanceLogFormValues = {
 
 const MAX_ITEMS = 20;
 
+// Service rows have no id until they're saved, and rows can be removed from the middle, so an array
+// index would make React reuse the wrong row's input state. Each row gets a stable key instead.
+let nextRowKey = 0;
+const withRowKey = (item: MaintenanceLogItemFormValues): MaintenanceLogItemFormValues => ({
+  ...item,
+  uid: item.uid ?? `service-row-${nextRowKey++}`,
+});
+
 export const MaintenanceLogForm: React.FC<Props> = ({
   initialValues = defaults,
   isEdit = false,
@@ -82,7 +92,10 @@ export const MaintenanceLogForm: React.FC<Props> = ({
   onSubmit,
 }) => {
   const navigate = useNavigate();
-  const [values, setValues] = useState<MaintenanceLogFormValues>(initialValues);
+  const [values, setValues] = useState<MaintenanceLogFormValues>(() => ({
+    ...initialValues,
+    items: initialValues.items.map((item) => withRowKey(item)),
+  }));
   const [errors, setErrors] = useState<Partial<Record<keyof MaintenanceLogFormValues, string>>>({});
 
   const set = <K extends keyof MaintenanceLogFormValues>(key: K, value: MaintenanceLogFormValues[K]) => {
@@ -102,7 +115,7 @@ export const MaintenanceLogForm: React.FC<Props> = ({
     setErrors((prev) => ({ ...prev, items: undefined }));
   };
 
-  const addItem = () => setValues((prev) => ({ ...prev, items: [...prev.items, emptyItem()] }));
+  const addItem = () => setValues((prev) => ({ ...prev, items: [...prev.items, withRowKey(emptyItem())] }));
 
   const removeItem = (index: number) =>
     setValues((prev) => ({ ...prev, items: prev.items.filter((_, i) => i !== index) }));
@@ -219,7 +232,7 @@ export const MaintenanceLogForm: React.FC<Props> = ({
 
         {values.items.map((item, index) => (
           <div
-            key={index}
+            key={item.uid}
             className="rounded-xl border border-border p-3 space-y-3"
             data-testid={`service-item-${index}`}
           >
