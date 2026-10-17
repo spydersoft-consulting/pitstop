@@ -13,10 +13,14 @@ import type {
   DeleteApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsByAttachmentIdResponses,
   DeleteApiV1VehiclesByVehicleIdMaintenanceByIdData,
   DeleteApiV1VehiclesByVehicleIdMaintenanceByIdResponses,
+  DeleteApiV1VehiclesByVehicleIdRemindersByIdData,
+  DeleteApiV1VehiclesByVehicleIdRemindersByIdResponses,
   GetApiV1LocationsByIdData,
   GetApiV1LocationsByIdResponses,
   GetApiV1LocationsData,
   GetApiV1LocationsResponses,
+  GetApiV1ReminderTemplatesData,
+  GetApiV1ReminderTemplatesResponses,
   GetApiV1VehiclesByIdData,
   GetApiV1VehiclesByIdResponses,
   GetApiV1VehiclesByVehicleIdAnalyticsMaintenanceCostData,
@@ -39,6 +43,10 @@ import type {
   GetApiV1VehiclesByVehicleIdMaintenanceResponses,
   GetApiV1VehiclesByVehicleIdRecallsData,
   GetApiV1VehiclesByVehicleIdRecallsResponses,
+  GetApiV1VehiclesByVehicleIdRemindersByIdData,
+  GetApiV1VehiclesByVehicleIdRemindersByIdResponses,
+  GetApiV1VehiclesByVehicleIdRemindersData,
+  GetApiV1VehiclesByVehicleIdRemindersResponses,
   GetApiV1VehiclesData,
   GetApiV1VehiclesResponses,
   PostApiV1LocationsData,
@@ -51,6 +59,14 @@ import type {
   PostApiV1VehiclesByVehicleIdMaintenanceByIdAttachmentsInitiateResponses,
   PostApiV1VehiclesByVehicleIdMaintenanceData,
   PostApiV1VehiclesByVehicleIdMaintenanceResponses,
+  PostApiV1VehiclesByVehicleIdRemindersByIdCompleteData,
+  PostApiV1VehiclesByVehicleIdRemindersByIdCompleteResponses,
+  PostApiV1VehiclesByVehicleIdRemindersByIdSnoozeData,
+  PostApiV1VehiclesByVehicleIdRemindersByIdSnoozeResponses,
+  PostApiV1VehiclesByVehicleIdRemindersData,
+  PostApiV1VehiclesByVehicleIdRemindersFromTemplatesData,
+  PostApiV1VehiclesByVehicleIdRemindersFromTemplatesResponses,
+  PostApiV1VehiclesByVehicleIdRemindersResponses,
   PostApiV1VehiclesData,
   PostApiV1VehiclesResponses,
   PutApiV1LocationsByIdData,
@@ -61,6 +77,8 @@ import type {
   PutApiV1VehiclesByVehicleIdFillupsByIdResponses,
   PutApiV1VehiclesByVehicleIdMaintenanceByIdData,
   PutApiV1VehiclesByVehicleIdMaintenanceByIdResponses,
+  PutApiV1VehiclesByVehicleIdRemindersByIdData,
+  PutApiV1VehiclesByVehicleIdRemindersByIdResponses,
 } from "./types.gen";
 
 export type Options<
@@ -338,6 +356,106 @@ export const getApiV1VehiclesByVehicleIdRecalls = <ThrowOnError extends boolean 
     responseType: "json",
     url: "/api/v1/vehicles/{vehicleId}/recalls",
     ...options,
+  });
+
+export const getApiV1ReminderTemplates = <ThrowOnError extends boolean = false>(
+  options?: Options<GetApiV1ReminderTemplatesData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<GetApiV1ReminderTemplatesResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/reminder-templates",
+    ...options,
+  });
+
+export const getApiV1VehiclesByVehicleIdReminders = <ThrowOnError extends boolean = false>(
+  options: Options<GetApiV1VehiclesByVehicleIdRemindersData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdRemindersResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/reminders",
+    ...options,
+  });
+
+export const postApiV1VehiclesByVehicleIdReminders = <ThrowOnError extends boolean = false>(
+  options: Options<PostApiV1VehiclesByVehicleIdRemindersData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<PostApiV1VehiclesByVehicleIdRemindersResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/reminders",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const deleteApiV1VehiclesByVehicleIdRemindersById = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteApiV1VehiclesByVehicleIdRemindersByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).delete<DeleteApiV1VehiclesByVehicleIdRemindersByIdResponses, unknown, ThrowOnError>({
+    url: "/api/v1/vehicles/{vehicleId}/reminders/{id}",
+    ...options,
+  });
+
+export const getApiV1VehiclesByVehicleIdRemindersById = <ThrowOnError extends boolean = false>(
+  options: Options<GetApiV1VehiclesByVehicleIdRemindersByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdRemindersByIdResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/reminders/{id}",
+    ...options,
+  });
+
+export const putApiV1VehiclesByVehicleIdRemindersById = <ThrowOnError extends boolean = false>(
+  options: Options<PutApiV1VehiclesByVehicleIdRemindersByIdData, ThrowOnError>,
+) =>
+  (options.client ?? client).put<PutApiV1VehiclesByVehicleIdRemindersByIdResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/reminders/{id}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const postApiV1VehiclesByVehicleIdRemindersFromTemplates = <ThrowOnError extends boolean = false>(
+  options: Options<PostApiV1VehiclesByVehicleIdRemindersFromTemplatesData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<PostApiV1VehiclesByVehicleIdRemindersFromTemplatesResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/reminders/from-templates",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const postApiV1VehiclesByVehicleIdRemindersByIdComplete = <ThrowOnError extends boolean = false>(
+  options: Options<PostApiV1VehiclesByVehicleIdRemindersByIdCompleteData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<PostApiV1VehiclesByVehicleIdRemindersByIdCompleteResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/reminders/{id}/complete",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+export const postApiV1VehiclesByVehicleIdRemindersByIdSnooze = <ThrowOnError extends boolean = false>(
+  options: Options<PostApiV1VehiclesByVehicleIdRemindersByIdSnoozeData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<PostApiV1VehiclesByVehicleIdRemindersByIdSnoozeResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/reminders/{id}/snooze",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 export const getApiV1Vehicles = <ThrowOnError extends boolean = false>(

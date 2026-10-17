@@ -13,6 +13,7 @@ describe("store", () => {
     expect(state.locations).toBeDefined();
     expect(state.maintenanceLogs).toBeDefined();
     expect(state.notifications).toEqual({ items: [], unreadCount: 0, loading: false });
+    expect(state.reminders).toEqual({ reminders: [], templates: [], loading: false });
   });
 
   it("persists state to localStorage on dispatch", () => {
