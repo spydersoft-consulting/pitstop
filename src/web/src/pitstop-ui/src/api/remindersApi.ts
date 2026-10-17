@@ -1,6 +1,7 @@
 import {
   getApiV1ReminderTemplates,
   getApiV1VehiclesByVehicleIdReminders,
+  getApiV1VehiclesByVehicleIdRemindersByIdHistory,
   postApiV1VehiclesByVehicleIdReminders,
   putApiV1VehiclesByVehicleIdRemindersById,
   deleteApiV1VehiclesByVehicleIdRemindersById,
@@ -11,6 +12,7 @@ import {
 import type {
   CompleteReminderRequest,
   ReminderDto,
+  ReminderHistoryEntryDto,
   ReminderRequest,
   ReminderTemplateDto,
   SnoozeReminderRequest,
@@ -20,6 +22,11 @@ export const remindersApi = {
   list: async (vehicleId: number): Promise<ReminderDto[]> => {
     const { data } = await getApiV1VehiclesByVehicleIdReminders({ path: { vehicleId } });
     return data ?? [];
+  },
+
+  history: async (vehicleId: number, id: number): Promise<ReminderHistoryEntryDto[]> => {
+    const { data } = await getApiV1VehiclesByVehicleIdRemindersByIdHistory({ path: { vehicleId, id } });
+    return Array.isArray(data) ? data : [];
   },
 
   templates: async (): Promise<ReminderTemplateDto[]> => {

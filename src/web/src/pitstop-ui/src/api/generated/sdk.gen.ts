@@ -44,6 +44,8 @@ import type {
   GetApiV1VehiclesByVehicleIdRecallsData,
   GetApiV1VehiclesByVehicleIdRecallsResponses,
   GetApiV1VehiclesByVehicleIdRemindersByIdData,
+  GetApiV1VehiclesByVehicleIdRemindersByIdHistoryData,
+  GetApiV1VehiclesByVehicleIdRemindersByIdHistoryResponses,
   GetApiV1VehiclesByVehicleIdRemindersByIdResponses,
   GetApiV1VehiclesByVehicleIdRemindersData,
   GetApiV1VehiclesByVehicleIdRemindersResponses,
@@ -417,6 +419,15 @@ export const putApiV1VehiclesByVehicleIdRemindersById = <ThrowOnError extends bo
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+export const getApiV1VehiclesByVehicleIdRemindersByIdHistory = <ThrowOnError extends boolean = false>(
+  options: Options<GetApiV1VehiclesByVehicleIdRemindersByIdHistoryData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<GetApiV1VehiclesByVehicleIdRemindersByIdHistoryResponses, unknown, ThrowOnError>({
+    responseType: "json",
+    url: "/api/v1/vehicles/{vehicleId}/reminders/{id}/history",
+    ...options,
   });
 
 export const postApiV1VehiclesByVehicleIdRemindersFromTemplates = <ThrowOnError extends boolean = false>(

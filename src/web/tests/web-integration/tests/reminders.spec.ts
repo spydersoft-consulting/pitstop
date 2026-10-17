@@ -83,6 +83,12 @@ test("add common services, mark one done, edit it, and delete it through the UI"
   await page.getByRole("button", { name: "Delete Tire rotation" }).click();
   await page.getByRole("button", { name: "Yes" }).click();
   await expect(page.getByText("Tire rotation", { exact: true })).toHaveCount(0);
+
+  // Marking the oil change done also recorded it in Maintenance History.
+  await page.getByRole("link", { name: "Maintenance" }).click();
+  await expect(page).toHaveURL(/\/maintenance$/);
+  await expect(page.getByText("12,000 mi").first()).toBeVisible();
+  await expect(page.getByText("Oil Change").first()).toBeVisible();
 });
 
 test("add a custom reminder through the form", async ({ page }) => {
