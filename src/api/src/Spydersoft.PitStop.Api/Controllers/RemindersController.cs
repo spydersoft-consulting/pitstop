@@ -162,10 +162,28 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
 
         if (request.Odometer < 0)
             return ValidationProblem("Odometer must not be negative.");
+        if (!Enum.TryParse<ServicePerformedBy>(request.PerformedBy, ignoreCase: true, out var performedBy))
+            return ValidationProblem($"Invalid performedBy '{request.PerformedBy}'.");
 
         var reminder = await Db.MaintenanceReminders.FirstOrDefaultAsync(r => r.Id == id && r.VehicleId == vehicleId, ct);
         if (reminder is null)
             return NotFound();
+
+        Db.MaintenanceLogs.Add(new MaintenanceLog
+        {
+            VehicleId = vehicleId,
+            ServiceDate = request.Date,
+            OdometerReading = request.Odometer,
+            PerformedBy = performedBy,
+            Items =
+            [
+                new MaintenanceLogItem
+                {
+                    ServiceType = reminder.ServiceType,
+                    Description = reminder.ServiceType == MaintenanceType.Other ? reminder.Name : null,
+                },
+            ],
+        });
 
         reminder.LastDoneDate = request.Date;
         reminder.LastDoneOdometer = request.Odometer;

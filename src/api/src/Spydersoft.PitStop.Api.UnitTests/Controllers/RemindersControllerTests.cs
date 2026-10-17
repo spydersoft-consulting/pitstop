@@ -160,6 +160,60 @@ public class RemindersControllerTests
     }
 
     [Test]
+    public async Task Complete_RecordsAMaintenanceLogForTheReminderService()
+    {
+        var vehicle = await TestDataHelpers.CreateVehicleAsync(_db);
+        var created = Value(await _controller.Create(vehicle.Id, OilRequest(), CancellationToken.None));
+
+        await _controller.Complete(
+            vehicle.Id,
+            created.Id,
+            new CompleteReminderRequest { Date = new DateOnly(2026, 5, 30), Odometer = 42000, PerformedBy = "Shop" },
+            CancellationToken.None);
+
+        var log = _db.MaintenanceLogs.Include(m => m.Items).Single();
+        Assert.That(log.VehicleId, Is.EqualTo(vehicle.Id));
+        Assert.That(log.ServiceDate, Is.EqualTo(new DateOnly(2026, 5, 30)));
+        Assert.That(log.OdometerReading, Is.EqualTo(42000));
+        Assert.That(log.PerformedBy, Is.EqualTo(ServicePerformedBy.Shop));
+        Assert.That(log.Items.Select(i => i.ServiceType), Is.EqualTo(new[] { MaintenanceType.OilChange }));
+        Assert.That(log.Items[0].Description, Is.Null);
+    }
+
+    [Test]
+    public async Task Complete_DescribesOtherServicesByReminderName()
+    {
+        var vehicle = await TestDataHelpers.CreateVehicleAsync(_db);
+        var request = OilRequest();
+        request.ServiceType = "Other";
+        request.Name = "Rotate spare";
+        var created = Value(await _controller.Create(vehicle.Id, request, CancellationToken.None));
+
+        await _controller.Complete(
+            vehicle.Id, created.Id, new CompleteReminderRequest { Date = new DateOnly(2026, 5, 30), Odometer = 42000 }, CancellationToken.None);
+
+        var item = _db.MaintenanceLogs.Include(m => m.Items).Single().Items.Single();
+        Assert.That(item.ServiceType, Is.EqualTo(MaintenanceType.Other));
+        Assert.That(item.Description, Is.EqualTo("Rotate spare"));
+    }
+
+    [Test]
+    public async Task Complete_RejectsInvalidPerformedBy_WithoutRecordingAnything()
+    {
+        var vehicle = await TestDataHelpers.CreateVehicleAsync(_db);
+        var created = Value(await _controller.Create(vehicle.Id, OilRequest(), CancellationToken.None));
+
+        var result = await _controller.Complete(
+            vehicle.Id,
+            created.Id,
+            new CompleteReminderRequest { Date = new DateOnly(2026, 5, 30), Odometer = 42000, PerformedBy = "Nobody" },
+            CancellationToken.None);
+
+        Assert.That(((ObjectResult)result.Result!).Value, Is.InstanceOf<ValidationProblemDetails>());
+        Assert.That(_db.MaintenanceLogs.Count(), Is.Zero);
+    }
+
+    [Test]
     public async Task Snooze_SetsAndClears()
     {
         var vehicle = await TestDataHelpers.CreateVehicleAsync(_db);
