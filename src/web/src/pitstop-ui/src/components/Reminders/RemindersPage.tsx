@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBellConcierge, faCheck, faPlus, faTrash, faClock } from "@fortawesome/free-solid-svg-icons";
+import { faBellConcierge, faCheck, faPlus, faTrash, faClock, faPencil } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
@@ -47,10 +48,11 @@ interface CardProps {
   reminder: Reminder;
   onComplete: () => void;
   onSnooze: () => void;
+  onEdit: () => void;
   onDelete: (e: React.MouseEvent) => void;
 }
 
-const ReminderCard: React.FC<CardProps> = ({ reminder, onComplete, onSnooze, onDelete }) => (
+const ReminderCard: React.FC<CardProps> = ({ reminder, onComplete, onSnooze, onEdit, onDelete }) => (
   <div className="rounded-xl border border-border bg-surface p-4 space-y-3">
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
@@ -103,6 +105,12 @@ const ReminderCard: React.FC<CardProps> = ({ reminder, onComplete, onSnooze, onD
         onClick={onSnooze}
       />
       <Button
+        icon={<FontAwesomeIcon icon={faPencil} />}
+        className="p-button-text p-button-sm p-button-secondary"
+        onClick={onEdit}
+        aria-label={`Edit ${reminder.name ?? "reminder"}`}
+      />
+      <Button
         icon={<FontAwesomeIcon icon={faTrash} />}
         className="p-button-text p-button-sm p-button-danger"
         onClick={onDelete}
@@ -114,6 +122,7 @@ const ReminderCard: React.FC<CardProps> = ({ reminder, onComplete, onSnooze, onD
 
 export const RemindersPage: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { reminders, templates } = useAppSelector((s) => s.reminders);
   const selectedVehicleId = useAppSelector((s) => s.vehicles.selectedVehicleId);
   const selectedVehicle = useSelectedVehicle();
@@ -150,18 +159,38 @@ export const RemindersPage: React.FC = () => {
       onClick={() => setPickingTemplates(true)}
     />
   );
+  const addReminderButton = (
+    <Button
+      label="Add reminder"
+      icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
+      className="p-button-sm p-button-outlined"
+      onClick={() => navigate("/reminders/new")}
+    />
+  );
 
   return (
     <div className="space-y-6">
       <ConfirmPopup />
-      <PageHeader title="Maintenance Reminders" subtitle={vehicleLabel} actions={addTemplatesButton} />
+      <PageHeader
+        title="Maintenance Reminders"
+        subtitle={vehicleLabel}
+        actions={
+          <>
+            {addReminderButton}
+            {addTemplatesButton}
+          </>
+        }
+      />
 
       {reminders.length === 0 ? (
         <Card>
           <div className="text-center py-12 text-content-muted">
             <FontAwesomeIcon icon={faBellConcierge} className="text-4xl mb-3" />
             <p className="text-lg mb-4">No maintenance reminders yet.</p>
-            {addTemplatesButton}
+            <div className="flex justify-center gap-2">
+              {addReminderButton}
+              {addTemplatesButton}
+            </div>
           </div>
         </Card>
       ) : (
@@ -172,6 +201,7 @@ export const RemindersPage: React.FC = () => {
               reminder={reminder}
               onComplete={() => setCompleting(reminder)}
               onSnooze={() => setSnoozing(reminder)}
+              onEdit={() => navigate(`/reminders/${String(reminder.id)}/edit`)}
               onDelete={(e) => handleDelete(e, reminder)}
             />
           ))}
