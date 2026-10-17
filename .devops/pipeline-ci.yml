@@ -37,6 +37,8 @@ pr:
   branches:
     include:
       - main
+      - feature/*
+      - fix/*
 
 # Composed from two stage templates: the multi-container build/publish stages
 # and the Playwright integration/E2E stage (run after Build). Composition (not
