@@ -219,3 +219,44 @@ export interface MaintenanceLogListResponse {
   pageSize: number;
   totalPages: number;
 }
+
+export interface ReminderRequest {
+  serviceType: string;
+  name?: string | null;
+  intervalMiles?: number | null;
+  intervalMonths?: number | null;
+  leadMiles?: number | null;
+  leadDays?: number | null;
+  isActive?: boolean;
+}
+
+export interface ReminderDto {
+  id: number;
+  vehicleId: number;
+  serviceType: string;
+  name: string;
+  intervalMiles?: number | null;
+  intervalMonths?: number | null;
+  leadMiles?: number | null;
+  leadDays?: number | null;
+  isActive: boolean;
+  snoozedUntil?: string | null;
+  source: string;
+  status: "Ok" | "DueSoon" | "Overdue" | "Snoozed";
+  lastServiceDate: string;
+  lastServiceOdometer: number;
+  nextDueOdometer?: number | null;
+  nextDueDate?: string | null;
+  estimatedOdometer: number;
+  isOdometerEstimated: boolean;
+  projectedDueDate?: string | null;
+}
+
+export interface ReminderTemplateDto {
+  serviceType: string;
+  name: string;
+  intervalMiles?: number | null;
+  intervalMonths?: number | null;
+  leadMiles?: number | null;
+  leadDays?: number | null;
+}
