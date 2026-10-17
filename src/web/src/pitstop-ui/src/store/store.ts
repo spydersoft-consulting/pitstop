@@ -5,6 +5,7 @@ import { fillUpSliceReducer } from "./slices/fillUpSlice";
 import { locationSliceReducer } from "./slices/locationSlice";
 import { maintenanceLogSliceReducer } from "./slices/maintenanceLogSlice";
 import { notificationSliceReducer } from "./slices/notificationSlice";
+import { reminderSliceReducer } from "./slices/reminderSlice";
 
 const rootReducer = combineReducers({
   vehicles: vehicleSliceReducer,
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
   locations: locationSliceReducer,
   maintenanceLogs: maintenanceLogSliceReducer,
   notifications: notificationSliceReducer,
+  reminders: reminderSliceReducer,
 });
 
 // Defined from rootReducer (not store.getState) to avoid circular type reference with localStorage

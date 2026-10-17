@@ -19,6 +19,7 @@ function isValidState(state: Partial<RootState>): boolean {
   if (state.locations !== undefined && !isValidIdArray(state.locations.locations)) return false;
   if (state.maintenanceLogs !== undefined && !isValidIdArray(state.maintenanceLogs.recentMaintenanceLogs)) return false;
   if (state.notifications !== undefined && !isValidIdArray(state.notifications.items)) return false;
+  if (state.reminders !== undefined && !isValidIdArray(state.reminders.reminders)) return false;
   return true;
 }
 
