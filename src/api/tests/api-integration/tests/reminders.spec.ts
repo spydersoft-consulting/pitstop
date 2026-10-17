@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import type { VehicleDto, ReminderDto, ReminderRequest, ReminderTemplateDto, MaintenanceLogListResponse } from "./types";
+import type { VehicleDto, ReminderDto, ReminderRequest, ReminderTemplateDto, MaintenanceLogListResponse, ReminderHistoryEntryDto } from "./types";
 
 let vehicleId: number;
 
@@ -96,6 +96,30 @@ test("CompleteReminder_AdvancesBaselineAndRecordsAMaintenanceLog", async ({ requ
   expect(logs.items[0].serviceDate).toBe("2026-03-01");
   expect(logs.items[0].odometerReading).toBe(42000);
   expect(logs.items[0].items.map((i) => i.serviceType)).toEqual(["OilChange"]);
+});
+
+test("GetReminderHistory_MeasuresCompletionsAgainstTheInterval", async ({ request }) => {
+  const created: ReminderDto = await (
+    await request.post(`/api/v1/vehicles/${vehicleId}/reminders`, { data: oilReminder })
+  ).json();
+  for (const [serviceDate, odometerReading] of [
+    ["2026-01-10", 12000],
+    ["2026-07-22", 15000],
+  ] as const) {
+    await request.post(`/api/v1/vehicles/${vehicleId}/maintenance`, {
+      data: { serviceDate, odometerReading, performedBy: "Self", items: [{ serviceType: "OilChange" }] },
+    });
+  }
+
+  const response = await request.get(`/api/v1/vehicles/${vehicleId}/reminders/${created.id}/history`);
+
+  expect(response.status()).toBe(200);
+  const history: ReminderHistoryEntryDto[] = await response.json();
+  expect(history.map((h) => h.serviceDate)).toEqual(["2026-07-22", "2026-01-10"]);
+  expect(history[0].dueDate).toBe("2026-07-10");
+  expect(history[0].daysLate).toBe(12);
+  expect(history[0].wasLate).toBe(true);
+  expect(history[1].dueDate).toBeNull();
 });
 
 test("SnoozeReminder_SetsAndClearsSnooze", async ({ request }) => {

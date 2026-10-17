@@ -57,6 +57,31 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
         return reminder is null ? NotFound() : Ok(await EvaluateOneAsync(vehicle, reminder, ct));
     }
 
+    [HttpGet("api/v1/vehicles/{vehicleId:int}/reminders/{id:int}/history")]
+    [Authorize(Policy = AuthorizationPolicies.Read)]
+    public async Task<ActionResult<List<ReminderHistoryEntryDto>>> GetHistory(int vehicleId, int id, CancellationToken ct)
+    {
+        if (await FindVehicleAsync(vehicleId, ct) is null)
+            return NotFound();
+
+        var reminder = await Db.MaintenanceReminders.FirstOrDefaultAsync(r => r.Id == id && r.VehicleId == vehicleId, ct);
+        if (reminder is null)
+            return NotFound();
+
+        var history = await reminderService.HistoryAsync(reminder, ct);
+        return Ok(history.Select(h => new ReminderHistoryEntryDto
+        {
+            MaintenanceLogId = h.LogId,
+            ServiceDate = h.Date,
+            Odometer = h.Odometer,
+            DueDate = h.DueDate,
+            DueOdometer = h.DueOdometer,
+            DaysLate = h.DaysLate,
+            MilesOver = h.MilesOver,
+            WasLate = h.WasLate,
+        }).ToList());
+    }
+
     [HttpPost("api/v1/vehicles/{vehicleId:int}/reminders")]
     [Authorize(Policy = AuthorizationPolicies.Write)]
     public async Task<ActionResult<ReminderDto>> Create(int vehicleId, ReminderRequest request, CancellationToken ct)

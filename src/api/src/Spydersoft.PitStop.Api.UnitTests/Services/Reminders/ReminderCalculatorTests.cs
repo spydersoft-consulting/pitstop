@@ -182,4 +182,81 @@ public class ReminderCalculatorTests
 
         Assert.That(first.CycleKey, Is.Not.EqualTo(second.CycleKey));
     }
+
+    private static ReminderCompletion Done(int id, string date, int odometer) => new(id, DateOnly.Parse(date), odometer);
+
+    [Test]
+    public void BuildHistory_FirstCompletionHasNothingToMeasureFrom()
+    {
+        var history = ReminderCalculator.BuildHistory(Reminder(miles: 5000, months: 6), [Done(1, "2026-01-10", 12000)]);
+
+        Assert.That(history, Has.Count.EqualTo(1));
+        Assert.That(history[0].DueDate, Is.Null);
+        Assert.That(history[0].DueOdometer, Is.Null);
+        Assert.That(history[0].DaysLate, Is.Null);
+        Assert.That(history[0].MilesOver, Is.Null);
+        Assert.That(history[0].WasLate, Is.False);
+    }
+
+    [Test]
+    public void BuildHistory_OnTimeCompletionIsNotLate()
+    {
+        var history = ReminderCalculator.BuildHistory(
+            Reminder(miles: 5000, months: 6),
+            [Done(1, "2026-01-10", 12000), Done(2, "2026-06-01", 16500)]);
+
+        Assert.That(history[1].DueDate, Is.EqualTo(new DateOnly(2026, 7, 10)));
+        Assert.That(history[1].DueOdometer, Is.EqualTo(17000));
+        Assert.That(history[1].DaysLate, Is.Zero);
+        Assert.That(history[1].MilesOver, Is.Zero);
+        Assert.That(history[1].WasLate, Is.False);
+    }
+
+    [Test]
+    public void BuildHistory_LateByDate_ReportsDaysLate()
+    {
+        var history = ReminderCalculator.BuildHistory(
+            Reminder(miles: 5000, months: 6),
+            [Done(1, "2026-01-10", 12000), Done(2, "2026-07-22", 15000)]);
+
+        Assert.That(history[1].DaysLate, Is.EqualTo(12));
+        Assert.That(history[1].MilesOver, Is.Zero);
+        Assert.That(history[1].WasLate, Is.True);
+    }
+
+    [Test]
+    public void BuildHistory_LateByMileage_ReportsMilesOver()
+    {
+        var history = ReminderCalculator.BuildHistory(
+            Reminder(miles: 5000, months: 6),
+            [Done(1, "2026-01-10", 12000), Done(2, "2026-04-01", 17340)]);
+
+        Assert.That(history[1].MilesOver, Is.EqualTo(340));
+        Assert.That(history[1].DaysLate, Is.Zero);
+        Assert.That(history[1].WasLate, Is.True);
+    }
+
+    [Test]
+    public void BuildHistory_MileageOnlyReminder_HasNoDateMeasures()
+    {
+        var history = ReminderCalculator.BuildHistory(
+            Reminder(miles: 5000),
+            [Done(1, "2026-01-10", 12000), Done(2, "2026-04-01", 17500)]);
+
+        Assert.That(history[1].DueDate, Is.Null);
+        Assert.That(history[1].DaysLate, Is.Null);
+        Assert.That(history[1].MilesOver, Is.EqualTo(500));
+    }
+
+    [Test]
+    public void BuildHistory_MeasuresEachCompletionFromTheOneBefore_RegardlessOfInputOrder()
+    {
+        var history = ReminderCalculator.BuildHistory(
+            Reminder(miles: 5000),
+            [Done(3, "2026-09-01", 22000), Done(1, "2026-01-10", 12000), Done(2, "2026-05-01", 17000)]);
+
+        Assert.That(history.Select(h => h.LogId), Is.EqualTo(new[] { 1, 2, 3 }));
+        Assert.That(history[2].DueOdometer, Is.EqualTo(22000));
+        Assert.That(history[2].WasLate, Is.False);
+    }
 }

@@ -9,6 +9,24 @@ public class ReminderService(PitStopDbContext db, TimeProvider timeProvider)
 {
     public DateOnly Today => DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
 
+    /// <summary>Past completions of the reminder's service, newest first, with lateness against its current interval.</summary>
+    public async Task<IReadOnlyList<ReminderHistoryEntry>> HistoryAsync(
+        MaintenanceReminder reminder,
+        CancellationToken ct)
+    {
+        if (reminder.ServiceType == MaintenanceType.Other)
+        {
+            return [];
+        }
+
+        var completions = await db.MaintenanceLogs
+            .Where(m => m.VehicleId == reminder.VehicleId && m.Items.Any(i => i.ServiceType == reminder.ServiceType))
+            .Select(m => new ReminderCompletion(m.Id, m.ServiceDate, m.OdometerReading))
+            .ToListAsync(ct);
+
+        return ReminderCalculator.BuildHistory(reminder, completions).Reverse().ToList();
+    }
+
     public async Task<IReadOnlyList<(MaintenanceReminder Reminder, ReminderEvaluation Evaluation)>> EvaluateAsync(
         Vehicle vehicle,
         IReadOnlyCollection<MaintenanceReminder> reminders,

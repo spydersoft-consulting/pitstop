@@ -213,6 +213,58 @@ public class RemindersControllerTests
         Assert.That(_db.MaintenanceLogs.Count(), Is.Zero);
     }
 
+    private void AddLog(int vehicleId, string date, int odometer, MaintenanceType type = MaintenanceType.OilChange) =>
+        _db.MaintenanceLogs.Add(new MaintenanceLog
+        {
+            VehicleId = vehicleId,
+            ServiceDate = DateOnly.Parse(date),
+            OdometerReading = odometer,
+            Items = [new MaintenanceLogItem { ServiceType = type }],
+        });
+
+    [Test]
+    public async Task GetHistory_ListsMatchingLogsNewestFirstWithLateness()
+    {
+        var vehicle = await TestDataHelpers.CreateVehicleAsync(_db);
+        var created = Value(await _controller.Create(vehicle.Id, OilRequest(), CancellationToken.None));
+        AddLog(vehicle.Id, "2026-01-10", 12000);
+        AddLog(vehicle.Id, "2026-07-22", 15000);
+        AddLog(vehicle.Id, "2026-03-01", 13000, MaintenanceType.TireRotation);
+        await _db.SaveChangesAsync();
+
+        var history = Value(await _controller.GetHistory(vehicle.Id, created.Id, CancellationToken.None));
+
+        Assert.That(history.Select(h => h.ServiceDate), Is.EqualTo(new[] { new DateOnly(2026, 7, 22), new DateOnly(2026, 1, 10) }));
+        Assert.That(history[0].DaysLate, Is.EqualTo(12));
+        Assert.That(history[0].WasLate, Is.True);
+        Assert.That(history[1].DueDate, Is.Null);
+    }
+
+    [Test]
+    public async Task GetHistory_IsEmptyForOtherServices()
+    {
+        var vehicle = await TestDataHelpers.CreateVehicleAsync(_db);
+        var request = OilRequest();
+        request.ServiceType = "Other";
+        var created = Value(await _controller.Create(vehicle.Id, request, CancellationToken.None));
+        AddLog(vehicle.Id, "2026-01-10", 12000, MaintenanceType.Other);
+        await _db.SaveChangesAsync();
+
+        var history = Value(await _controller.GetHistory(vehicle.Id, created.Id, CancellationToken.None));
+
+        Assert.That(history, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetHistory_ReturnsNotFound_ForAnotherOwnersVehicle()
+    {
+        var vehicle = await TestDataHelpers.CreateVehicleAsync(_db, "someone-else");
+
+        var result = await _controller.GetHistory(vehicle.Id, 1, CancellationToken.None);
+
+        Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+    }
+
     [Test]
     public async Task Snooze_SetsAndClears()
     {
