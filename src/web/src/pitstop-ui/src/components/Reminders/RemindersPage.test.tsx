@@ -17,6 +17,7 @@ vi.mock("../../api/remindersApi", () => ({
     createFromTemplates: vi.fn(),
     update: vi.fn(),
     delete: vi.fn().mockResolvedValue(undefined),
+    history: vi.fn().mockResolvedValue([]),
     complete: vi.fn(),
     snooze: vi.fn(),
   },
@@ -221,6 +222,16 @@ describe("RemindersPage", () => {
 
     await user.click(screen.getByRole("button", { name: /edit oil change/i }));
     expect(navigateMock).toHaveBeenCalledWith("/reminders/1/edit");
+  });
+
+  it("opens the history for a reminder", async () => {
+    renderPage([reminder()]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /^history$/i }));
+
+    await waitFor(() => expect(remindersApi.history).toHaveBeenCalledWith(1, 1));
+    expect(await screen.findByText(/no matching services have been logged yet/i)).toBeInTheDocument();
   });
 
   it("does not call the API when no vehicle is selected", async () => {
