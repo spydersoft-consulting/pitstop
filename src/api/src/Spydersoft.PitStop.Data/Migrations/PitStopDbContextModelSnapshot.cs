@@ -17,7 +17,7 @@ namespace Spydersoft.PitStop.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -264,6 +264,69 @@ namespace Spydersoft.PitStop.Data.Migrations
                     b.ToTable("MaintenanceLogItems");
                 });
 
+            modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.MaintenanceReminder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("IntervalMiles")
+                        .HasPrecision(10, 1)
+                        .HasColumnType("numeric(10,1)");
+
+                    b.Property<int?>("IntervalMonths")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateOnly?>("LastDoneDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal?>("LastDoneOdometer")
+                        .HasPrecision(10, 1)
+                        .HasColumnType("numeric(10,1)");
+
+                    b.Property<int?>("LeadDays")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("LeadMiles")
+                        .HasPrecision(10, 1)
+                        .HasColumnType("numeric(10,1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateOnly?>("SnoozedUntil")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("VehicleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("MaintenanceReminders", t =>
+                        {
+                            t.HasCheckConstraint("CK_MaintenanceReminders_HasInterval", "\"IntervalMiles\" > 0 OR \"IntervalMonths\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.RecallNotification", b =>
                 {
                     b.Property<int>("Id")
@@ -289,6 +352,38 @@ namespace Spydersoft.PitStop.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("RecallNotifications");
+                });
+
+            modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.ReminderNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CycleKey")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTimeOffset>("NotifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ReminderId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReminderId", "Stage", "CycleKey")
+                        .IsUnique();
+
+                    b.ToTable("ReminderNotifications");
                 });
 
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.Vehicle", b =>
@@ -417,6 +512,17 @@ namespace Spydersoft.PitStop.Data.Migrations
                     b.Navigation("MaintenanceLog");
                 });
 
+            modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.MaintenanceReminder", b =>
+                {
+                    b.HasOne("Spydersoft.PitStop.Data.Entities.Vehicle", "Vehicle")
+                        .WithMany("MaintenanceReminders")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.RecallNotification", b =>
                 {
                     b.HasOne("Spydersoft.PitStop.Data.Entities.Vehicle", "Vehicle")
@@ -426,6 +532,17 @@ namespace Spydersoft.PitStop.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.ReminderNotification", b =>
+                {
+                    b.HasOne("Spydersoft.PitStop.Data.Entities.MaintenanceReminder", "Reminder")
+                        .WithMany("Notifications")
+                        .HasForeignKey("ReminderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Reminder");
                 });
 
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.Location", b =>
@@ -442,11 +559,18 @@ namespace Spydersoft.PitStop.Data.Migrations
                     b.Navigation("Items");
                 });
 
+            modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.MaintenanceReminder", b =>
+                {
+                    b.Navigation("Notifications");
+                });
+
             modelBuilder.Entity("Spydersoft.PitStop.Data.Entities.Vehicle", b =>
                 {
                     b.Navigation("FillUps");
 
                     b.Navigation("MaintenanceLogs");
+
+                    b.Navigation("MaintenanceReminders");
 
                     b.Navigation("RecallNotifications");
                 });
