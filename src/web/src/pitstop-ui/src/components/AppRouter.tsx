@@ -10,6 +10,8 @@ import { MaintenanceLogHistory } from "./MaintenanceLog/MaintenanceLogHistory";
 import { AddMaintenanceLog } from "./MaintenanceLog/AddMaintenanceLog";
 import { EditMaintenanceLog } from "./MaintenanceLog/EditMaintenanceLog";
 import { RemindersPage } from "./Reminders/RemindersPage";
+import { AddReminder } from "./Reminders/AddReminder";
+import { EditReminder } from "./Reminders/EditReminder";
 import { Analytics } from "./Analytics/Analytics";
 import { Vehicles } from "./Vehicles/Vehicles";
 import { AddVehicle } from "./Vehicles/AddVehicle";
@@ -76,6 +78,8 @@ export const AppRouter: React.FC = () => {
           <Route path="/maintenance/new" element={<AddMaintenanceLog />} />
           <Route path="/maintenance/:id/edit" element={<EditMaintenanceLog />} />
           <Route path="/reminders" element={<RemindersPage />} />
+          <Route path="/reminders/new" element={<AddReminder />} />
+          <Route path="/reminders/:id/edit" element={<EditReminder />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/vehicles/new" element={<AddVehicle />} />
