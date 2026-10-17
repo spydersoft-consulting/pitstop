@@ -18,6 +18,20 @@ public record ReminderBaseline(DateOnly Date, decimal Odometer)
     public string CycleKey => $"{Date:yyyyMMdd}:{Odometer:0.#}";
 }
 
+public record ReminderCompletion(int LogId, DateOnly Date, decimal Odometer);
+
+public record ReminderHistoryEntry(
+    int LogId,
+    DateOnly Date,
+    decimal Odometer,
+    DateOnly? DueDate,
+    decimal? DueOdometer,
+    int? DaysLate,
+    decimal? MilesOver)
+{
+    public bool WasLate => DaysLate > 0 || MilesOver > 0;
+}
+
 public record OdometerEstimate(decimal Odometer, decimal AverageDailyMiles, bool IsEstimated);
 
 public record ReminderEvaluation(
@@ -116,6 +130,47 @@ public static class ReminderCalculator
         }
 
         return new ReminderEvaluation(status, baseline, dueOdometer, dueDate, estimate, projected);
+    }
+
+    /// <summary>
+    /// Measures each completion against the reminder's current interval from the one before it.
+    /// The first completion has nothing to measure from, so it carries no due values.
+    /// </summary>
+    public static IReadOnlyList<ReminderHistoryEntry> BuildHistory(
+        MaintenanceReminder reminder,
+        IEnumerable<ReminderCompletion> completions)
+    {
+        var entries = new List<ReminderHistoryEntry>();
+        ReminderCompletion? previous = null;
+
+        foreach (var completion in completions.OrderBy(c => c.Date).ThenBy(c => c.Odometer))
+        {
+            DateOnly? dueDate = null;
+            decimal? dueOdometer = null;
+            int? daysLate = null;
+            decimal? milesOver = null;
+
+            if (previous is not null)
+            {
+                if (reminder.IntervalMonths is > 0)
+                {
+                    dueDate = previous.Date.AddMonths(reminder.IntervalMonths.Value);
+                    daysLate = Math.Max(0, completion.Date.DayNumber - dueDate.Value.DayNumber);
+                }
+
+                if (reminder.IntervalMiles is > 0)
+                {
+                    dueOdometer = previous.Odometer + reminder.IntervalMiles;
+                    milesOver = Math.Max(0, completion.Odometer - dueOdometer.Value);
+                }
+            }
+
+            entries.Add(new ReminderHistoryEntry(
+                completion.LogId, completion.Date, completion.Odometer, dueDate, dueOdometer, daysLate, milesOver));
+            previous = completion;
+        }
+
+        return entries;
     }
 
     private static decimal? AverageDailyMiles(IReadOnlyList<OdometerSample> ordered)
