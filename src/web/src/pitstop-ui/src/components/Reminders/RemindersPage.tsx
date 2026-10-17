@@ -1,7 +1,15 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBellConcierge, faCheck, faPlus, faTrash, faClock, faPencil } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBellConcierge,
+  faCheck,
+  faPlus,
+  faTrash,
+  faClock,
+  faClockRotateLeft,
+  faPencil,
+} from "@fortawesome/free-solid-svg-icons";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
@@ -17,6 +25,7 @@ import { fetchMaintenanceLogs } from "../../store/slices/maintenanceLogSlice";
 import { PageHeader } from "../layout/PageHeader";
 import { formatVehicleLabel } from "../../utils/vehicle";
 import { CompleteReminderDialog } from "./CompleteReminderDialog";
+import { ReminderHistoryDialog } from "./ReminderHistoryDialog";
 import { SnoozeReminderDialog } from "./SnoozeReminderDialog";
 import { TemplatePickerDialog } from "./TemplatePickerDialog";
 import { STATUS_CLASSES, STATUS_LABELS, fmtDate, fmtMiles, num, serviceTypeLabel } from "./reminderFormat";
@@ -50,10 +59,11 @@ interface CardProps {
   onComplete: () => void;
   onSnooze: () => void;
   onEdit: () => void;
+  onHistory: () => void;
   onDelete: (e: React.MouseEvent) => void;
 }
 
-const ReminderCard: React.FC<CardProps> = ({ reminder, onComplete, onSnooze, onEdit, onDelete }) => (
+const ReminderCard: React.FC<CardProps> = ({ reminder, onComplete, onSnooze, onEdit, onHistory, onDelete }) => (
   <div className="rounded-xl border border-border bg-surface p-4 space-y-3">
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
@@ -106,6 +116,12 @@ const ReminderCard: React.FC<CardProps> = ({ reminder, onComplete, onSnooze, onE
         onClick={onSnooze}
       />
       <Button
+        icon={<FontAwesomeIcon icon={faClockRotateLeft} className="mr-1" />}
+        label="History"
+        className="p-button-text p-button-sm p-button-secondary"
+        onClick={onHistory}
+      />
+      <Button
         icon={<FontAwesomeIcon icon={faPencil} />}
         className="p-button-text p-button-sm p-button-secondary"
         onClick={onEdit}
@@ -131,6 +147,7 @@ export const RemindersPage: React.FC = () => {
 
   const [completing, setCompleting] = useState<Reminder | null>(null);
   const [snoozing, setSnoozing] = useState<Reminder | null>(null);
+  const [viewingHistory, setViewingHistory] = useState<Reminder | null>(null);
   const [pickingTemplates, setPickingTemplates] = useState(false);
 
   const availableTemplates = useMemo(() => {
@@ -203,6 +220,7 @@ export const RemindersPage: React.FC = () => {
               onComplete={() => setCompleting(reminder)}
               onSnooze={() => setSnoozing(reminder)}
               onEdit={() => navigate(`/reminders/${String(reminder.id)}/edit`)}
+              onHistory={() => setViewingHistory(reminder)}
               onDelete={(e) => handleDelete(e, reminder)}
             />
           ))}
@@ -236,6 +254,14 @@ export const RemindersPage: React.FC = () => {
             }
             setSnoozing(null);
           }}
+        />
+      )}
+
+      {viewingHistory && selectedVehicleId != null && (
+        <ReminderHistoryDialog
+          vehicleId={selectedVehicleId}
+          reminder={viewingHistory}
+          onClose={() => setViewingHistory(null)}
         />
       )}
 

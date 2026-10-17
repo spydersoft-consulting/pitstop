@@ -73,6 +73,11 @@ test("add common services, mark one done, edit it, and delete it through the UI"
   await expect(oilCard.getByText("On track")).toBeVisible();
   await expect(oilCard.getByText(/12,000 mi/).first()).toBeVisible();
 
+  await oilCard.getByRole("button", { name: "History" }).click();
+  const historyDialog = page.getByRole("dialog");
+  await expect(historyDialog.getByText("First recorded service")).toBeVisible();
+  await historyDialog.getByRole("button", { name: "Close" }).click();
+
   await oilCard.getByRole("button", { name: "Edit Oil change" }).click();
   await expect(page).toHaveURL(/\/reminders\/\d+\/edit$/);
   await page.getByLabel("Repeat every (miles)").fill("7500");
