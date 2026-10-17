@@ -14,6 +14,7 @@ import {
   faAnglesLeft,
   faAnglesRight,
   faWrench,
+  faCalendarCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { Sidebar } from "primereact/sidebar";
 import { useAuth, usePageTitle } from "../../context";
@@ -35,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Vehicles", icon: faCar, to: "/vehicles" },
   { label: "Fill-Ups", icon: faGasPump, to: "/fill-ups" },
   { label: "Maintenance", icon: faWrench, to: "/maintenance" },
+  { label: "Reminders", icon: faCalendarCheck, to: "/reminders" },
   { label: "Locations", icon: faLocationDot, to: "/locations" },
   { label: "Analytics", icon: faChartLine, to: "/analytics" },
 ];

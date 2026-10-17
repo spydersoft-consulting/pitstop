@@ -9,6 +9,7 @@ import { fillUpSliceReducer } from "../store/slices/fillUpSlice";
 import { locationSliceReducer } from "../store/slices/locationSlice";
 import { maintenanceLogSliceReducer } from "../store/slices/maintenanceLogSlice";
 import { notificationSliceReducer } from "../store/slices/notificationSlice";
+import { reminderSliceReducer } from "../store/slices/reminderSlice";
 import { vehiclesApi } from "../api/vehiclesApi";
 import { locationsApi } from "../api/locationsApi";
 
@@ -23,6 +24,13 @@ vi.mock("../api/vehiclesApi", () => ({
 
 vi.mock("../api/locationsApi", () => ({
   locationsApi: { list: vi.fn().mockResolvedValue([]) },
+}));
+
+vi.mock("../api/remindersApi", () => ({
+  remindersApi: {
+    list: vi.fn().mockResolvedValue([]),
+    templates: vi.fn().mockResolvedValue([]),
+  },
 }));
 
 vi.mock("../api/notificationApi", () => ({
@@ -51,6 +59,7 @@ function renderAppRouter() {
       locations: locationSliceReducer,
       maintenanceLogs: maintenanceLogSliceReducer,
       notifications: notificationSliceReducer,
+      reminders: reminderSliceReducer,
     },
   });
   return render(

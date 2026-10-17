@@ -9,6 +9,7 @@ import { EditFillUp } from "./FillUpHistory/EditFillUp";
 import { MaintenanceLogHistory } from "./MaintenanceLog/MaintenanceLogHistory";
 import { AddMaintenanceLog } from "./MaintenanceLog/AddMaintenanceLog";
 import { EditMaintenanceLog } from "./MaintenanceLog/EditMaintenanceLog";
+import { RemindersPage } from "./Reminders/RemindersPage";
 import { Analytics } from "./Analytics/Analytics";
 import { Vehicles } from "./Vehicles/Vehicles";
 import { AddVehicle } from "./Vehicles/AddVehicle";
@@ -19,6 +20,7 @@ import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchVehicles } from "../store/slices/vehicleSlice";
 import { fetchFillUps } from "../store/slices/fillUpSlice";
 import { fetchMaintenanceLogs } from "../store/slices/maintenanceLogSlice";
+import { fetchReminders, fetchReminderTemplates } from "../store/slices/reminderSlice";
 import { fetchLocations } from "../store/slices/locationSlice";
 import { fetchNotifications, fetchUnreadCount } from "../store/slices/notificationSlice";
 import { Locations } from "./Locations/Locations";
@@ -36,6 +38,7 @@ export const AppRouter: React.FC = () => {
     if (isAuthenticated) {
       void dispatch(fetchVehicles());
       void dispatch(fetchLocations());
+      void dispatch(fetchReminderTemplates());
       void dispatch(fetchNotifications());
       void dispatch(fetchUnreadCount());
     }
@@ -45,6 +48,7 @@ export const AppRouter: React.FC = () => {
     if (isAuthenticated && selectedVehicleId != null) {
       void dispatch(fetchFillUps(selectedVehicleId));
       void dispatch(fetchMaintenanceLogs(selectedVehicleId));
+      void dispatch(fetchReminders(selectedVehicleId));
     }
   }, [dispatch, isAuthenticated, selectedVehicleId]);
 
@@ -71,6 +75,7 @@ export const AppRouter: React.FC = () => {
           <Route path="/maintenance" element={<MaintenanceLogHistory />} />
           <Route path="/maintenance/new" element={<AddMaintenanceLog />} />
           <Route path="/maintenance/:id/edit" element={<EditMaintenanceLog />} />
+          <Route path="/reminders" element={<RemindersPage />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/vehicles/new" element={<AddVehicle />} />
