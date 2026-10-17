@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { selectVehicle } from "../../store/slices/vehicleSlice";
 import {
   fetchNotifications,
   markAllNotificationsRead,
@@ -26,9 +27,10 @@ const relativeTime = (iso: string): string => {
 };
 
 // Deep-links back into PitStop from a notification's opaque EntityType/EntityId, per
-// consumer-integration.md -- v1 only ever produces Vehicle-entity recall alerts.
+// consumer-integration.md -- PitStop only produces Vehicle-entity recall and maintenance-due alerts.
 const entityLink = (notification: Notification): string | undefined => {
   if (notification.entityType === "Vehicle" && notification.entityId) {
+    if (notification.type === "maintenance-due") return "/reminders";
     return notification.type === "recall-alert"
       ? `/vehicles/${notification.entityId}/recalls`
       : `/vehicles/${notification.entityId}/edit`;
@@ -53,6 +55,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ buttonClassN
     }
     const link = entityLink(notification);
     if (link) {
+      if (notification.type === "maintenance-due") {
+        dispatch(selectVehicle(Number(notification.entityId)));
+      }
       overlayRef.current?.hide();
       navigate(link);
     }
