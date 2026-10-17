@@ -23,6 +23,12 @@ vi.mock("../../api/remindersApi", () => ({
 
 import { remindersApi } from "../../api/remindersApi";
 
+const navigateMock = vi.fn();
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router-dom")>();
+  return { ...actual, useNavigate: () => navigateMock };
+});
+
 let capturedAccept: (() => void) | null = null;
 vi.mock("primereact/confirmpopup", async (importOriginal) => {
   const actual = await importOriginal<typeof import("primereact/confirmpopup")>();
@@ -177,6 +183,17 @@ describe("RemindersPage", () => {
 
     await waitFor(() => expect(remindersApi.createFromTemplates).toHaveBeenCalledWith(1, ["TireRotation"]));
     await waitFor(() => expect(store.getState().reminders.reminders).toHaveLength(2));
+  });
+
+  it("navigates to the add and edit screens", async () => {
+    renderPage([reminder()]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /^add reminder$/i }));
+    expect(navigateMock).toHaveBeenCalledWith("/reminders/new");
+
+    await user.click(screen.getByRole("button", { name: /edit oil change/i }));
+    expect(navigateMock).toHaveBeenCalledWith("/reminders/1/edit");
   });
 
   it("does not call the API when no vehicle is selected", async () => {
