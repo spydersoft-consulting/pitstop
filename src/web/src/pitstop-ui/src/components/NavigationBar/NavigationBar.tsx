@@ -18,6 +18,7 @@ import {
 import { Sidebar } from "primereact/sidebar";
 import { useAuth, usePageTitle } from "../../context";
 import { NotificationBell } from "./NotificationBell";
+import { ErrorBoundary } from "../layout/ErrorBoundary";
 
 interface NavigationBarProps {
   brand?: string;
@@ -190,7 +191,11 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
         </span>
         {!collapsed && <span className="font-display text-xl uppercase tracking-wider">{brandName}</span>}
       </button>
-      {!collapsed && isAuthenticated && <NotificationBell />}
+      {!collapsed && isAuthenticated && (
+        <ErrorBoundary>
+          <NotificationBell />
+        </ErrorBoundary>
+      )}
     </div>
 
     <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
@@ -248,7 +253,11 @@ const MobileTopBar: React.FC<MobileTopBarProps> = ({ mobileTitle, onOpenDrawer, 
       <h1 className="font-display text-lg uppercase tracking-wider leading-none truncate min-w-0 flex-1">
         {mobileTitle}
       </h1>
-      {isAuthenticated && <NotificationBell />}
+      {isAuthenticated && (
+        <ErrorBoundary>
+          <NotificationBell />
+        </ErrorBoundary>
+      )}
     </div>
   </div>
 );

@@ -71,6 +71,11 @@ export default defineConfig({
         target: "https://127.0.0.1:9081/",
         secure: false,
       },
+      "^/notification": {
+        target: "https://127.0.0.1:9081/",
+        secure: false,
+        ws: true,
+      },
       "^/livez": {
         target: "https://127.0.0.1:9081/",
         secure: false,

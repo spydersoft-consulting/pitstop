@@ -20,12 +20,12 @@ export const notificationApi = {
         limit: params.limit,
       },
     });
-    return data ?? [];
+    return Array.isArray(data) ? data : [];
   },
 
   unreadCount: async (): Promise<number> => {
     const { data } = await notificationClient.get<UnreadCountResponse>("/api/v1/notifications/unread-count");
-    return data?.count ?? 0;
+    return typeof data?.count === "number" ? data.count : 0;
   },
 
   markRead: async (id: string): Promise<NotificationDto> => {
