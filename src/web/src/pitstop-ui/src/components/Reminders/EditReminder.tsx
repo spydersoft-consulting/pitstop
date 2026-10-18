@@ -44,7 +44,7 @@ export const EditReminder: React.FC = () => {
     setError(null);
     try {
       await dispatch(updateReminder({ vehicleId: selectedVehicleId, id: Number(reminder.id), body })).unwrap();
-      navigate("/reminders");
+      void navigate("/reminders");
     } catch {
       setError("Failed to update reminder. Please try again.");
     } finally {

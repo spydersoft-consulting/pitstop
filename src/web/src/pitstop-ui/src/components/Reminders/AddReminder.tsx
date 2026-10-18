@@ -23,7 +23,7 @@ export const AddReminder: React.FC = () => {
     setError(null);
     try {
       await dispatch(createReminder({ vehicleId: selectedVehicleId, body })).unwrap();
-      navigate("/reminders");
+      void navigate("/reminders");
     } catch {
       setError("Failed to save reminder. Please try again.");
     } finally {
