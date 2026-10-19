@@ -260,3 +260,14 @@ export interface ReminderTemplateDto {
   leadMiles?: number | null;
   leadDays?: number | null;
 }
+
+export interface ReminderHistoryEntryDto {
+  maintenanceLogId: number;
+  serviceDate: string;
+  odometer: number;
+  dueDate?: string | null;
+  dueOdometer?: number | null;
+  daysLate?: number | null;
+  milesOver?: number | null;
+  wasLate: boolean;
+}
