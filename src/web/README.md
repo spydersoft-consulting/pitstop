@@ -16,7 +16,7 @@ The backend API lives in [spydersoft-consulting/pitstop-api](https://github.com/
 
 | Layer       | Technology                                                |
 | ----------- | --------------------------------------------------------- |
-| UI          | React 19, TypeScript, Vite, PrimeReact, Tailwind, Chart.js|
+| UI          | React 19, TypeScript, Vite, React Aria Components, Tailwind, Chart.js|
 | BFF         | ASP.NET Core (.NET 10) + `OidcProxy.Net` + YARP           |
 | State       | Redux Toolkit                                             |
 | Auth        | OAuth2 / OIDC (Authorization Code + PKCE)                 |

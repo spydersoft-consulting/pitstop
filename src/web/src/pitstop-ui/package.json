@@ -27,8 +27,6 @@
     "axios": "^1.20.0",
     "chart.js": "^4.5.1",
     "leaflet": "^1.9.4",
-    "primeicons": "^8.0.2",
-    "primereact": "^10.9.8",
     "react": "19.3.1",
     "react-aria-components": "^1.22.1",
     "react-dom": "19.3.1",

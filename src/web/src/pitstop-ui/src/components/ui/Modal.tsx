@@ -19,7 +19,6 @@ export const Modal: React.FC<ModalProps> = ({ open = true, onClose, header, foot
       if (!isOpen) onClose();
     }}
     isDismissable
-    shouldCloseOnInteractOutside={(element) => !element.closest(".p-component")}
     className="fixed inset-0 z-1100 flex items-end justify-center bg-black/40 sm:items-center"
   >
     <AriaModal
