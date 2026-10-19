@@ -11,6 +11,7 @@ const sampleState = (): RootState => ({
   locations: { locations: [], loading: false },
   maintenanceLogs: { recentMaintenanceLogs: [], loading: false },
   notifications: { items: [], unreadCount: 0, loading: false },
+  reminders: { reminders: [], templates: [], loading: false },
 });
 
 describe("localStorage state persistence", () => {
@@ -75,6 +76,17 @@ describe("localStorage state persistence", () => {
       JSON.stringify({
         version: VERSION,
         state: { maintenanceLogs: { recentMaintenanceLogs: 42 } },
+      }),
+    );
+    expect(loadState()).toBeUndefined();
+  });
+
+  it("rejects payloads with the wrong reminders shape", () => {
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({
+        version: VERSION,
+        state: { reminders: { reminders: 42 } },
       }),
     );
     expect(loadState()).toBeUndefined();

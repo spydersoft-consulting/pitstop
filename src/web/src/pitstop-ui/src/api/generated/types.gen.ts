@@ -4,6 +4,11 @@ export type ClientOptions = {
   baseURL: "http://localhost:8080/" | (string & {});
 };
 
+export type CompleteReminderRequest = {
+  date?: string;
+  odometer?: number | string;
+};
+
 export type CreateFillUpRequest = {
   filledAt?: string;
   odometerReading?: number | string;
@@ -33,6 +38,10 @@ export type CreateMaintenanceLogRequest = {
   location?: null | CreateLocationRequest;
   notes?: null | string;
   items: Array<MaintenanceLogItemRequest>;
+};
+
+export type CreateRemindersFromTemplatesRequest = {
+  serviceTypes?: Array<string>;
 };
 
 export type CreateVehicleRequest = {
@@ -204,6 +213,51 @@ export type RecallDto = {
   parkIt?: boolean;
   parkOutside?: boolean;
   reportedDate?: null | string;
+};
+
+export type ReminderDto = {
+  id?: number | string;
+  vehicleId?: number | string;
+  serviceType?: string;
+  name?: string;
+  intervalMiles?: null | number | string;
+  intervalMonths?: null | number | string;
+  leadMiles?: null | number | string;
+  leadDays?: null | number | string;
+  isActive?: boolean;
+  snoozedUntil?: null | string;
+  source?: string;
+  status?: string;
+  lastServiceDate?: string;
+  lastServiceOdometer?: number | string;
+  nextDueOdometer?: null | number | string;
+  nextDueDate?: null | string;
+  estimatedOdometer?: number | string;
+  isOdometerEstimated?: boolean;
+  projectedDueDate?: null | string;
+};
+
+export type ReminderRequest = {
+  serviceType?: string;
+  name?: null | string;
+  intervalMiles?: null | number | string;
+  intervalMonths?: null | number | string;
+  leadMiles?: null | number | string;
+  leadDays?: null | number | string;
+  isActive?: boolean;
+};
+
+export type ReminderTemplateDto = {
+  serviceType?: string;
+  name?: string;
+  intervalMiles?: null | number | string;
+  intervalMonths?: null | number | string;
+  leadMiles?: null | number | string;
+  leadDays?: null | number | string;
+};
+
+export type SnoozeReminderRequest = {
+  until?: null | string;
 };
 
 export type SpendDataPoint = {
@@ -749,6 +803,177 @@ export type GetApiV1VehiclesByVehicleIdRecallsResponses = {
 
 export type GetApiV1VehiclesByVehicleIdRecallsResponse =
   GetApiV1VehiclesByVehicleIdRecallsResponses[keyof GetApiV1VehiclesByVehicleIdRecallsResponses];
+
+export type GetApiV1ReminderTemplatesData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/reminder-templates";
+};
+
+export type GetApiV1ReminderTemplatesResponses = {
+  /**
+   * OK
+   */
+  200: Array<ReminderTemplateDto>;
+};
+
+export type GetApiV1ReminderTemplatesResponse =
+  GetApiV1ReminderTemplatesResponses[keyof GetApiV1ReminderTemplatesResponses];
+
+export type GetApiV1VehiclesByVehicleIdRemindersData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/reminders";
+};
+
+export type GetApiV1VehiclesByVehicleIdRemindersResponses = {
+  /**
+   * OK
+   */
+  200: Array<ReminderDto>;
+};
+
+export type GetApiV1VehiclesByVehicleIdRemindersResponse =
+  GetApiV1VehiclesByVehicleIdRemindersResponses[keyof GetApiV1VehiclesByVehicleIdRemindersResponses];
+
+export type PostApiV1VehiclesByVehicleIdRemindersData = {
+  body: ReminderRequest;
+  path: {
+    vehicleId: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/reminders";
+};
+
+export type PostApiV1VehiclesByVehicleIdRemindersResponses = {
+  /**
+   * OK
+   */
+  200: ReminderDto;
+};
+
+export type PostApiV1VehiclesByVehicleIdRemindersResponse =
+  PostApiV1VehiclesByVehicleIdRemindersResponses[keyof PostApiV1VehiclesByVehicleIdRemindersResponses];
+
+export type DeleteApiV1VehiclesByVehicleIdRemindersByIdData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/reminders/{id}";
+};
+
+export type DeleteApiV1VehiclesByVehicleIdRemindersByIdResponses = {
+  /**
+   * OK
+   */
+  200: unknown;
+};
+
+export type GetApiV1VehiclesByVehicleIdRemindersByIdData = {
+  body?: never;
+  path: {
+    vehicleId: number;
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/reminders/{id}";
+};
+
+export type GetApiV1VehiclesByVehicleIdRemindersByIdResponses = {
+  /**
+   * OK
+   */
+  200: ReminderDto;
+};
+
+export type GetApiV1VehiclesByVehicleIdRemindersByIdResponse =
+  GetApiV1VehiclesByVehicleIdRemindersByIdResponses[keyof GetApiV1VehiclesByVehicleIdRemindersByIdResponses];
+
+export type PutApiV1VehiclesByVehicleIdRemindersByIdData = {
+  body: ReminderRequest;
+  path: {
+    vehicleId: number;
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/reminders/{id}";
+};
+
+export type PutApiV1VehiclesByVehicleIdRemindersByIdResponses = {
+  /**
+   * OK
+   */
+  200: ReminderDto;
+};
+
+export type PutApiV1VehiclesByVehicleIdRemindersByIdResponse =
+  PutApiV1VehiclesByVehicleIdRemindersByIdResponses[keyof PutApiV1VehiclesByVehicleIdRemindersByIdResponses];
+
+export type PostApiV1VehiclesByVehicleIdRemindersFromTemplatesData = {
+  body: CreateRemindersFromTemplatesRequest;
+  path: {
+    vehicleId: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/reminders/from-templates";
+};
+
+export type PostApiV1VehiclesByVehicleIdRemindersFromTemplatesResponses = {
+  /**
+   * OK
+   */
+  200: Array<ReminderDto>;
+};
+
+export type PostApiV1VehiclesByVehicleIdRemindersFromTemplatesResponse =
+  PostApiV1VehiclesByVehicleIdRemindersFromTemplatesResponses[keyof PostApiV1VehiclesByVehicleIdRemindersFromTemplatesResponses];
+
+export type PostApiV1VehiclesByVehicleIdRemindersByIdCompleteData = {
+  body: CompleteReminderRequest;
+  path: {
+    vehicleId: number;
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/reminders/{id}/complete";
+};
+
+export type PostApiV1VehiclesByVehicleIdRemindersByIdCompleteResponses = {
+  /**
+   * OK
+   */
+  200: ReminderDto;
+};
+
+export type PostApiV1VehiclesByVehicleIdRemindersByIdCompleteResponse =
+  PostApiV1VehiclesByVehicleIdRemindersByIdCompleteResponses[keyof PostApiV1VehiclesByVehicleIdRemindersByIdCompleteResponses];
+
+export type PostApiV1VehiclesByVehicleIdRemindersByIdSnoozeData = {
+  body: SnoozeReminderRequest;
+  path: {
+    vehicleId: number;
+    id: number;
+  };
+  query?: never;
+  url: "/api/v1/vehicles/{vehicleId}/reminders/{id}/snooze";
+};
+
+export type PostApiV1VehiclesByVehicleIdRemindersByIdSnoozeResponses = {
+  /**
+   * OK
+   */
+  200: ReminderDto;
+};
+
+export type PostApiV1VehiclesByVehicleIdRemindersByIdSnoozeResponse =
+  PostApiV1VehiclesByVehicleIdRemindersByIdSnoozeResponses[keyof PostApiV1VehiclesByVehicleIdRemindersByIdSnoozeResponses];
 
 export type GetApiV1VehiclesData = {
   body?: never;
