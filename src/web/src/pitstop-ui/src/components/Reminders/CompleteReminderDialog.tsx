@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Button } from "../ui/Button";
 import { Calendar } from "primereact/calendar";
 import { Modal } from "../ui/Modal";
-import { Dropdown } from "primereact/dropdown";
-import { InputNumber } from "primereact/inputnumber";
+import { Select } from "../ui/Select";
+import { NumberField } from "../ui/NumberField";
 import type { Reminder } from "../../store/slices/reminderSlice";
 import { PERFORMED_BY_OPTIONS } from "../MaintenanceLog/maintenanceLogOptions";
 import { num, toDateOnlyString } from "./reminderFormat";
@@ -53,28 +53,25 @@ export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onS
           />
         </div>
         <div>
-          <label htmlFor="complete-odometer" className="block text-sm mb-1">
+          <label id="complete-odometer-label" htmlFor="complete-odometer" className="block text-sm mb-1">
             Odometer (mi)
           </label>
-          <InputNumber
+          <NumberField
             inputId="complete-odometer"
             value={odometer}
             onValueChange={(e) => setOdometer(e.value ?? null)}
             useGrouping
-            className="w-full"
-            inputClassName="w-full"
           />
         </div>
         <div>
-          <label htmlFor="complete-performed-by" className="block text-sm mb-1">
+          <label id="complete-performed-by-label" htmlFor="complete-performed-by" className="block text-sm mb-1">
             Performed by
           </label>
-          <Dropdown
+          <Select
             inputId="complete-performed-by"
             value={performedBy}
             options={PERFORMED_BY_OPTIONS}
             onChange={(e) => setPerformedBy(e.value)}
-            className="w-full"
           />
         </div>
         <p className="text-xs text-content-muted">This also adds an entry to Maintenance History.</p>

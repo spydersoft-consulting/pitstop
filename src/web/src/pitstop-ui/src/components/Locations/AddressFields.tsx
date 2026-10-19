@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
 import { AutoComplete, type AutoCompleteCompleteEvent } from "primereact/autocomplete";
-import { InputNumber } from "primereact/inputnumber";
+import { NumberField } from "../ui/NumberField";
 import { Button } from "../ui/Button";
 import { getAddressLookupProvider, type AddressSuggestion } from "../../services/addressLookup";
 
@@ -141,23 +141,19 @@ export const AddressFields: React.FC<Props> = ({
       />
       {addressLookupError && <span className="text-xs text-red-500">{addressLookupError}</span>}
       <div className="grid grid-cols-2 gap-2">
-        <InputNumber
+        <NumberField
           value={value.latitude}
           onValueChange={(e) => onChange({ ...value, latitude: e.value ?? null })}
           placeholder="Latitude (optional)"
           minFractionDigits={4}
           maxFractionDigits={6}
-          className="w-full"
-          inputClassName="w-full"
         />
-        <InputNumber
+        <NumberField
           value={value.longitude}
           onValueChange={(e) => onChange({ ...value, longitude: e.value ?? null })}
           placeholder="Longitude (optional)"
           minFractionDigits={4}
           maxFractionDigits={6}
-          className="w-full"
-          inputClassName="w-full"
         />
       </div>
       <div className="flex items-center gap-2">

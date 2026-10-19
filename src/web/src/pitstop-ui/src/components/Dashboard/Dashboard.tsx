@@ -13,7 +13,7 @@ import {
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Chart } from "../common/Chart";
-import { Dropdown } from "primereact/dropdown";
+import { Select } from "../ui/Select";
 import { Spinner } from "../ui/Spinner";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { selectVehicle, type Vehicle } from "../../store/slices/vehicleSlice";
@@ -67,14 +67,14 @@ const VehicleHeroCard: React.FC<VehicleHeroCardProps> = ({
         </div>
         <div className="min-w-0 flex-1">
           {vehicles.length > 1 ? (
-            <Dropdown
+            <Select
               value={selectedVehicleId}
+              aria-label="Vehicle"
               options={vehicles.map((v) => ({
                 label: `${v.year} ${v.make} ${v.model}`,
-                value: v.id,
+                value: v.id as number,
               }))}
               onChange={(e) => onSelectVehicle(e.value)}
-              className="w-full"
             />
           ) : (
             <p className="font-display text-2xl uppercase tracking-wide truncate">

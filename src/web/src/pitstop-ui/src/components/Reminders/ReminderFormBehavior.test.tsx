@@ -1,3 +1,4 @@
+import { selectOption } from "../../test-utils/selectOption";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
@@ -41,8 +42,7 @@ function renderForm(props: Partial<React.ComponentProps<typeof ReminderForm>> = 
 }
 
 async function chooseServiceType(user: ReturnType<typeof userEvent.setup>, container: HTMLElement, label: string) {
-  await user.click(container.querySelector(".p-dropdown")!);
-  await user.click(document.querySelector<HTMLElement>(`li[aria-label="${label}"]`)!);
+  await selectOption(user, container.querySelector("#reminder-service-type")!, label);
 }
 
 describe("ReminderForm", () => {

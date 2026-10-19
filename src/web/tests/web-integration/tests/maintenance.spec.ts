@@ -12,10 +12,8 @@ async function login(page: Page) {
 }
 
 async function selectDropdownOption(page: Page, testId: string, optionText: string) {
-  await page.getByTestId(testId).locator(".p-dropdown").click();
-  // Scope to the open panel: PrimeReact also renders a hidden native <select> whose <option>
-  // elements match the role query (e.g. the already-selected value).
-  await page.locator(".p-dropdown-panel").getByRole("option", { name: optionText, exact: true }).click();
+  await page.getByTestId(testId).getByRole("button").first().click();
+  await page.getByRole("option", { name: optionText, exact: true }).click();
 }
 
 // The freshly-booted Testing stack (Postgres + mock OIDC + API + BFF, all cold-starting
@@ -164,9 +162,9 @@ test("filtering by service type matches any service on the visit", async ({ page
   await page.reload();
   await expect(page.locator("table tbody tr")).toHaveCount(2);
 
-  const typeFilter = page.locator(".p-dropdown", { hasText: "All types" });
+  const typeFilter = page.getByRole("button", { name: /All types/ });
   await typeFilter.click();
-  await page.locator(".p-dropdown-panel").getByRole("option", { name: "Tire Rotation", exact: true }).click();
+  await page.getByRole("option", { name: "Tire Rotation", exact: true }).click();
 
   // The two-service visit matches via its second item; the wiper-blade visit is filtered out.
   const rows = page.locator("table tbody tr");

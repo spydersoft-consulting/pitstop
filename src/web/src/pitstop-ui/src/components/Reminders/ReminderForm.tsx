@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { FormActions } from "../layout/FormActions";
 import { InputText } from "../ui/TextField";
 import { Checkbox } from "../ui/Checkbox";
-import { Dropdown } from "primereact/dropdown";
-import { InputNumber } from "primereact/inputnumber";
+import { Select } from "../ui/Select";
+import { NumberField } from "../ui/NumberField";
 import type { ReminderRequest } from "../../api/generated/types.gen";
 import type { ReminderTemplate } from "../../store/slices/reminderSlice";
 import { SERVICE_TYPE_OPTIONS } from "../MaintenanceLog/maintenanceLogOptions";
@@ -90,7 +90,7 @@ export const ReminderForm: React.FC<Props> = ({
 
   const field = (label: string, id: string, children: React.ReactNode) => (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-medium text-secondary">
+      <label id={`${id}-label`} htmlFor={id} className="text-sm font-medium text-secondary">
         {label}
       </label>
       {children}
@@ -103,12 +103,11 @@ export const ReminderForm: React.FC<Props> = ({
         {field(
           "Service type",
           "reminder-service-type",
-          <Dropdown
+          <Select
             inputId="reminder-service-type"
             value={values.serviceType}
             options={SERVICE_TYPE_OPTIONS}
             onChange={(e) => handleServiceTypeChange(e.value)}
-            className="w-full"
           />,
         )}
         {field(
@@ -129,51 +128,43 @@ export const ReminderForm: React.FC<Props> = ({
         {field(
           "Repeat every (miles)",
           "reminder-interval-miles",
-          <InputNumber
+          <NumberField
             inputId="reminder-interval-miles"
             value={values.intervalMiles}
             onValueChange={(e) => set("intervalMiles", e.value ?? null)}
             min={0}
             useGrouping
-            className="w-full"
-            inputClassName="w-full"
           />,
         )}
         {field(
           "Repeat every (months)",
           "reminder-interval-months",
-          <InputNumber
+          <NumberField
             inputId="reminder-interval-months"
             value={values.intervalMonths}
             onValueChange={(e) => set("intervalMonths", e.value ?? null)}
             min={0}
-            className="w-full"
-            inputClassName="w-full"
           />,
         )}
         {field(
           "Notify this many miles ahead",
           "reminder-lead-miles",
-          <InputNumber
+          <NumberField
             inputId="reminder-lead-miles"
             value={values.leadMiles}
             onValueChange={(e) => set("leadMiles", e.value ?? null)}
             min={0}
             useGrouping
-            className="w-full"
-            inputClassName="w-full"
           />,
         )}
         {field(
           "Notify this many days ahead",
           "reminder-lead-days",
-          <InputNumber
+          <NumberField
             inputId="reminder-lead-days"
             value={values.leadDays}
             onValueChange={(e) => set("leadDays", e.value ?? null)}
             min={0}
-            className="w-full"
-            inputClassName="w-full"
           />,
         )}
       </div>

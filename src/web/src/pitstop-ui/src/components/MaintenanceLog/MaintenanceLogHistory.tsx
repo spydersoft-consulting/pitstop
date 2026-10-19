@@ -14,7 +14,7 @@ import { Button } from "../ui/Button";
 import { CardActions } from "../layout/CardActions";
 import { Card } from "../ui/Card";
 import { Calendar } from "primereact/calendar";
-import { Dropdown } from "primereact/dropdown";
+import { Select } from "../ui/Select";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { ConfirmPopup } from "../ui/ConfirmPopup";
@@ -109,25 +109,23 @@ const FiltersPanel: React.FC<FiltersProps> = ({
 
     <div>
       <p className="text-meta uppercase tracking-wide text-content-muted mb-2">Service type</p>
-      <Dropdown
+      <Select
         value={serviceType}
         options={SERVICE_TYPE_OPTIONS}
         onChange={(e) => onServiceTypeChange(e.value)}
-        showClear
+        onClear={() => onServiceTypeChange(null)}
         placeholder="All types"
-        className="w-full"
       />
     </div>
 
     <div>
       <p className="text-meta uppercase tracking-wide text-content-muted mb-2">Performed by</p>
-      <Dropdown
+      <Select
         value={performedBy}
         options={PERFORMED_BY_OPTIONS}
         onChange={(e) => onPerformedByChange(e.value)}
-        showClear
+        onClear={() => onPerformedByChange(null)}
         placeholder="Anyone"
-        className="w-full"
       />
     </div>
 

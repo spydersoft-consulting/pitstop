@@ -1,3 +1,4 @@
+import { selectOption } from "../../test-utils/selectOption";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -254,10 +255,7 @@ describe("MaintenanceLogHistory", () => {
     ];
 
     const pick = async (user: ReturnType<typeof userEvent.setup>, placeholder: string, option: string) => {
-      await user.click(screen.getAllByText(placeholder)[0].closest(".p-dropdown")!);
-      const item = document.querySelector<HTMLElement>(`li[aria-label="${option}"]`);
-      expect(item).not.toBeNull();
-      await user.click(item!);
+      await selectOption(user, screen.getAllByText(placeholder)[0].closest("button")!, option);
     };
 
     it("filters by service type, matching any service on the visit", async () => {
