@@ -2,19 +2,22 @@ import { useState } from "react";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Dialog } from "primereact/dialog";
+import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
 import type { Reminder } from "../../store/slices/reminderSlice";
+import { PERFORMED_BY_OPTIONS } from "../MaintenanceLog/maintenanceLogOptions";
 import { num, toDateOnlyString } from "./reminderFormat";
 
 interface Props {
   reminder: Reminder;
   onClose: () => void;
-  onSubmit: (body: { date: string; odometer: number }) => void;
+  onSubmit: (body: { date: string; odometer: number; performedBy: string }) => void;
 }
 
 export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onSubmit }) => {
   const [date, setDate] = useState<Date | null>(new Date());
   const [odometer, setOdometer] = useState<number | null>(Math.round(num(reminder.estimatedOdometer) ?? 0));
+  const [performedBy, setPerformedBy] = useState("Self");
 
   const valid = date !== null && odometer !== null && odometer >= 0;
 
@@ -31,7 +34,7 @@ export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onS
             label="Mark done"
             className="p-button-sm"
             disabled={!valid}
-            onClick={() => onSubmit({ date: toDateOnlyString(date!), odometer: odometer! })}
+            onClick={() => onSubmit({ date: toDateOnlyString(date!), odometer: odometer!, performedBy })}
           />
         </div>
       }
@@ -63,6 +66,19 @@ export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onS
             inputClassName="w-full"
           />
         </div>
+        <div>
+          <label htmlFor="complete-performed-by" className="block text-sm mb-1">
+            Performed by
+          </label>
+          <Dropdown
+            inputId="complete-performed-by"
+            value={performedBy}
+            options={PERFORMED_BY_OPTIONS}
+            onChange={(e) => setPerformedBy(e.value)}
+            className="w-full"
+          />
+        </div>
+        <p className="text-xs text-content-muted">This also adds an entry to Maintenance History.</p>
       </div>
     </Dialog>
   );

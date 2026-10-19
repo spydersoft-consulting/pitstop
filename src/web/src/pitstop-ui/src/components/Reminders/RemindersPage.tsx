@@ -13,6 +13,7 @@ import {
   snoozeReminder,
   type Reminder,
 } from "../../store/slices/reminderSlice";
+import { fetchMaintenanceLogs } from "../../store/slices/maintenanceLogSlice";
 import { PageHeader } from "../layout/PageHeader";
 import { formatVehicleLabel } from "../../utils/vehicle";
 import { CompleteReminderDialog } from "./CompleteReminderDialog";
@@ -214,7 +215,11 @@ export const RemindersPage: React.FC = () => {
           onClose={() => setCompleting(null)}
           onSubmit={(body) => {
             if (selectedVehicleId != null) {
-              void dispatch(completeReminder({ vehicleId: selectedVehicleId, id: Number(completing.id), body }));
+              const vehicleId = selectedVehicleId;
+              void dispatch(completeReminder({ vehicleId, id: Number(completing.id), body }))
+                .unwrap()
+                .then(() => dispatch(fetchMaintenanceLogs(vehicleId)))
+                .catch(() => undefined);
             }
             setCompleting(null);
           }}

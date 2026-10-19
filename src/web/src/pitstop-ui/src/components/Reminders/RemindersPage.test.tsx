@@ -7,6 +7,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { RemindersPage } from "./RemindersPage";
 import { reminderSliceReducer, type Reminder, type ReminderTemplate } from "../../store/slices/reminderSlice";
 import { vehicleSliceReducer, type Vehicle } from "../../store/slices/vehicleSlice";
+import { maintenanceLogSliceReducer } from "../../store/slices/maintenanceLogSlice";
 
 vi.mock("../../api/remindersApi", () => ({
   remindersApi: {
@@ -22,12 +23,17 @@ vi.mock("../../api/remindersApi", () => ({
 }));
 
 import { remindersApi } from "../../api/remindersApi";
+import { maintenanceLogsApi } from "../../api/maintenanceLogsApi";
 
 const navigateMock = vi.fn();
 vi.mock("react-router-dom", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router-dom")>();
   return { ...actual, useNavigate: () => navigateMock };
 });
+
+vi.mock("../../api/maintenanceLogsApi", () => ({
+  maintenanceLogsApi: { list: vi.fn().mockResolvedValue({ items: [] }) },
+}));
 
 let capturedAccept: (() => void) | null = null;
 vi.mock("primereact/confirmpopup", async (importOriginal) => {
@@ -75,7 +81,11 @@ const templates: ReminderTemplate[] = [
 
 function renderPage(reminders: Reminder[] = [], selectedVehicleId: number | null = 1) {
   const store = configureStore({
-    reducer: { reminders: reminderSliceReducer, vehicles: vehicleSliceReducer },
+    reducer: {
+      reminders: reminderSliceReducer,
+      vehicles: vehicleSliceReducer,
+      maintenanceLogs: maintenanceLogSliceReducer,
+    },
     preloadedState: {
       reminders: { reminders, templates, loading: false },
       vehicles: { vehicles: [sampleVehicle], selectedVehicleId, loading: false },
@@ -140,7 +150,24 @@ describe("RemindersPage", () => {
     expect(id).toBe(1);
     expect(body.odometer).toBe(44600);
     expect(body.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(body.performedBy).toBe("Self");
     await waitFor(() => expect(store.getState().reminders.reminders[0].status).toBe("Ok"));
+    await waitFor(() => expect(maintenanceLogsApi.list).toHaveBeenCalledWith(1, expect.anything()));
+  });
+
+  it("lets the owner record who performed the service", async () => {
+    vi.mocked(remindersApi.complete).mockResolvedValue(reminder({ status: "Ok" }));
+    renderPage([reminder()]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /mark done/i }));
+    const dialog = await screen.findByRole("dialog");
+    await user.click(dialog.querySelector(".p-dropdown")!);
+    await user.click(document.querySelector<HTMLElement>('li[aria-label="Shop"]')!);
+    await user.click(within(dialog).getByRole("button", { name: /^mark done$/i }));
+
+    await waitFor(() => expect(remindersApi.complete).toHaveBeenCalled());
+    expect(vi.mocked(remindersApi.complete).mock.calls[0][2].performedBy).toBe("Shop");
   });
 
   it("snoozes a reminder", async () => {

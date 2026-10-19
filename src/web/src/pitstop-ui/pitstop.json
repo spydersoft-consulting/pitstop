@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8080/"
+      "url": "http://localhost:8180/"
     }
   ],
   "paths": {
@@ -1562,6 +1562,64 @@
         }
       }
     },
+    "/api/v1/vehicles/{vehicleId}/reminders/{id}/history": {
+      "get": {
+        "tags": ["Reminders"],
+        "parameters": [
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReminderHistoryEntryDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReminderHistoryEntryDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReminderHistoryEntryDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/vehicles/{vehicleId}/reminders/from-templates": {
       "post": {
         "tags": ["Reminders"],
@@ -1979,6 +2037,9 @@
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": ["number", "string"],
             "format": "double"
+          },
+          "performedBy": {
+            "type": "string"
           }
         }
       },
@@ -2831,6 +2892,47 @@
           "projectedDueDate": {
             "type": ["null", "string"],
             "format": "date"
+          }
+        }
+      },
+      "ReminderHistoryEntryDto": {
+        "type": "object",
+        "properties": {
+          "maintenanceLogId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": ["integer", "string"],
+            "format": "int32"
+          },
+          "serviceDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "odometer": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["number", "string"],
+            "format": "double"
+          },
+          "dueDate": {
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "dueOdometer": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["null", "number", "string"],
+            "format": "double"
+          },
+          "daysLate": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": ["null", "integer", "string"],
+            "format": "int32"
+          },
+          "milesOver": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": ["null", "number", "string"],
+            "format": "double"
+          },
+          "wasLate": {
+            "type": "boolean"
           }
         }
       },
