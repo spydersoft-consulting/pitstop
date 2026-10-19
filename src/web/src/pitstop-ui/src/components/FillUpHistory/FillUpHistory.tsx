@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -16,7 +16,8 @@ import { Card } from "../ui/Card";
 import { Calendar } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { ConfirmPopup } from "../ui/ConfirmPopup";
+import { confirmPopup } from "../ui/confirmPopupStore";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { deleteFillUp } from "../../store/slices/fillUpSlice";
 import type { FillUp } from "../../store/slices/fillUpSlice";
@@ -160,7 +161,6 @@ export const FillUpHistory: React.FC = () => {
   const selectedVehicleId = useAppSelector((s) => s.vehicles.selectedVehicleId);
   const selectedVehicle = useSelectedVehicle();
   const vehicleLabel = selectedVehicle ? formatVehicleLabel(selectedVehicle) : undefined;
-  const toastRef = useRef<HTMLDivElement>(null);
 
   const [range, setRange] = useState<Date[] | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -200,8 +200,6 @@ export const FillUpHistory: React.FC = () => {
     confirmPopup({
       target: event.currentTarget as HTMLElement,
       message: "Delete this fill-up?",
-      icon: "pi pi-exclamation-triangle",
-      acceptClassName: "p-button-danger p-button-sm",
       accept: () => {
         if (selectedVehicleId != null) {
           void dispatch(deleteFillUp({ vehicleId: selectedVehicleId, id: Number(row.id) }));
@@ -274,7 +272,7 @@ export const FillUpHistory: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6" ref={toastRef}>
+    <div className="space-y-6">
       <ConfirmPopup />
       <PageHeader
         title="Fill-Up History"

@@ -37,8 +37,8 @@ vi.mock("../../api/maintenanceLogsApi", () => ({
 }));
 
 let capturedAccept: (() => void) | null = null;
-vi.mock("primereact/confirmpopup", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("primereact/confirmpopup")>();
+vi.mock("../ui/confirmPopupStore", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../ui/confirmPopupStore")>();
   return {
     ...actual,
     confirmPopup: vi.fn((options: { accept?: () => void }) => {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../ui/Button";
 import { Calendar } from "primereact/calendar";
-import { Dialog } from "primereact/dialog";
+import { Modal } from "../ui/Modal";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
 import type { Reminder } from "../../store/slices/reminderSlice";
@@ -22,9 +22,8 @@ export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onS
   const valid = date !== null && odometer !== null && odometer >= 0;
 
   return (
-    <Dialog
-      visible
-      onHide={onClose}
+    <Modal
+      onClose={onClose}
       header={`Mark done: ${reminder.name ?? "reminder"}`}
       className="w-full max-w-md"
       footer={
@@ -80,6 +79,6 @@ export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onS
         </div>
         <p className="text-xs text-content-muted">This also adds an entry to Maintenance History.</p>
       </div>
-    </Dialog>
+    </Modal>
   );
 };
