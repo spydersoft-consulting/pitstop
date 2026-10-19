@@ -1,9 +1,10 @@
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCar, faPlus, faPencil, faTrash, faGaugeHigh } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/Button";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { ConfirmPopup } from "../ui/ConfirmPopup";
+import { confirmPopup } from "../ui/confirmPopupStore";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { selectVehicle, deleteVehicle, type Vehicle } from "../../store/slices/vehicleSlice";
 import { PageHeader } from "../layout/PageHeader";
@@ -123,7 +124,6 @@ export const Vehicles: React.FC = () => {
   const { recentFillUps } = useAppSelector((s) => s.fillUps);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const toastRef = useRef(null);
 
   const activeMpg = useMemo(() => {
     const mpgs = recentFillUps.map((f) => num(f.mpgThisFillUp)).filter((v): v is number => v !== null);
@@ -135,16 +135,13 @@ export const Vehicles: React.FC = () => {
     confirmPopup({
       target: e.currentTarget as HTMLElement,
       message: `Remove "${vehicle.name}"?`,
-      icon: "pi pi-exclamation-triangle",
-      acceptClassName: "p-button-danger p-button-sm",
-      rejectClassName: "p-button-sm p-button-outlined",
       accept: () => void dispatch(deleteVehicle(vehicle.id as number)),
     });
   };
 
   return (
     <div className="space-y-6">
-      <ConfirmPopup ref={toastRef} />
+      <ConfirmPopup />
       <PageHeader
         title="Vehicles"
         actions={

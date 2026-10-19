@@ -5,9 +5,7 @@ interface PrimeReactProviderProps {
   children: React.ReactNode;
 }
 
-export const PrimeReactProvider: React.FC<PrimeReactProviderProps> = ({
-  children,
-}) => {
+export const PrimeReactProvider: React.FC<PrimeReactProviderProps> = ({ children }) => {
   const value = {
     ripple: true,
     inputStyle: "outlined" as const,
@@ -16,7 +14,7 @@ export const PrimeReactProvider: React.FC<PrimeReactProviderProps> = ({
     autoZIndex: true,
     zIndex: {
       modal: 1100,
-      overlay: 1000,
+      overlay: 1300,
       menu: 1000,
       tooltip: 1100,
       toast: 1200,

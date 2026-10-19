@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dialog } from "primereact/dialog";
+import { Modal } from "../ui/Modal";
 import { Spinner } from "../ui/Spinner";
 import { remindersApi } from "../../api/remindersApi";
 import type { ReminderHistoryEntryDto } from "../../api/generated/types.gen";
@@ -53,7 +53,7 @@ export const ReminderHistoryDialog: React.FC<Props> = ({ vehicleId, reminder, on
   }, [vehicleId, reminder.id]);
 
   return (
-    <Dialog visible onHide={onClose} header={`History: ${reminder.name ?? "reminder"}`} className="w-full max-w-lg">
+    <Modal onClose={onClose} header={`History: ${reminder.name ?? "reminder"}`} className="w-full max-w-lg">
       {failed ? (
         <p className="text-danger">Couldn't load the history. Please try again.</p>
       ) : entries === null ? (
@@ -80,6 +80,6 @@ export const ReminderHistoryDialog: React.FC<Props> = ({ vehicleId, reminder, on
           </p>
         </>
       )}
-    </Dialog>
+    </Modal>
   );
 };

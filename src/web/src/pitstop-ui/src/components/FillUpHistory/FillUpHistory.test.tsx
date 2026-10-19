@@ -29,8 +29,8 @@ vi.mock("react-router-dom", async (importOriginal) => {
 // naturally -- capture the options it's called with and invoke `accept` directly to simulate
 // the user confirming.
 let capturedAccept: (() => void) | null = null;
-vi.mock("primereact/confirmpopup", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("primereact/confirmpopup")>();
+vi.mock("../ui/confirmPopupStore", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../ui/confirmPopupStore")>();
   return {
     ...actual,
     confirmPopup: vi.fn((options: { accept?: () => void }) => {

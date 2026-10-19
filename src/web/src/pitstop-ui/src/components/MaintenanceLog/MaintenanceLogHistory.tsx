@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -17,7 +17,8 @@ import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { ConfirmPopup } from "../ui/ConfirmPopup";
+import { confirmPopup } from "../ui/confirmPopupStore";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { deleteMaintenanceLog } from "../../store/slices/maintenanceLogSlice";
 import type { MaintenanceLog } from "../../store/slices/maintenanceLogSlice";
@@ -228,7 +229,6 @@ export const MaintenanceLogHistory: React.FC = () => {
   const selectedVehicleId = useAppSelector((s) => s.vehicles.selectedVehicleId);
   const selectedVehicle = useSelectedVehicle();
   const vehicleLabel = selectedVehicle ? formatVehicleLabel(selectedVehicle) : undefined;
-  const toastRef = useRef<HTMLDivElement>(null);
 
   const [range, setRange] = useState<Date[] | null>(null);
   const [serviceType, setServiceType] = useState<string | null>(null);
@@ -262,8 +262,6 @@ export const MaintenanceLogHistory: React.FC = () => {
     confirmPopup({
       target: event.currentTarget as HTMLElement,
       message: "Delete this maintenance log?",
-      icon: "pi pi-exclamation-triangle",
-      acceptClassName: "p-button-danger p-button-sm",
       accept: () => {
         if (selectedVehicleId != null) {
           void dispatch(deleteMaintenanceLog({ vehicleId: selectedVehicleId, id: Number(row.id) }));
@@ -331,7 +329,7 @@ export const MaintenanceLogHistory: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6" ref={toastRef}>
+    <div className="space-y-6">
       <ConfirmPopup />
       <PageHeader
         title="Maintenance History"

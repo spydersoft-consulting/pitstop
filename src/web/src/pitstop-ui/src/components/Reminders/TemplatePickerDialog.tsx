@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../ui/Button";
 import { Checkbox } from "../ui/Checkbox";
-import { Dialog } from "primereact/dialog";
+import { Modal } from "../ui/Modal";
 import type { ReminderTemplate } from "../../store/slices/reminderSlice";
 
 interface Props {
@@ -25,9 +25,8 @@ export const TemplatePickerDialog: React.FC<Props> = ({ templates, onClose, onSu
     setSelected((s) => (s.includes(serviceType) ? s.filter((x) => x !== serviceType) : [...s, serviceType]));
 
   return (
-    <Dialog
-      visible
-      onHide={onClose}
+    <Modal
+      onClose={onClose}
       header="Add common services"
       className="w-full max-w-lg"
       footer={
@@ -64,6 +63,6 @@ export const TemplatePickerDialog: React.FC<Props> = ({ templates, onClose, onSu
           })}
         </ul>
       )}
-    </Dialog>
+    </Modal>
   );
 };

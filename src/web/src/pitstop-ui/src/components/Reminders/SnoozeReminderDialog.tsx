@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../ui/Button";
 import { Calendar } from "primereact/calendar";
-import { Dialog } from "primereact/dialog";
+import { Modal } from "../ui/Modal";
 import type { Reminder } from "../../store/slices/reminderSlice";
 import { toDateOnlyString } from "./reminderFormat";
 
@@ -21,9 +21,8 @@ export const SnoozeReminderDialog: React.FC<Props> = ({ reminder, onClose, onSub
   const [until, setUntil] = useState<Date | null>(defaultSnoozeEnd());
 
   return (
-    <Dialog
-      visible
-      onHide={onClose}
+    <Modal
+      onClose={onClose}
       header={`Snooze: ${reminder.name ?? "reminder"}`}
       className="w-full max-w-md"
       footer={
@@ -53,6 +52,6 @@ export const SnoozeReminderDialog: React.FC<Props> = ({ reminder, onClose, onSub
         className="w-full"
         inputClassName="w-full"
       />
-    </Dialog>
+    </Modal>
   );
 };

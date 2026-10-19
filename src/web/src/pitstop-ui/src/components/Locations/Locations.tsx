@@ -5,8 +5,9 @@ import { Button } from "../ui/Button";
 import { InputText } from "../ui/TextField";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Dialog } from "primereact/dialog";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { Modal } from "../ui/Modal";
+import { ConfirmPopup } from "../ui/ConfirmPopup";
+import { confirmPopup } from "../ui/confirmPopupStore";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -113,8 +114,6 @@ export const Locations: React.FC = () => {
     confirmPopup({
       target: event.currentTarget as HTMLElement,
       message: "Delete this location?",
-      icon: "pi pi-exclamation-triangle",
-      acceptClassName: "p-button-danger",
       accept: () => void dispatch(deleteLocation(id)),
     });
   };
@@ -319,11 +318,11 @@ export const Locations: React.FC = () => {
         </div>
       )}
 
-      <Dialog
+      <Modal
         header={editingId !== null ? "Edit Location" : "Add Location"}
-        visible={dialogOpen}
-        onHide={closeDialog}
-        style={{ width: "min(480px, 95vw)" }}
+        open={dialogOpen}
+        onClose={closeDialog}
+        className="max-w-[480px]"
         footer={
           <div className="flex justify-end gap-2">
             <Button
@@ -383,7 +382,7 @@ export const Locations: React.FC = () => {
             />
           </div>
         </div>
-      </Dialog>
+      </Modal>
     </div>
   );
 };
