@@ -164,6 +164,30 @@ public class ReminderCalculatorTests
         Assert.That(result.ProjectedDueDate, Is.EqualTo(Today.AddDays(50)));
     }
 
+    [TestCase(0.0001)]
+    [TestCase(0.000000001)]
+    public void Evaluate_DoesNotProject_WhenDrivingPaceIsTooSlowToReachTheDueOdometer(double dailyMiles)
+    {
+        var baseline = new ReminderBaseline(new DateOnly(2026, 5, 1), 10000);
+
+        var result = ReminderCalculator.Evaluate(Reminder(miles: 5000), baseline, Estimate(14000, daily: (decimal)dailyMiles), Today);
+
+        Assert.That(result.ProjectedDueDate, Is.Null);
+        Assert.That(result.Status, Is.EqualTo(ReminderStatus.Ok));
+    }
+
+    [Test]
+    public void Evaluate_ProjectsAsFarAsTenYearsOut_ButNoFurther()
+    {
+        var baseline = new ReminderBaseline(new DateOnly(2026, 5, 1), 10000);
+
+        var tenYears = ReminderCalculator.Evaluate(Reminder(miles: 5000), baseline, Estimate(11350, daily: 1m), Today);
+        var beyond = ReminderCalculator.Evaluate(Reminder(miles: 5000), baseline, Estimate(11349, daily: 1m), Today);
+
+        Assert.That(tenYears.ProjectedDueDate, Is.EqualTo(Today.AddDays(3650)));
+        Assert.That(beyond.ProjectedDueDate, Is.Null);
+    }
+
     [Test]
     public void Evaluate_NoProjection_WithoutDailyMileage()
     {

@@ -34,6 +34,7 @@ public static class ReminderCalculator
     private const int RecentWindowDays = 180;
     private const int MinimumSpanDays = 14;
     private const int MaxExtrapolationDays = 90;
+    private const int MaxProjectionDays = 3650;
 
     /// <summary>
     /// The most recent of: matching maintenance logs, the reminder's own last-done values, and the
@@ -108,7 +109,10 @@ public static class ReminderCalculator
         if (dueOdometer.HasValue && estimate.AverageDailyMiles > 0)
         {
             var remaining = Math.Max(0, dueOdometer.Value - estimate.Odometer);
-            projected = today.AddDays((int)Math.Ceiling(remaining / estimate.AverageDailyMiles));
+            if (remaining <= estimate.AverageDailyMiles * MaxProjectionDays)
+            {
+                projected = today.AddDays((int)Math.Ceiling(remaining / estimate.AverageDailyMiles));
+            }
         }
 
         return new ReminderEvaluation(status, baseline, dueOdometer, dueDate, estimate, projected);
