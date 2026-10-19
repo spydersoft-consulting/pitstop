@@ -82,7 +82,7 @@ describe("AppRouter", () => {
     renderAppRouter();
 
     expect(screen.queryByText(/sign in/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("progressbar")).not.toBeNull();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
     expect(vehiclesApi.list).not.toHaveBeenCalled();
   });
 
@@ -115,7 +115,7 @@ describe("AppRouter", () => {
     // The Dashboard (default route) shows its own spinner while vehicles are still
     // loading -- this is distinct from AppRouter's own auth-loading spinner, which
     // is what the previous test in this file covers.
-    expect(screen.queryByRole("progressbar")).not.toBeNull();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
     await waitFor(() => expect(vehiclesApi.list).toHaveBeenCalled());
     await waitFor(() => expect(locationsApi.list).toHaveBeenCalled());
     await waitFor(() => expect(screen.queryByRole("progressbar")).toBeNull());

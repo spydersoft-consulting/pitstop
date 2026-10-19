@@ -16,6 +16,7 @@ export const Spinner: React.FC<SpinnerProps> = ({ size = 50, className }) => (
       stroke="currentColor"
       strokeWidth="4"
       strokeLinecap="round"
+      aria-hidden="true"
     >
       <circle cx="25" cy="25" r="20" strokeDasharray="90 150" />
     </svg>
