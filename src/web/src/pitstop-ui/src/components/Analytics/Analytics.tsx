@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartLine, faGasPump, faGaugeHigh, faDollarSign, faCar } from "@fortawesome/free-solid-svg-icons";
-import { Card } from "primereact/card";
+import { Card } from "../ui/Card";
 import { Chart } from "../common/Chart";
-import { ProgressSpinner } from "primereact/progressspinner";
+import { Spinner } from "../ui/Spinner";
 import { useAppSelector } from "../../store/hooks";
 import { analyticsApi } from "../../api/analyticsApi";
 import { SERVICE_TYPE_OPTIONS } from "../MaintenanceLog/maintenanceLogOptions";
@@ -277,7 +277,7 @@ export const Analytics: React.FC = () => {
       <div className="space-y-6">
         <PageHeader title="Analytics" />
         <div className="flex justify-center py-16">
-          <ProgressSpinner />
+          <Spinner />
         </div>
       </div>
     );

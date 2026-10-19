@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation, faCircleCheck, faBan } from "@fortawesome/free-solid-svg-icons";
-import { Card } from "primereact/card";
-import { ProgressSpinner } from "primereact/progressspinner";
+import { Card } from "../ui/Card";
+import { Spinner } from "../ui/Spinner";
 import { useAppSelector } from "../../store/hooks";
 import { vehiclesApi } from "../../api/vehiclesApi";
 import type { RecallDto } from "../../api/generated/types.gen";
@@ -124,7 +124,7 @@ export const VehicleRecalls: React.FC = () => {
 
       {loading && (
         <div className="flex justify-center py-12">
-          <ProgressSpinner />
+          <Spinner />
         </div>
       )}
 

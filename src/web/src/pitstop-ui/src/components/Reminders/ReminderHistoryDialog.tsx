@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Dialog } from "primereact/dialog";
-import { ProgressSpinner } from "primereact/progressspinner";
+import { Spinner } from "../ui/Spinner";
 import { remindersApi } from "../../api/remindersApi";
 import type { ReminderHistoryEntryDto } from "../../api/generated/types.gen";
 import type { Reminder } from "../../store/slices/reminderSlice";
@@ -58,7 +58,7 @@ export const ReminderHistoryDialog: React.FC<Props> = ({ vehicleId, reminder, on
         <p className="text-danger">Couldn't load the history. Please try again.</p>
       ) : entries === null ? (
         <div className="flex justify-center py-6">
-          <ProgressSpinner style={{ width: "32px", height: "32px" }} />
+          <Spinner size={32} />
         </div>
       ) : entries.length === 0 ? (
         <p className="text-content-muted">No matching services have been logged yet.</p>

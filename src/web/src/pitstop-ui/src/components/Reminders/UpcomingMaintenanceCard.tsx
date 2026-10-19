@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/Button";
-import { Card } from "primereact/card";
+import { Card } from "../ui/Card";
 import type { Reminder } from "../../store/slices/reminderSlice";
 import { STATUS_CLASSES, STATUS_LABELS, fmtDate, fmtMiles, num } from "./reminderFormat";
 

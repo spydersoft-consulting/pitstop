@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InputNumber } from "primereact/inputnumber";
-import { InputTextarea } from "primereact/inputtextarea";
+import { Textarea } from "../ui/TextField";
 import { Calendar } from "primereact/calendar";
-import { Checkbox } from "primereact/checkbox";
+import { Checkbox } from "../ui/Checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { FormActions } from "../layout/FormActions";
 import type { CreateFillUpRequest, FillUpRequest } from "../../api/generated/types.gen";
@@ -230,7 +230,7 @@ export const FillUpForm: React.FC<Props> = ({
       {field(
         "Notes",
         undefined,
-        <InputTextarea
+        <Textarea
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder="Optional notes"
@@ -244,7 +244,7 @@ export const FillUpForm: React.FC<Props> = ({
         <Checkbox
           inputId="isFullFillUp"
           checked={values.isFullFillUp}
-          onChange={(e) => set("isFullFillUp", e.checked ?? false)}
+          onChange={(e) => set("isFullFillUp", e.checked)}
         />
         <label htmlFor="isFullFillUp" className="text-sm text-secondary">
           Full fill-up (used for MPG calculation)

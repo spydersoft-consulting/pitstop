@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { InputNumber } from "primereact/inputnumber";
-import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
+import { InputText, Textarea } from "../ui/TextField";
 import { Calendar } from "primereact/calendar";
-import { Checkbox } from "primereact/checkbox";
+import { Checkbox } from "../ui/Checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "../ui/Button";
 import { FormActions } from "../layout/FormActions";
@@ -313,7 +312,7 @@ export const MaintenanceLogForm: React.FC<Props> = ({
                 <Checkbox
                   inputId={`isWarrantyWork-${index}`}
                   checked={item.isWarrantyWork}
-                  onChange={(e) => setItem(index, "isWarrantyWork", e.checked ?? false)}
+                  onChange={(e) => setItem(index, "isWarrantyWork", e.checked)}
                 />
                 <label htmlFor={`isWarrantyWork-${index}`} className="text-sm text-secondary">
                   Covered under warranty
@@ -357,7 +356,7 @@ export const MaintenanceLogForm: React.FC<Props> = ({
         "Notes",
         "notes",
         undefined,
-        <InputTextarea
+        <Textarea
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder="Optional notes"
