@@ -104,6 +104,9 @@ builder.Services.AddScoped<RecallCheckRunner>();
 builder.Services.AddHostedService<RecallCheckJob>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ReminderService>();
+builder.Services.AddOptions<ReminderCheckOptions>().Bind(builder.Configuration.GetSection("ReminderCheck"));
+builder.Services.AddScoped<ReminderCheckRunner>();
+builder.Services.AddHostedService<ReminderCheckJob>();
 
 var app = builder.Build();
 
