@@ -11,6 +11,10 @@ namespace Spydersoft.PitStop.Api.Controllers;
 [ApiController]
 public class RemindersController(PitStopDbContext db, ReminderService reminderService) : PitStopControllerBase(db)
 {
+    private const int MaxMiles = 1_000_000;
+    private const int MaxIntervalMonths = 1_200;
+    private const int MaxLeadDays = 3_650;
+
     [HttpGet("api/v1/reminder-templates")]
     [Authorize(Policy = AuthorizationPolicies.Read)]
     public ActionResult<IReadOnlyList<ReminderTemplateDto>> GetTemplates() =>
@@ -213,6 +217,12 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
             return "A reminder needs an interval in miles, months, or both.";
         if (request.LeadMiles < 0 || request.LeadDays < 0)
             return "Lead times must not be negative.";
+        if (request.IntervalMiles > MaxMiles || request.LeadMiles > MaxMiles)
+            return $"Mileage values must not exceed {MaxMiles:N0}.";
+        if (request.IntervalMonths > MaxIntervalMonths)
+            return $"An interval must not exceed {MaxIntervalMonths:N0} months.";
+        if (request.LeadDays > MaxLeadDays)
+            return $"A lead time must not exceed {MaxLeadDays:N0} days.";
         return null;
     }
 

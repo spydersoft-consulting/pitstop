@@ -78,6 +78,42 @@ public class RemindersControllerTests
         Assert.That(_db.MaintenanceReminders.Count(), Is.Zero);
     }
 
+    [TestCase(1_000_001, null, null, null)]
+    [TestCase(null, 1_201, null, null)]
+    [TestCase(5000, 6, 1_000_001, null)]
+    [TestCase(5000, 6, null, 3_651)]
+    [TestCase(null, 200_000, null, null)]
+    public async Task Create_RejectsIntervalsAndLeadTimesTooLargeToCalculate(
+        int? miles, int? months, int? leadMiles, int? leadDays)
+    {
+        var vehicle = await TestDataHelpers.CreateVehicleAsync(_db);
+        var request = OilRequest();
+        request.IntervalMiles = miles;
+        request.IntervalMonths = months;
+        request.LeadMiles = leadMiles;
+        request.LeadDays = leadDays;
+
+        var result = await _controller.Create(vehicle.Id, request, CancellationToken.None);
+
+        Assert.That(((ObjectResult)result.Result!).Value, Is.InstanceOf<ValidationProblemDetails>());
+        Assert.That(_db.MaintenanceReminders.Count(), Is.Zero);
+    }
+
+    [Test]
+    public async Task Create_AcceptsTheLargestAllowedValues()
+    {
+        var vehicle = await TestDataHelpers.CreateVehicleAsync(_db);
+        var request = OilRequest();
+        request.IntervalMiles = 1_000_000;
+        request.IntervalMonths = 1_200;
+        request.LeadMiles = 1_000_000;
+        request.LeadDays = 3_650;
+
+        var result = await _controller.Create(vehicle.Id, request, CancellationToken.None);
+
+        Assert.That(Value(result).IntervalMonths, Is.EqualTo(1_200));
+    }
+
     [Test]
     public async Task Create_RejectsUnknownServiceType()
     {
