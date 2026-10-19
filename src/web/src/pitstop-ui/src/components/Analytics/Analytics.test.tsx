@@ -22,7 +22,7 @@ vi.mock("../../api/analyticsApi", () => ({
 
 // Chart.js needs a real canvas, which jsdom doesn't provide. Render the dataset so tests can assert
 // on exactly what each card would plot.
-vi.mock("primereact/chart", () => ({
+vi.mock("../common/Chart", () => ({
   Chart: ({
     type,
     data,

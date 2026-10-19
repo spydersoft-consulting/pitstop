@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartLine, faGasPump, faGaugeHigh, faDollarSign, faCar } from "@fortawesome/free-solid-svg-icons";
 import { Card } from "primereact/card";
-import { Chart } from "primereact/chart";
+import { Chart } from "../common/Chart";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useAppSelector } from "../../store/hooks";
 import { analyticsApi } from "../../api/analyticsApi";

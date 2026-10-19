@@ -12,7 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { Chart } from "primereact/chart";
+import { Chart } from "../common/Chart";
 import { Dropdown } from "primereact/dropdown";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
