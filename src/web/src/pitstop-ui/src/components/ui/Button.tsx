@@ -64,8 +64,9 @@ export const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   const classes = [base, sizes[size], palette[severity][variant], className].filter(Boolean).join(" ");
-  const leading = loading ? <FontAwesomeIcon icon={faSpinner} spin /> : iconPos === "left" ? icon : null;
-  const trailing = !loading && iconPos === "right" ? icon : null;
+  const iconOnLeft = iconPos === "left";
+  const leading = loading ? <FontAwesomeIcon icon={faSpinner} spin /> : iconOnLeft && icon;
+  const trailing = !loading && !iconOnLeft && icon;
 
   return (
     <AriaButton {...rest} isDisabled={disabled || loading} className={classes}>
