@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LocationPicker, type LocationSelection } from "./LocationPicker";
+import { locationsApi } from "../../api/locationsApi";
 
 vi.mock("../../api/locationsApi", () => ({
   locationsApi: {
@@ -190,5 +191,68 @@ describe("LocationPicker — geolocation", () => {
     render(<LocationPicker value={{ kind: "existing", id: 1, name: "Costco", address: null }} onChange={onChange} />);
 
     expect(screen.queryByRole("button", { name: /use current location/i })).toBeNull();
+  });
+});
+
+describe("LocationPicker — station search", () => {
+  const station = { id: 7, name: "Shell", address: "1 Main St" };
+
+  it("searches as the user types and selects an existing station", async () => {
+    vi.mocked(locationsApi.list).mockResolvedValue([station] as never);
+    const onChange = vi.fn();
+    render(<LocationPicker value={null} onChange={onChange} />);
+
+    await userEvent.type(screen.getByRole("combobox"), "she");
+    await waitFor(() => expect(locationsApi.list).toHaveBeenCalledWith(expect.objectContaining({ search: "she" })));
+    await userEvent.click(await screen.findByRole("option", { name: /Shell/ }));
+
+    expect(onChange).toHaveBeenCalledWith({ kind: "existing", id: 7, name: "Shell", address: "1 Main St" });
+  });
+
+  it("offers to add a new station from the typed text", async () => {
+    vi.mocked(locationsApi.list).mockResolvedValue([] as never);
+    const onChange = vi.fn();
+    render(<LocationPicker value={null} onChange={onChange} />);
+
+    await userEvent.type(screen.getByRole("combobox"), "Costco");
+    await userEvent.click(await screen.findByRole("option", { name: /Add new "Costco"/ }));
+
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ kind: "new", name: "Costco" }));
+  });
+
+  it("still offers adding a station when the lookup fails", async () => {
+    vi.mocked(locationsApi.list).mockRejectedValue(new Error("boom"));
+    render(<LocationPicker value={null} onChange={vi.fn()} />);
+
+    await userEvent.type(screen.getByRole("combobox"), "x");
+    expect(await screen.findByRole("option", { name: /Add new location/ })).toBeInTheDocument();
+  });
+
+  it("shows the chosen station's address and clears it", async () => {
+    const onChange = vi.fn();
+    render(
+      <LocationPicker value={{ kind: "existing", id: 7, name: "Shell", address: "1 Main St" }} onChange={onChange} />,
+    );
+
+    expect(screen.getByText("1 Main St")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Clear location" }));
+    expect(onChange).toHaveBeenCalledWith(null);
+  });
+
+  it("drops the selection when the user types again", async () => {
+    vi.mocked(locationsApi.list).mockResolvedValue([] as never);
+    const onChange = vi.fn();
+    render(<LocationPicker value={{ kind: "existing", id: 7, name: "Shell", address: null }} onChange={onChange} />);
+
+    await userEvent.type(screen.getByRole("combobox"), "z");
+    expect(onChange).toHaveBeenCalledWith(null);
+  });
+
+  it("opens the list from the trigger button", async () => {
+    vi.mocked(locationsApi.list).mockResolvedValue([station] as never);
+    render(<LocationPicker value={null} onChange={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Show suggestions" }));
+    expect(await screen.findByRole("option", { name: /Shell/ })).toBeInTheDocument();
   });
 });

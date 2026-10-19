@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
@@ -151,5 +151,26 @@ describe("FillUpHistory", () => {
     const initialCount = screen.getAllByText("Date range").length;
     await user.click(screen.getByText(/filters & summary/i));
     expect(screen.getAllByText("Date range").length).toBeGreaterThan(initialCount);
+  });
+
+  it("filters the list to the chosen date range and clears it again", async () => {
+    const user = userEvent.setup();
+    renderComponent([
+      fillUp({ id: 1, filledAt: "2026-01-15T12:30:00.000Z", totalCost: 42.71 }),
+      fillUp({ id: 2, filledAt: "2026-03-15T12:30:00.000Z", totalCost: 50, odometerReading: 46000 }),
+    ]);
+
+    const group = screen.getAllByRole("group", { name: "Date range" })[0];
+    const parts = within(group).getAllByRole("spinbutton");
+    await user.click(parts[0]);
+    await user.keyboard("03012026");
+    await user.click(parts[3]);
+    await user.keyboard("03312026");
+
+    expect(screen.getAllByText("$50.00").length).toBeGreaterThan(0);
+    expect(screen.queryByText("$42.71")).not.toBeInTheDocument();
+
+    await user.click(screen.getAllByRole("button", { name: "Clear" })[0]);
+    expect(screen.getAllByText("$42.71").length).toBeGreaterThan(0);
   });
 });
