@@ -5,7 +5,6 @@
 
 @source "./**/*.{ts,tsx,js,jsx,html}";
 @source "../index.html";
-@source "../node_modules/primereact/**/*.{js,ts,jsx,tsx}";
 
 @theme {
   /* Brand */
@@ -69,25 +68,4 @@ html body {
 .font-numeric {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-}
-
-/* --- PrimeReact surface overrides (lighter chrome) --- */
-.p-card {
-  background-color: var(--color-surface);
-  border: none;
-  border-radius: 0.875rem;
-  box-shadow: 0 1px 2px rgba(15, 17, 21, 0.04);
-  transition: box-shadow 0.2s ease;
-}
-
-.p-card:hover {
-  box-shadow: 0 4px 12px rgba(15, 17, 21, 0.06);
-}
-
-.p-card .p-card-body {
-  padding: 1.25rem;
-}
-
-.p-card .p-card-content {
-  padding: 0;
 }

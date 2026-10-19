@@ -36,20 +36,15 @@ describe("Modal", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("does not close when interacting with a legacy .p-component overlay", async () => {
+  it("closes from its Close button", async () => {
     const onClose = vi.fn();
     render(
-      <>
-        <div className="p-component">
-          <button>legacy panel item</button>
-        </div>
-        <Modal onClose={onClose} header="Hold">
-          x
-        </Modal>
-      </>,
+      <Modal onClose={onClose} header="Closable">
+        x
+      </Modal>,
     );
-    await userEvent.click(screen.getByText("legacy panel item"));
-    expect(onClose).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it("omits the heading and footer when not provided", () => {
