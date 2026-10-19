@@ -14,8 +14,7 @@ import { Button } from "../ui/Button";
 import { CardActions } from "../layout/CardActions";
 import { Card } from "../ui/Card";
 import { DateRangeField } from "../ui/DateField";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
+import { Column, DataTable } from "../ui/DataTable";
 import { ConfirmPopup } from "../ui/ConfirmPopup";
 import { confirmPopup } from "../ui/confirmPopupStore";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
@@ -313,7 +312,6 @@ export const FillUpHistory: React.FC = () => {
               rowsPerPageOptions={[10, 20, 50]}
               sortField="filledAt"
               sortOrder={-1}
-              className="p-datatable-sm"
               emptyMessage="No fill-ups match the current filter."
             >
               <Column field="filledAt" header="Date" body={dateTemplate} sortable />

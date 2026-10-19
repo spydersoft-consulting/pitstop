@@ -1,15 +1,15 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-import { FileUpload, type FileUploadHandlerEvent } from "primereact/fileupload";
 import { Button } from "../ui/Button";
+import { FileButton } from "../ui/FileButton";
 import { ConfirmPopup } from "../ui/ConfirmPopup";
 import { confirmPopup } from "../ui/confirmPopupStore";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { deleteMaintenanceAttachment, uploadMaintenanceAttachment } from "../../store/slices/maintenanceLogSlice";
 import { maintenanceAttachmentsApi } from "../../api/maintenanceAttachmentsApi";
 
-const ACCEPTED_CONTENT_TYPES = "application/pdf,image/jpeg,image/png,image/webp,image/heic";
+const ACCEPTED_CONTENT_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/heic"];
 
 interface Props {
   vehicleId: number;
@@ -24,16 +24,14 @@ export const MaintenanceLogAttachments: React.FC<Props> = ({ vehicleId, maintena
   const [error, setError] = useState<string | null>(null);
   const [viewingId, setViewingId] = useState<number | null>(null);
 
-  const handleUpload = async (event: FileUploadHandlerEvent) => {
+  const handleUpload = async (files: File[]) => {
     setError(null);
     try {
-      for (const file of event.files) {
+      for (const file of files) {
         await dispatch(uploadMaintenanceAttachment({ vehicleId, id: maintenanceLogId, file })).unwrap();
       }
     } catch {
       setError("Failed to upload attachment. Please try again.");
-    } finally {
-      event.options.clear();
     }
   };
 
@@ -99,15 +97,11 @@ export const MaintenanceLogAttachments: React.FC<Props> = ({ vehicleId, maintena
         </ul>
       )}
 
-      <FileUpload
-        mode="basic"
-        customUpload
-        uploadHandler={handleUpload}
-        multiple
+      <FileButton
+        label="Add Attachment"
         accept={ACCEPTED_CONTENT_TYPES}
-        chooseLabel="Add Attachment"
-        auto
-        className="w-fit"
+        multiple
+        onFiles={(files) => void handleUpload(files)}
       />
 
       {error && <span className="text-xs text-red-500">{error}</span>}
