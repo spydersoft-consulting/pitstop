@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCar, faPlus, faPencil, faTrash, faGaugeHigh } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { selectVehicle, deleteVehicle, type Vehicle } from "../../store/slices/vehicleSlice";
@@ -95,17 +95,19 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, isActive, mpgBadge, 
           <div className="flex gap-1 shrink-0">
             <Button
               icon={<FontAwesomeIcon icon={faPencil} />}
-              className="p-button-text p-button-sm p-button-secondary"
-              tooltip="Edit"
-              tooltipOptions={{ position: "top" }}
+              variant="text"
+              size="sm"
+              severity="secondary"
+              title="Edit"
               onClick={onEdit}
               aria-label="Edit vehicle"
             />
             <Button
               icon={<FontAwesomeIcon icon={faTrash} />}
-              className="p-button-text p-button-sm p-button-danger"
-              tooltip="Delete"
-              tooltipOptions={{ position: "top" }}
+              variant="text"
+              size="sm"
+              severity="danger"
+              title="Delete"
               onClick={onDelete}
               aria-label="Delete vehicle"
             />
@@ -149,7 +151,7 @@ export const Vehicles: React.FC = () => {
           <Button
             label="Add"
             icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-            className="p-button-sm"
+            size="sm"
             onClick={() => navigate("/vehicles/new")}
           />
         }

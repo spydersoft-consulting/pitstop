@@ -10,7 +10,8 @@ import {
   faChevronUp,
   faFilter,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
+import { CardActions } from "../layout/CardActions";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
@@ -55,7 +56,7 @@ const FiltersPanel: React.FC<FiltersProps> = ({ range, onChange, onClear, totals
         placeholder="All time"
         className="w-full"
       />
-      {range?.[0] && <Button label="Clear" className="p-button-text p-button-sm mt-1 px-0" onClick={onClear} />}
+      {range?.[0] && <Button label="Clear" variant="text" size="sm" className="mt-1 px-0" onClick={onClear} />}
     </div>
 
     <hr className="border-border" />
@@ -145,20 +146,7 @@ const MobileFillUpCard: React.FC<MobileCardProps> = ({ row, expanded, onToggle, 
               <span className="block">{row.notes}</span>
             </div>
           )}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              icon={<FontAwesomeIcon icon={faPencil} className="mr-1" />}
-              label="Edit"
-              className="p-button-text p-button-sm"
-              onClick={onEdit}
-            />
-            <Button
-              icon={<FontAwesomeIcon icon={faTrash} className="mr-1" />}
-              label="Delete"
-              className="p-button-text p-button-sm p-button-danger"
-              onClick={onDelete}
-            />
-          </div>
+          <CardActions onEdit={onEdit} onDelete={onDelete} />
         </div>
       )}
     </div>
@@ -236,13 +224,17 @@ export const FillUpHistory: React.FC = () => {
     <div className="flex gap-2">
       <Button
         icon={<FontAwesomeIcon icon={faPencil} />}
-        className="p-button-text p-button-sm p-button-secondary"
+        variant="text"
+        size="sm"
+        severity="secondary"
         onClick={() => navigate(`/fill-ups/${String(row.id)}/edit`)}
         aria-label="Edit fill-up"
       />
       <Button
         icon={<FontAwesomeIcon icon={faTrash} />}
-        className="p-button-text p-button-sm p-button-danger"
+        variant="text"
+        size="sm"
+        severity="danger"
         onClick={(e) => handleDelete(e, row)}
         aria-label="Delete fill-up"
       />
@@ -272,7 +264,7 @@ export const FillUpHistory: React.FC = () => {
             <Button
               label="Log Your First Fill-Up"
               icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-              className="p-button-sm"
+              size="sm"
               onClick={() => navigate("/fill-ups/new")}
             />
           </div>
@@ -291,7 +283,7 @@ export const FillUpHistory: React.FC = () => {
           <Button
             label="Add"
             icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-            className="p-button-sm"
+            size="sm"
             onClick={() => navigate("/fill-ups/new")}
           />
         }

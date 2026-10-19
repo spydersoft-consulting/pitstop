@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList, faMap, faPlus, faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
@@ -109,9 +109,9 @@ export const Locations: React.FC = () => {
     }
   };
 
-  const confirmDelete = (event: React.MouseEvent<HTMLButtonElement>, id: number) => {
+  const confirmDelete = (event: React.MouseEvent<Element>, id: number) => {
     confirmPopup({
-      target: event.currentTarget,
+      target: event.currentTarget as HTMLElement,
       message: "Delete this location?",
       icon: "pi pi-exclamation-triangle",
       acceptClassName: "p-button-danger",
@@ -125,8 +125,8 @@ export const Locations: React.FC = () => {
         type="button"
         icon={<FontAwesomeIcon icon={faPencil} />}
         severity="secondary"
-        outlined
-        size="small"
+        variant="outlined"
+        size="sm"
         aria-label="Edit"
         onClick={() => openEdit(loc)}
       />
@@ -134,8 +134,8 @@ export const Locations: React.FC = () => {
         type="button"
         icon={<FontAwesomeIcon icon={faTrash} />}
         severity="danger"
-        outlined
-        size="small"
+        variant="outlined"
+        size="sm"
         aria-label="Delete"
         ref={(el) => {
           if (el) deleteButtonRef.current.set(Number(loc.id), el as unknown as HTMLButtonElement);
@@ -190,7 +190,7 @@ export const Locations: React.FC = () => {
                 <span className="hidden sm:inline">Map</span>
               </button>
             </div>
-            <Button type="button" icon={<FontAwesomeIcon icon={faPlus} />} label="Add" size="small" onClick={openAdd} />
+            <Button type="button" icon={<FontAwesomeIcon icon={faPlus} />} label="Add" size="sm" onClick={openAdd} />
           </div>
         }
       />
@@ -252,8 +252,8 @@ export const Locations: React.FC = () => {
                       type="button"
                       icon={<FontAwesomeIcon icon={faPencil} />}
                       severity="secondary"
-                      outlined
-                      size="small"
+                      variant="outlined"
+                      size="sm"
                       aria-label="Edit"
                       onClick={() => openEdit(loc)}
                     />
@@ -261,8 +261,8 @@ export const Locations: React.FC = () => {
                       type="button"
                       icon={<FontAwesomeIcon icon={faTrash} />}
                       severity="danger"
-                      outlined
-                      size="small"
+                      variant="outlined"
+                      size="sm"
                       aria-label="Delete"
                       onClick={(e) => confirmDelete(e, Number(loc.id))}
                     />
@@ -330,7 +330,7 @@ export const Locations: React.FC = () => {
               type="button"
               label="Cancel"
               severity="secondary"
-              outlined
+              variant="outlined"
               onClick={closeDialog}
               disabled={saving}
             />

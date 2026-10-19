@@ -8,7 +8,8 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Calendar } from "primereact/calendar";
 import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
+import { FormActions } from "../layout/FormActions";
 import type {
   CreateMaintenanceLogRequest,
   MaintenanceLogItemRequest,
@@ -322,7 +323,9 @@ export const MaintenanceLogForm: React.FC<Props> = ({
                 <Button
                   type="button"
                   icon={<FontAwesomeIcon icon={faTrash} />}
-                  className="p-button-text p-button-sm p-button-danger"
+                  variant="text"
+                  size="sm"
+                  severity="danger"
                   onClick={() => removeItem(index)}
                   aria-label={`Remove service ${index + 1}`}
                 />
@@ -336,7 +339,8 @@ export const MaintenanceLogForm: React.FC<Props> = ({
             type="button"
             label="Add another service"
             icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-            className="p-button-sm p-button-outlined"
+            size="sm"
+            variant="outlined"
             onClick={addItem}
           />
         )}
@@ -363,20 +367,11 @@ export const MaintenanceLogForm: React.FC<Props> = ({
         />,
       )}
 
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="submit"
-          label={isEdit ? "Save Changes" : "Add Maintenance Log"}
-          loading={submitting}
-          className="p-button-sm"
-        />
-        <Button
-          type="button"
-          label="Cancel"
-          className="p-button-sm p-button-outlined"
-          onClick={() => navigate("/maintenance")}
-        />
-      </div>
+      <FormActions
+        submitLabel={isEdit ? "Save Changes" : "Add Maintenance Log"}
+        submitting={submitting}
+        onCancel={() => navigate("/maintenance")}
+      />
     </form>
   );
 };

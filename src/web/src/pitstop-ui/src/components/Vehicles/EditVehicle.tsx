@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { Card } from "primereact/card";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updateVehicle } from "../../store/slices/vehicleSlice";
@@ -69,7 +69,8 @@ export const EditVehicle: React.FC = () => {
           <Button
             label="Recalls"
             icon={<FontAwesomeIcon icon={faTriangleExclamation} className="mr-2" />}
-            className="p-button-sm p-button-outlined"
+            size="sm"
+            variant="outlined"
             onClick={() => navigate(`/vehicles/${id}/recalls`)}
           />
         }

@@ -5,7 +5,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Calendar } from "primereact/calendar";
 import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
+import { FormActions } from "../layout/FormActions";
 import type { CreateFillUpRequest, FillUpRequest } from "../../api/generated/types.gen";
 import { LocationPicker, type LocationSelection } from "../Locations/LocationPicker";
 
@@ -251,20 +251,11 @@ export const FillUpForm: React.FC<Props> = ({
         </label>
       </div>
 
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="submit"
-          label={isEdit ? "Save Changes" : "Add Fill-Up"}
-          loading={submitting}
-          className="p-button-sm"
-        />
-        <Button
-          type="button"
-          label="Cancel"
-          className="p-button-sm p-button-outlined"
-          onClick={() => navigate("/fill-ups")}
-        />
-      </div>
+      <FormActions
+        submitLabel={isEdit ? "Save Changes" : "Add Fill-Up"}
+        submitting={submitting}
+        onCancel={() => navigate("/fill-ups")}
+      />
     </form>
   );
 };

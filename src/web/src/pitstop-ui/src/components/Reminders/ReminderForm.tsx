@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "primereact/button";
+import { FormActions } from "../layout/FormActions";
 import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
@@ -191,20 +191,11 @@ export const ReminderForm: React.FC<Props> = ({
 
       {error && <p className="text-xs text-danger">{error}</p>}
 
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="submit"
-          label={isEdit ? "Save Changes" : "Add Reminder"}
-          loading={submitting}
-          className="p-button-sm"
-        />
-        <Button
-          type="button"
-          label="Cancel"
-          className="p-button-sm p-button-outlined"
-          onClick={() => navigate("/reminders")}
-        />
-      </div>
+      <FormActions
+        submitLabel={isEdit ? "Save Changes" : "Add Reminder"}
+        submitting={submitting}
+        onCancel={() => navigate("/reminders")}
+      />
     </form>
   );
 };
