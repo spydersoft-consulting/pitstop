@@ -2,7 +2,7 @@ import { Input, TextArea } from "react-aria-components";
 import { useLayoutEffect, useRef } from "react";
 
 const field =
-  "w-full rounded-md border bg-surface px-3 py-2 text-base text-content placeholder:text-content-muted " +
+  "w-full rounded-md border bg-surface px-3 py-3 text-base text-content placeholder:text-content-muted " +
   "focus:outline-2 focus:outline-offset-0 focus:outline-primary disabled:opacity-60";
 
 const borderFor = (invalid?: boolean) => (invalid ? "border-danger" : "border-border-strong");
