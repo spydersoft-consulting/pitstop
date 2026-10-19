@@ -3,8 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList, faMap, faPlus, faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/Button";
 import { InputText } from "../ui/TextField";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
+import { Column, DataTable } from "../ui/DataTable";
 import { Modal } from "../ui/Modal";
 import { ConfirmPopup } from "../ui/ConfirmPopup";
 import { confirmPopup } from "../ui/confirmPopupStore";
@@ -203,7 +202,6 @@ export const Locations: React.FC = () => {
               loading={loading}
               emptyMessage="No locations yet — add your first station."
               stripedRows
-              size="small"
             >
               <Column field="name" header="Name" sortable />
               <Column field="address" header="Address" sortable body={(row: Location) => row.address ?? "—"} />
