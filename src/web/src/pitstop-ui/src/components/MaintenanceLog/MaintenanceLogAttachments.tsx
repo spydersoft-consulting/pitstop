@@ -1,12 +1,15 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-import { FileUpload, type FileUploadHandlerEvent } from "primereact/fileupload";
-import { Button } from "primereact/button";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { Button } from "../ui/Button";
+import { FileButton } from "../ui/FileButton";
+import { ConfirmPopup } from "../ui/ConfirmPopup";
+import { confirmPopup } from "../ui/confirmPopupStore";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { deleteMaintenanceAttachment, uploadMaintenanceAttachment } from "../../store/slices/maintenanceLogSlice";
 import { maintenanceAttachmentsApi } from "../../api/maintenanceAttachmentsApi";
 
-const ACCEPTED_CONTENT_TYPES = "application/pdf,image/jpeg,image/png,image/webp,image/heic";
+const ACCEPTED_CONTENT_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/heic"];
 
 interface Props {
   vehicleId: number;
@@ -21,16 +24,14 @@ export const MaintenanceLogAttachments: React.FC<Props> = ({ vehicleId, maintena
   const [error, setError] = useState<string | null>(null);
   const [viewingId, setViewingId] = useState<number | null>(null);
 
-  const handleUpload = async (event: FileUploadHandlerEvent) => {
+  const handleUpload = async (files: File[]) => {
     setError(null);
     try {
-      for (const file of event.files) {
+      for (const file of files) {
         await dispatch(uploadMaintenanceAttachment({ vehicleId, id: maintenanceLogId, file })).unwrap();
       }
     } catch {
       setError("Failed to upload attachment. Please try again.");
-    } finally {
-      event.options.clear();
     }
   };
 
@@ -74,16 +75,19 @@ export const MaintenanceLogAttachments: React.FC<Props> = ({ vehicleId, maintena
               <div className="flex gap-1 shrink-0">
                 <Button
                   type="button"
-                  icon="pi pi-eye"
-                  className="p-button-sm p-button-text"
+                  icon={<FontAwesomeIcon icon={faEye} />}
+                  size="sm"
+                  variant="text"
                   loading={viewingId === Number(a.id)}
                   onClick={() => handleView(Number(a.id))}
                   aria-label={`View ${a.fileName}`}
                 />
                 <Button
                   type="button"
-                  icon="pi pi-trash"
-                  className="p-button-sm p-button-text p-button-danger"
+                  icon={<FontAwesomeIcon icon={faTrash} />}
+                  size="sm"
+                  variant="text"
+                  severity="danger"
                   onClick={(e) => handleDelete(e, Number(a.id))}
                   aria-label={`Delete ${a.fileName}`}
                 />
@@ -93,15 +97,11 @@ export const MaintenanceLogAttachments: React.FC<Props> = ({ vehicleId, maintena
         </ul>
       )}
 
-      <FileUpload
-        mode="basic"
-        customUpload
-        uploadHandler={handleUpload}
-        multiple
+      <FileButton
+        label="Add Attachment"
         accept={ACCEPTED_CONTENT_TYPES}
-        chooseLabel="Add Attachment"
-        auto
-        className="w-fit"
+        multiple
+        onFiles={(files) => void handleUpload(files)}
       />
 
       {error && <span className="text-xs text-red-500">{error}</span>}

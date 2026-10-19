@@ -1,12 +1,12 @@
 import React, { useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList, faMap, faPlus, faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { Button } from "../ui/Button";
+import { InputText } from "../ui/TextField";
+import { Column, DataTable } from "../ui/DataTable";
+import { Modal } from "../ui/Modal";
+import { ConfirmPopup } from "../ui/ConfirmPopup";
+import { confirmPopup } from "../ui/confirmPopupStore";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -109,12 +109,10 @@ export const Locations: React.FC = () => {
     }
   };
 
-  const confirmDelete = (event: React.MouseEvent<HTMLButtonElement>, id: number) => {
+  const confirmDelete = (event: React.MouseEvent<Element>, id: number) => {
     confirmPopup({
-      target: event.currentTarget,
+      target: event.currentTarget as HTMLElement,
       message: "Delete this location?",
-      icon: "pi pi-exclamation-triangle",
-      acceptClassName: "p-button-danger",
       accept: () => void dispatch(deleteLocation(id)),
     });
   };
@@ -125,8 +123,8 @@ export const Locations: React.FC = () => {
         type="button"
         icon={<FontAwesomeIcon icon={faPencil} />}
         severity="secondary"
-        outlined
-        size="small"
+        variant="outlined"
+        size="sm"
         aria-label="Edit"
         onClick={() => openEdit(loc)}
       />
@@ -134,8 +132,8 @@ export const Locations: React.FC = () => {
         type="button"
         icon={<FontAwesomeIcon icon={faTrash} />}
         severity="danger"
-        outlined
-        size="small"
+        variant="outlined"
+        size="sm"
         aria-label="Delete"
         ref={(el) => {
           if (el) deleteButtonRef.current.set(Number(loc.id), el as unknown as HTMLButtonElement);
@@ -190,7 +188,7 @@ export const Locations: React.FC = () => {
                 <span className="hidden sm:inline">Map</span>
               </button>
             </div>
-            <Button type="button" icon={<FontAwesomeIcon icon={faPlus} />} label="Add" size="small" onClick={openAdd} />
+            <Button type="button" icon={<FontAwesomeIcon icon={faPlus} />} label="Add" size="sm" onClick={openAdd} />
           </div>
         }
       />
@@ -204,7 +202,6 @@ export const Locations: React.FC = () => {
               loading={loading}
               emptyMessage="No locations yet — add your first station."
               stripedRows
-              size="small"
             >
               <Column field="name" header="Name" sortable />
               <Column field="address" header="Address" sortable body={(row: Location) => row.address ?? "—"} />
@@ -252,8 +249,8 @@ export const Locations: React.FC = () => {
                       type="button"
                       icon={<FontAwesomeIcon icon={faPencil} />}
                       severity="secondary"
-                      outlined
-                      size="small"
+                      variant="outlined"
+                      size="sm"
                       aria-label="Edit"
                       onClick={() => openEdit(loc)}
                     />
@@ -261,8 +258,8 @@ export const Locations: React.FC = () => {
                       type="button"
                       icon={<FontAwesomeIcon icon={faTrash} />}
                       severity="danger"
-                      outlined
-                      size="small"
+                      variant="outlined"
+                      size="sm"
                       aria-label="Delete"
                       onClick={(e) => confirmDelete(e, Number(loc.id))}
                     />
@@ -319,18 +316,18 @@ export const Locations: React.FC = () => {
         </div>
       )}
 
-      <Dialog
+      <Modal
         header={editingId !== null ? "Edit Location" : "Add Location"}
-        visible={dialogOpen}
-        onHide={closeDialog}
-        style={{ width: "min(480px, 95vw)" }}
+        open={dialogOpen}
+        onClose={closeDialog}
+        className="max-w-[480px]"
         footer={
           <div className="flex justify-end gap-2">
             <Button
               type="button"
               label="Cancel"
               severity="secondary"
-              outlined
+              variant="outlined"
               onClick={closeDialog}
               disabled={saving}
             />
@@ -383,7 +380,7 @@ export const Locations: React.FC = () => {
             />
           </div>
         </div>
-      </Dialog>
+      </Modal>
     </div>
   );
 };

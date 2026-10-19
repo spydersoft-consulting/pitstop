@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { VehicleForm, type VehicleFormValues } from "./VehicleForm";
+import { selectOption } from "../../test-utils/selectOption";
 
 function renderForm(props: Partial<React.ComponentProps<typeof VehicleForm>> = {}) {
   const onSubmit = vi.fn();
@@ -126,5 +127,43 @@ describe("VehicleForm", () => {
       screen.getByText("VIN must be 17 characters (letters and digits, excluding I, O, and Q)."),
     ).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("chooses a plate state and clears it again", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({ initialValues: { ...filled, plateState: "" } });
+
+    await selectOption(user, screen.getByRole("button", { name: /Select state/ }), "Pennsylvania");
+    expect(screen.getByRole("button", { name: /Pennsylvania/ })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Clear" }));
+    expect(screen.getByRole("button", { name: /Select state/ })).toBeInTheDocument();
+
+    await selectOption(user, screen.getByRole("button", { name: /Select state/ }), "Ohio");
+    await user.click(screen.getByRole("button", { name: /add vehicle/i }));
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ plateState: "OH" });
+  });
+
+  it("accepts typed numbers for year and tank capacity", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({ initialValues: { ...filled, year: null, tankCapacityGallons: null } });
+
+    await user.type(screen.getByPlaceholderText("e.g. 2022"), "2019");
+    await user.type(screen.getByPlaceholderText("e.g. 14.8"), "15.5");
+    await user.tab();
+    await user.click(screen.getByRole("button", { name: /add vehicle/i }));
+
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ year: 2019, tankCapacityGallons: 15.5 });
+  });
+
+  it("sets the start date by typing into the date field", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm({ initialValues: { ...filled, startDate: null } });
+
+    const group = screen.getByRole("group", { name: "Date" });
+    await user.click(within(group).getByRole("spinbutton", { name: /month/i }));
+    await user.keyboard("03152026");
+    await user.click(screen.getByRole("button", { name: /add vehicle/i }));
+
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ startDate: "2026-03-15" });
   });
 });

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Button } from "primereact/button";
-import { Calendar } from "primereact/calendar";
-import { Dialog } from "primereact/dialog";
-import { Dropdown } from "primereact/dropdown";
-import { InputNumber } from "primereact/inputnumber";
+import { Button } from "../ui/Button";
+import { DateField } from "../ui/DateField";
+import { Modal } from "../ui/Modal";
+import { Select } from "../ui/Select";
+import { NumberField } from "../ui/NumberField";
 import type { Reminder } from "../../store/slices/reminderSlice";
 import { PERFORMED_BY_OPTIONS } from "../MaintenanceLog/maintenanceLogOptions";
 import { num, toDateOnlyString } from "./reminderFormat";
@@ -22,17 +22,16 @@ export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onS
   const valid = date !== null && odometer !== null && odometer >= 0;
 
   return (
-    <Dialog
-      visible
-      onHide={onClose}
+    <Modal
+      onClose={onClose}
       header={`Mark done: ${reminder.name ?? "reminder"}`}
       className="w-full max-w-md"
       footer={
         <div className="flex justify-end gap-2">
-          <Button label="Cancel" className="p-button-text p-button-sm" onClick={onClose} />
+          <Button label="Cancel" variant="text" size="sm" onClick={onClose} />
           <Button
             label="Mark done"
-            className="p-button-sm"
+            size="sm"
             disabled={!valid}
             onClick={() => onSubmit({ date: toDateOnlyString(date!), odometer: odometer!, performedBy })}
           />
@@ -41,45 +40,35 @@ export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onS
     >
       <div className="space-y-3">
         <div>
-          <label htmlFor="complete-date" className="block text-sm mb-1">
+          <label id="complete-date-label" htmlFor="complete-date" className="block text-sm mb-1">
             Date done
           </label>
-          <Calendar
-            inputId="complete-date"
-            value={date}
-            onChange={(e) => setDate(e.value ?? null)}
-            showIcon
-            className="w-full"
-            inputClassName="w-full"
-          />
+          <DateField inputId="complete-date" value={date} onChange={(e) => setDate(e.value)} />
         </div>
         <div>
-          <label htmlFor="complete-odometer" className="block text-sm mb-1">
+          <label id="complete-odometer-label" htmlFor="complete-odometer" className="block text-sm mb-1">
             Odometer (mi)
           </label>
-          <InputNumber
+          <NumberField
             inputId="complete-odometer"
             value={odometer}
             onValueChange={(e) => setOdometer(e.value ?? null)}
             useGrouping
-            className="w-full"
-            inputClassName="w-full"
           />
         </div>
         <div>
-          <label htmlFor="complete-performed-by" className="block text-sm mb-1">
+          <label id="complete-performed-by-label" htmlFor="complete-performed-by" className="block text-sm mb-1">
             Performed by
           </label>
-          <Dropdown
+          <Select
             inputId="complete-performed-by"
             value={performedBy}
             options={PERFORMED_BY_OPTIONS}
             onChange={(e) => setPerformedBy(e.value)}
-            className="w-full"
           />
         </div>
         <p className="text-xs text-content-muted">This also adds an entry to Maintenance History.</p>
       </div>
-    </Dialog>
+    </Modal>
   );
 };

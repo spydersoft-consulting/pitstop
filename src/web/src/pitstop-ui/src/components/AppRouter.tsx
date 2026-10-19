@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { ProgressSpinner } from "primereact/progressspinner";
+import { Spinner } from "./ui/Spinner";
 import MainLayout from "../layouts/Main";
 import { Dashboard } from "./Dashboard/Dashboard";
 import { FillUpHistory } from "./FillUpHistory/FillUpHistory";
@@ -57,7 +57,7 @@ export const AppRouter: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <ProgressSpinner />
+        <Spinner />
       </div>
     );
   }

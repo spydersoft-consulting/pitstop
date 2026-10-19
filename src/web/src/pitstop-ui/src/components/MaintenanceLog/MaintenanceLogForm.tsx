@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { InputNumber } from "primereact/inputnumber";
-import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
-import { Calendar } from "primereact/calendar";
-import { Checkbox } from "primereact/checkbox";
-import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
+import { NumberField } from "../ui/NumberField";
+import { InputText, Textarea } from "../ui/TextField";
+import { DateField } from "../ui/DateField";
+import { Checkbox } from "../ui/Checkbox";
+import { Select } from "../ui/Select";
+import { Button } from "../ui/Button";
+import { FormActions } from "../layout/FormActions";
 import type {
   CreateMaintenanceLogRequest,
   MaintenanceLogItemRequest,
@@ -184,25 +184,18 @@ export const MaintenanceLogForm: React.FC<Props> = ({
           "Service Date *",
           "service-date",
           errors.serviceDate,
-          <Calendar
-            value={values.serviceDate}
-            onChange={(e) => set("serviceDate", e.value ?? null)}
-            showIcon
-            className="w-full"
-            inputClassName="w-full"
-          />,
+          <DateField value={values.serviceDate} onChange={(e) => set("serviceDate", e.value)} />,
         )}
         {field(
           "Odometer (mi) *",
           "odometer-reading",
           errors.odometerReading,
-          <InputNumber
+          <NumberField
             value={values.odometerReading}
             onValueChange={(e) => set("odometerReading", e.value ?? null)}
             placeholder="e.g. 45230"
             useGrouping
-            className={errors.odometerReading ? "p-invalid w-full" : "w-full"}
-            inputClassName="w-full"
+            invalid={!!errors.odometerReading}
           />,
         )}
       </div>
@@ -211,11 +204,10 @@ export const MaintenanceLogForm: React.FC<Props> = ({
         "Performed By",
         "performed-by",
         undefined,
-        <Dropdown
+        <Select
           value={values.performedBy}
           options={PERFORMED_BY_OPTIONS}
           onChange={(e) => set("performedBy", e.value)}
-          className="w-full"
         />,
       )}
 
@@ -241,11 +233,10 @@ export const MaintenanceLogForm: React.FC<Props> = ({
                 "Service Type",
                 `service-type-${index}`,
                 undefined,
-                <Dropdown
+                <Select
                   value={item.serviceType}
                   options={SERVICE_TYPE_OPTIONS}
                   onChange={(e) => setItem(index, "serviceType", e.value)}
-                  className="w-full"
                 />,
               )}
               {field(
@@ -267,42 +258,36 @@ export const MaintenanceLogForm: React.FC<Props> = ({
                 "Parts Cost",
                 `parts-cost-${index}`,
                 undefined,
-                <InputNumber
+                <NumberField
                   value={item.partsCost}
                   onValueChange={(e) => setItem(index, "partsCost", e.value ?? null)}
                   placeholder="e.g. 45.00"
                   mode="currency"
                   currency="USD"
-                  className="w-full"
-                  inputClassName="w-full"
                 />,
               )}
               {field(
                 "Labor Cost",
                 `labor-cost-${index}`,
                 undefined,
-                <InputNumber
+                <NumberField
                   value={item.laborCost}
                   onValueChange={(e) => setItem(index, "laborCost", e.value ?? null)}
                   placeholder="e.g. 60.00"
                   mode="currency"
                   currency="USD"
-                  className="w-full"
-                  inputClassName="w-full"
                 />,
               )}
               {field(
                 "Total Cost",
                 `total-cost-${index}`,
                 undefined,
-                <InputNumber
+                <NumberField
                   value={item.totalCost}
                   onValueChange={(e) => setItem(index, "totalCost", e.value ?? null)}
                   placeholder="Blank = parts + labor"
                   mode="currency"
                   currency="USD"
-                  className="w-full"
-                  inputClassName="w-full"
                 />,
               )}
             </div>
@@ -312,7 +297,7 @@ export const MaintenanceLogForm: React.FC<Props> = ({
                 <Checkbox
                   inputId={`isWarrantyWork-${index}`}
                   checked={item.isWarrantyWork}
-                  onChange={(e) => setItem(index, "isWarrantyWork", e.checked ?? false)}
+                  onChange={(e) => setItem(index, "isWarrantyWork", e.checked)}
                 />
                 <label htmlFor={`isWarrantyWork-${index}`} className="text-sm text-secondary">
                   Covered under warranty
@@ -322,7 +307,9 @@ export const MaintenanceLogForm: React.FC<Props> = ({
                 <Button
                   type="button"
                   icon={<FontAwesomeIcon icon={faTrash} />}
-                  className="p-button-text p-button-sm p-button-danger"
+                  variant="text"
+                  size="sm"
+                  severity="danger"
                   onClick={() => removeItem(index)}
                   aria-label={`Remove service ${index + 1}`}
                 />
@@ -336,7 +323,8 @@ export const MaintenanceLogForm: React.FC<Props> = ({
             type="button"
             label="Add another service"
             icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-            className="p-button-sm p-button-outlined"
+            size="sm"
+            variant="outlined"
             onClick={addItem}
           />
         )}
@@ -353,7 +341,7 @@ export const MaintenanceLogForm: React.FC<Props> = ({
         "Notes",
         "notes",
         undefined,
-        <InputTextarea
+        <Textarea
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder="Optional notes"
@@ -363,20 +351,11 @@ export const MaintenanceLogForm: React.FC<Props> = ({
         />,
       )}
 
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="submit"
-          label={isEdit ? "Save Changes" : "Add Maintenance Log"}
-          loading={submitting}
-          className="p-button-sm"
-        />
-        <Button
-          type="button"
-          label="Cancel"
-          className="p-button-sm p-button-outlined"
-          onClick={() => navigate("/maintenance")}
-        />
-      </div>
+      <FormActions
+        submitLabel={isEdit ? "Save Changes" : "Add Maintenance Log"}
+        submitting={submitting}
+        onCancel={() => navigate("/maintenance")}
+      />
     </form>
   );
 };

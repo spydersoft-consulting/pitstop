@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { InputNumber } from "primereact/inputnumber";
-import { InputTextarea } from "primereact/inputtextarea";
-import { Calendar } from "primereact/calendar";
-import { Checkbox } from "primereact/checkbox";
-import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
+import { NumberField } from "../ui/NumberField";
+import { Textarea } from "../ui/TextField";
+import { DateField } from "../ui/DateField";
+import { Checkbox } from "../ui/Checkbox";
+import { FormActions } from "../layout/FormActions";
+import { Select } from "../ui/Select";
 import type { CreateFillUpRequest, FillUpRequest } from "../../api/generated/types.gen";
 import { LocationPicker, type LocationSelection } from "../Locations/LocationPicker";
 
@@ -136,39 +136,25 @@ export const FillUpForm: React.FC<Props> = ({
       {field(
         "Date *",
         errors.filledAt,
-        <Calendar
-          value={values.filledAt}
-          onChange={(e) => set("filledAt", e.value ?? null)}
-          showIcon
-          showTime
-          hourFormat="12"
-          className="w-full"
-          inputClassName="w-full"
-        />,
+        <DateField value={values.filledAt} onChange={(e) => set("filledAt", e.value)} showTime />,
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {field(
           "Odometer (mi) *",
           errors.odometerReading,
-          <InputNumber
+          <NumberField
             value={values.odometerReading}
             onValueChange={(e) => set("odometerReading", e.value ?? null)}
             placeholder="e.g. 45230"
             useGrouping
-            className={errors.odometerReading ? "p-invalid w-full" : "w-full"}
-            inputClassName="w-full"
+            invalid={!!errors.odometerReading}
           />,
         )}
         {field(
           "Fuel Grade",
           undefined,
-          <Dropdown
-            value={values.fuelGrade}
-            options={FUEL_GRADE_OPTIONS}
-            onChange={(e) => set("fuelGrade", e.value)}
-            className="w-full"
-          />,
+          <Select value={values.fuelGrade} options={FUEL_GRADE_OPTIONS} onChange={(e) => set("fuelGrade", e.value)} />,
         )}
       </div>
 
@@ -176,21 +162,20 @@ export const FillUpForm: React.FC<Props> = ({
         {field(
           "Gallons Added *",
           errors.gallonsAdded,
-          <InputNumber
+          <NumberField
             value={values.gallonsAdded}
             onValueChange={(e) => set("gallonsAdded", e.value ?? null)}
             onBlur={autoFillMissing}
             placeholder="e.g. 12.345"
             minFractionDigits={3}
             maxFractionDigits={3}
-            className={errors.gallonsAdded ? "p-invalid w-full" : "w-full"}
-            inputClassName="w-full"
+            invalid={!!errors.gallonsAdded}
           />,
         )}
         {field(
           "Price / Gallon",
           errors.pricePerGallon,
-          <InputNumber
+          <NumberField
             value={values.pricePerGallon}
             onValueChange={(e) => set("pricePerGallon", e.value ?? null)}
             onBlur={autoFillMissing}
@@ -199,14 +184,13 @@ export const FillUpForm: React.FC<Props> = ({
             currency="USD"
             minFractionDigits={3}
             maxFractionDigits={3}
-            className={errors.pricePerGallon ? "p-invalid w-full" : "w-full"}
-            inputClassName="w-full"
+            invalid={!!errors.pricePerGallon}
           />,
         )}
         {field(
           "Total Cost",
           errors.totalCost,
-          <InputNumber
+          <NumberField
             value={values.totalCost}
             onValueChange={(e) => set("totalCost", e.value ?? null)}
             onBlur={autoFillMissing}
@@ -215,8 +199,7 @@ export const FillUpForm: React.FC<Props> = ({
             currency="USD"
             minFractionDigits={2}
             maxFractionDigits={2}
-            className={errors.totalCost ? "p-invalid w-full" : "w-full"}
-            inputClassName="w-full"
+            invalid={!!errors.totalCost}
           />,
         )}
       </div>
@@ -230,7 +213,7 @@ export const FillUpForm: React.FC<Props> = ({
       {field(
         "Notes",
         undefined,
-        <InputTextarea
+        <Textarea
           value={values.notes}
           onChange={(e) => set("notes", e.target.value)}
           placeholder="Optional notes"
@@ -244,27 +227,18 @@ export const FillUpForm: React.FC<Props> = ({
         <Checkbox
           inputId="isFullFillUp"
           checked={values.isFullFillUp}
-          onChange={(e) => set("isFullFillUp", e.checked ?? false)}
+          onChange={(e) => set("isFullFillUp", e.checked)}
         />
         <label htmlFor="isFullFillUp" className="text-sm text-secondary">
           Full fill-up (used for MPG calculation)
         </label>
       </div>
 
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="submit"
-          label={isEdit ? "Save Changes" : "Add Fill-Up"}
-          loading={submitting}
-          className="p-button-sm"
-        />
-        <Button
-          type="button"
-          label="Cancel"
-          className="p-button-sm p-button-outlined"
-          onClick={() => navigate("/fill-ups")}
-        />
-      </div>
+      <FormActions
+        submitLabel={isEdit ? "Save Changes" : "Add Fill-Up"}
+        submitting={submitting}
+        onCancel={() => navigate("/fill-ups")}
+      />
     </form>
   );
 };

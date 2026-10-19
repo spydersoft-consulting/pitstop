@@ -1,7 +1,9 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
-import { AutoComplete, type AutoCompleteCompleteEvent } from "primereact/autocomplete";
-import { InputNumber } from "primereact/inputnumber";
-import { Button } from "primereact/button";
+import { NumberField } from "../ui/NumberField";
+import { Button } from "../ui/Button";
+import { ComboBox } from "../ui/ComboBox";
 import { getAddressLookupProvider, type AddressSuggestion } from "../../services/addressLookup";
 
 export interface AddressFieldsValue {
@@ -63,8 +65,8 @@ export const AddressFields: React.FC<Props> = ({
     setAddressQuery((q) => (q === reflected ? q : reflected));
   }, [value.address]);
 
-  const searchAddress = (event: AutoCompleteCompleteEvent) => {
-    const term = (event.query ?? "").trim();
+  const searchAddress = (rawTerm: string) => {
+    const term = rawTerm.trim();
     if (addressDebounceRef.current) clearTimeout(addressDebounceRef.current);
     if (!term) {
       setAddressSuggestions([]);
@@ -118,53 +120,44 @@ export const AddressFields: React.FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <AutoComplete
+      <ComboBox
         inputId={addressInputId}
-        value={addressQuery}
-        suggestions={addressSuggestions}
-        completeMethod={searchAddress}
-        field="description"
-        delay={0}
+        inputValue={addressQuery}
+        items={addressSuggestions}
+        getKey={(s) => s.id}
+        getText={(s) => s.description}
+        onSearch={searchAddress}
         placeholder={addressPlaceholder}
-        inputClassName="w-full"
-        className="w-full"
-        onChange={(e) => {
-          const v = e.value;
-          if (typeof v === "string") {
-            setAddressQuery(v);
-            onChange({ ...value, address: v });
-          }
+        onInputChange={(v) => {
+          setAddressQuery(v);
+          onChange({ ...value, address: v });
         }}
-        onSelect={(e) => void handleSelectAddress(e.value as AddressSuggestion)}
+        onSelect={(s) => void handleSelectAddress(s)}
       />
       {addressLookupError && <span className="text-xs text-red-500">{addressLookupError}</span>}
       <div className="grid grid-cols-2 gap-2">
-        <InputNumber
+        <NumberField
           value={value.latitude}
           onValueChange={(e) => onChange({ ...value, latitude: e.value ?? null })}
           placeholder="Latitude (optional)"
           minFractionDigits={4}
           maxFractionDigits={6}
-          className="w-full"
-          inputClassName="w-full"
         />
-        <InputNumber
+        <NumberField
           value={value.longitude}
           onValueChange={(e) => onChange({ ...value, longitude: e.value ?? null })}
           placeholder="Longitude (optional)"
           minFractionDigits={4}
           maxFractionDigits={6}
-          className="w-full"
-          inputClassName="w-full"
         />
       </div>
       <div className="flex items-center gap-2">
         <Button
           type="button"
-          icon="pi pi-map-marker"
+          icon={<FontAwesomeIcon icon={faLocationDot} />}
           label="Use current location"
-          size="small"
-          outlined
+          size="sm"
+          variant="outlined"
           loading={geoStatus.kind === "fetching"}
           onClick={useBrowserLocation}
         />

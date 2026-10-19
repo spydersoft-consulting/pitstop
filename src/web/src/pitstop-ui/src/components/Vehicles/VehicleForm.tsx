@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { InputText } from "primereact/inputtext";
-import { InputNumber } from "primereact/inputnumber";
-import { Calendar } from "primereact/calendar";
-import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
+import { NumberField } from "../ui/NumberField";
+import { FormActions } from "../layout/FormActions";
+import { DateField } from "../ui/DateField";
+import { Select } from "../ui/Select";
+import { InputText } from "../ui/TextField";
 import type { CreateVehicleRequest, UpdateVehicleRequest } from "../../api/generated/types.gen";
 import { US_STATE_OPTIONS } from "./vehicleOptions";
 
@@ -124,7 +124,8 @@ export const VehicleForm: React.FC<Props> = ({
           value={values.name}
           onChange={(e) => set("name", e.target.value)}
           placeholder="e.g. My Daily Driver"
-          className={errors.name ? "p-invalid w-full" : "w-full"}
+          invalid={!!errors.name}
+          className="w-full"
         />,
       )}
 
@@ -136,7 +137,8 @@ export const VehicleForm: React.FC<Props> = ({
             value={values.make}
             onChange={(e) => set("make", e.target.value)}
             placeholder="e.g. Honda"
-            className={errors.make ? "p-invalid w-full" : "w-full"}
+            invalid={!!errors.make}
+            className="w-full"
           />,
         )}
         {field(
@@ -146,7 +148,8 @@ export const VehicleForm: React.FC<Props> = ({
             value={values.model}
             onChange={(e) => set("model", e.target.value)}
             placeholder="e.g. Accord"
-            className={errors.model ? "p-invalid w-full" : "w-full"}
+            invalid={!!errors.model}
+            className="w-full"
           />,
         )}
       </div>
@@ -155,13 +158,11 @@ export const VehicleForm: React.FC<Props> = ({
         {field(
           "Year",
           undefined,
-          <InputNumber
+          <NumberField
             value={values.year}
             onValueChange={(e) => set("year", e.value ?? null)}
             placeholder="e.g. 2022"
             useGrouping={false}
-            className="w-full"
-            inputClassName="w-full"
           />,
         )}
         {field(
@@ -177,14 +178,12 @@ export const VehicleForm: React.FC<Props> = ({
         {field(
           "Tank Capacity (gal)",
           undefined,
-          <InputNumber
+          <NumberField
             value={values.tankCapacityGallons}
             onValueChange={(e) => set("tankCapacityGallons", e.value ?? null)}
             placeholder="e.g. 14.8"
             minFractionDigits={1}
             maxFractionDigits={3}
-            className="w-full"
-            inputClassName="w-full"
           />,
         )}
       </div>
@@ -193,13 +192,12 @@ export const VehicleForm: React.FC<Props> = ({
         {field(
           "Plate State",
           undefined,
-          <Dropdown
+          <Select
             value={values.plateState || null}
             options={US_STATE_OPTIONS}
-            onChange={(e) => set("plateState", e.value ?? "")}
+            onChange={(e) => set("plateState", e.value)}
             placeholder="Select state"
-            showClear
-            className="w-full"
+            onClear={() => set("plateState", "")}
           />,
         )}
         {field(
@@ -220,7 +218,8 @@ export const VehicleForm: React.FC<Props> = ({
             onChange={(e) => set("vin", e.target.value)}
             placeholder="e.g. 1HGCM82633A123456"
             maxLength={17}
-            className={errors.vin ? "p-invalid w-full" : "w-full"}
+            invalid={!!errors.vin}
+            className="w-full"
           />,
         )}
       </div>
@@ -230,44 +229,26 @@ export const VehicleForm: React.FC<Props> = ({
           {field(
             "Starting Odometer (mi)",
             undefined,
-            <InputNumber
+            <NumberField
               value={values.initialOdometer}
               onValueChange={(e) => set("initialOdometer", e.value ?? null)}
               placeholder="e.g. 0"
               useGrouping={false}
-              className="w-full"
-              inputClassName="w-full"
             />,
           )}
           {field(
             "Start Date",
             undefined,
-            <Calendar
-              value={values.startDate}
-              onChange={(e) => set("startDate", e.value ?? null)}
-              placeholder="Select date"
-              showIcon
-              className="w-full"
-              inputClassName="w-full"
-            />,
+            <DateField value={values.startDate} onChange={(e) => set("startDate", e.value)} />,
           )}
         </div>
       )}
 
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="submit"
-          label={isEdit ? "Save Changes" : "Add Vehicle"}
-          loading={submitting}
-          className="p-button-sm"
-        />
-        <Button
-          type="button"
-          label="Cancel"
-          className="p-button-sm p-button-outlined"
-          onClick={() => navigate("/vehicles")}
-        />
-      </div>
+      <FormActions
+        submitLabel={isEdit ? "Save Changes" : "Add Vehicle"}
+        submitting={submitting}
+        onCancel={() => navigate("/vehicles")}
+      />
     </form>
   );
 };

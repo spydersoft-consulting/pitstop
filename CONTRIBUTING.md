@@ -103,7 +103,7 @@ If you bypass a hook (`--no-verify`) you'll find out in CI. Don't.
 - Function components with hooks. No class components for new code.
 - Components live in `src/web/src/pitstop-ui/src/components/<Feature>/`. One feature per folder; the public component is the folder name (`Vehicles/index.tsx` or `Vehicles/Vehicles.tsx`).
 - State lives in Redux Toolkit slices under `src/store/`. Local component state is fine for UI-only concerns (form fields, modal open/closed).
-- Styling is Tailwind utility classes + PrimeReact components. Don't introduce a third styling system.
+- Styling is Tailwind utility classes on top of React Aria Components. Shared controls live in `src/components/ui/`; use those rather than styling raw elements. Don't introduce a third styling system.
 - Don't import from `src/web/src/pitstop-ui/src/api/generated/` directly in components — it's the raw `@hey-api/openapi-ts` output. Wrap calls in a slice or hook.
 
 ## Tests

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card } from "primereact/card";
+import { Card } from "../ui/Card";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { createReminder } from "../../store/slices/reminderSlice";
 import type { ReminderRequest } from "../../api/generated/types.gen";

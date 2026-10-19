@@ -16,7 +16,7 @@ import {
   faWrench,
   faCalendarCheck,
 } from "@fortawesome/free-solid-svg-icons";
-import { Sidebar } from "primereact/sidebar";
+import { Drawer } from "../ui/Drawer";
 import { useAuth, usePageTitle } from "../../context";
 import { NotificationBell } from "./NotificationBell";
 import { ErrorBoundary } from "../layout/ErrorBoundary";
@@ -283,7 +283,7 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onLogin,
   onLogout,
 }) => (
-  <Sidebar visible={drawerOpen} onHide={onClose} position="left" className="w-72" showCloseIcon>
+  <Drawer open={drawerOpen} onClose={onClose} className="w-72">
     <div className="flex items-center gap-2 mb-4">
       <span className="flex h-9 w-9 items-center justify-center rounded-md bg-brand text-brand-fg">
         <FontAwesomeIcon icon={faGasPump} className="text-lg" />
@@ -343,7 +343,7 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
         <span>Sign in</span>
       </button>
     )}
-  </Sidebar>
+  </Drawer>
 );
 
 export const NavigationBar: React.FC<NavigationBarProps> = ({ brand }) => {

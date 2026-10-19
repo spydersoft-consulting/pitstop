@@ -10,11 +10,11 @@ import {
   faRoad,
   faChartLine,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
-import { Card } from "primereact/card";
-import { Chart } from "primereact/chart";
-import { Dropdown } from "primereact/dropdown";
-import { ProgressSpinner } from "primereact/progressspinner";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
+import { Chart } from "../common/Chart";
+import { Select } from "../ui/Select";
+import { Spinner } from "../ui/Spinner";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { selectVehicle, type Vehicle } from "../../store/slices/vehicleSlice";
 import type { FillUp } from "../../store/slices/fillUpSlice";
@@ -67,14 +67,14 @@ const VehicleHeroCard: React.FC<VehicleHeroCardProps> = ({
         </div>
         <div className="min-w-0 flex-1">
           {vehicles.length > 1 ? (
-            <Dropdown
+            <Select
               value={selectedVehicleId}
+              aria-label="Vehicle"
               options={vehicles.map((v) => ({
                 label: `${v.year} ${v.make} ${v.model}`,
-                value: v.id,
+                value: v.id as number,
               }))}
               onChange={(e) => onSelectVehicle(e.value)}
-              className="w-full"
             />
           ) : (
             <p className="font-display text-2xl uppercase tracking-wide truncate">
@@ -133,7 +133,7 @@ const RecentFillUpsCard: React.FC<RecentFillUpsCardProps> = ({ recentList, onAdd
       <div className="text-center py-8 text-content-muted">
         <FontAwesomeIcon icon={faGasPump} className="text-3xl mb-3" />
         <p>No fill-ups recorded yet.</p>
-        <Button label="Add your first fill-up" className="p-button-text mt-2" onClick={onAddFillUp} />
+        <Button label="Add your first fill-up" variant="text" className="mt-2" onClick={onAddFillUp} />
       </div>
     ) : (
       <ul className="divide-y divide-border">
@@ -247,7 +247,7 @@ export const Dashboard: React.FC = () => {
       return (
         <div className="space-y-6">
           <div className="flex justify-center py-16">
-            <ProgressSpinner />
+            <Spinner />
           </div>
         </div>
       );

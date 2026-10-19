@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,12 +10,13 @@ import {
   faChevronUp,
   faFilter,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
-import { Card } from "primereact/card";
-import { Calendar } from "primereact/calendar";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { Button } from "../ui/Button";
+import { CardActions } from "../layout/CardActions";
+import { Card } from "../ui/Card";
+import { DateRangeField } from "../ui/DateField";
+import { Column, DataTable } from "../ui/DataTable";
+import { ConfirmPopup } from "../ui/ConfirmPopup";
+import { confirmPopup } from "../ui/confirmPopupStore";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { deleteFillUp } from "../../store/slices/fillUpSlice";
 import type { FillUp } from "../../store/slices/fillUpSlice";
@@ -41,21 +42,8 @@ const FiltersPanel: React.FC<FiltersProps> = ({ range, onChange, onClear, totals
   <div className="space-y-4">
     <div>
       <p className="text-meta uppercase tracking-wide text-content-muted mb-2">Date range</p>
-      <Calendar
-        value={range ?? undefined}
-        onChange={(e) => {
-          const v: unknown = e.value;
-          if (Array.isArray(v)) onChange(v as Date[]);
-          else if (v instanceof Date) onChange([v]);
-          else onChange(null);
-        }}
-        selectionMode="range"
-        readOnlyInput
-        showIcon
-        placeholder="All time"
-        className="w-full"
-      />
-      {range?.[0] && <Button label="Clear" className="p-button-text p-button-sm mt-1 px-0" onClick={onClear} />}
+      <DateRangeField value={range} onChange={onChange} aria-label="Date range" />
+      {range?.[0] && <Button label="Clear" variant="text" size="sm" className="mt-1 px-0" onClick={onClear} />}
     </div>
 
     <hr className="border-border" />
@@ -145,20 +133,7 @@ const MobileFillUpCard: React.FC<MobileCardProps> = ({ row, expanded, onToggle, 
               <span className="block">{row.notes}</span>
             </div>
           )}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              icon={<FontAwesomeIcon icon={faPencil} className="mr-1" />}
-              label="Edit"
-              className="p-button-text p-button-sm"
-              onClick={onEdit}
-            />
-            <Button
-              icon={<FontAwesomeIcon icon={faTrash} className="mr-1" />}
-              label="Delete"
-              className="p-button-text p-button-sm p-button-danger"
-              onClick={onDelete}
-            />
-          </div>
+          <CardActions onEdit={onEdit} onDelete={onDelete} />
         </div>
       )}
     </div>
@@ -172,7 +147,6 @@ export const FillUpHistory: React.FC = () => {
   const selectedVehicleId = useAppSelector((s) => s.vehicles.selectedVehicleId);
   const selectedVehicle = useSelectedVehicle();
   const vehicleLabel = selectedVehicle ? formatVehicleLabel(selectedVehicle) : undefined;
-  const toastRef = useRef<HTMLDivElement>(null);
 
   const [range, setRange] = useState<Date[] | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -212,8 +186,6 @@ export const FillUpHistory: React.FC = () => {
     confirmPopup({
       target: event.currentTarget as HTMLElement,
       message: "Delete this fill-up?",
-      icon: "pi pi-exclamation-triangle",
-      acceptClassName: "p-button-danger p-button-sm",
       accept: () => {
         if (selectedVehicleId != null) {
           void dispatch(deleteFillUp({ vehicleId: selectedVehicleId, id: Number(row.id) }));
@@ -236,13 +208,17 @@ export const FillUpHistory: React.FC = () => {
     <div className="flex gap-2">
       <Button
         icon={<FontAwesomeIcon icon={faPencil} />}
-        className="p-button-text p-button-sm p-button-secondary"
+        variant="text"
+        size="sm"
+        severity="secondary"
         onClick={() => navigate(`/fill-ups/${String(row.id)}/edit`)}
         aria-label="Edit fill-up"
       />
       <Button
         icon={<FontAwesomeIcon icon={faTrash} />}
-        className="p-button-text p-button-sm p-button-danger"
+        variant="text"
+        size="sm"
+        severity="danger"
         onClick={(e) => handleDelete(e, row)}
         aria-label="Delete fill-up"
       />
@@ -272,7 +248,7 @@ export const FillUpHistory: React.FC = () => {
             <Button
               label="Log Your First Fill-Up"
               icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-              className="p-button-sm"
+              size="sm"
               onClick={() => navigate("/fill-ups/new")}
             />
           </div>
@@ -282,7 +258,7 @@ export const FillUpHistory: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6" ref={toastRef}>
+    <div className="space-y-6">
       <ConfirmPopup />
       <PageHeader
         title="Fill-Up History"
@@ -291,7 +267,7 @@ export const FillUpHistory: React.FC = () => {
           <Button
             label="Add"
             icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-            className="p-button-sm"
+            size="sm"
             onClick={() => navigate("/fill-ups/new")}
           />
         }
@@ -336,7 +312,6 @@ export const FillUpHistory: React.FC = () => {
               rowsPerPageOptions={[10, 20, 50]}
               sortField="filledAt"
               sortOrder={-1}
-              className="p-datatable-sm"
               emptyMessage="No fill-ups match the current filter."
             >
               <Column field="filledAt" header="Date" body={dateTemplate} sortable />

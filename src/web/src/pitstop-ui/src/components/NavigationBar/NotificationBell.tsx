@@ -1,8 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
-import { OverlayPanel } from "primereact/overlaypanel";
+import { Popover } from "../ui/Popover";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { selectVehicle } from "../../store/slices/vehicleSlice";
 import {
@@ -41,12 +41,13 @@ const entityLink = (notification: Notification): string | undefined => {
 export const NotificationBell: React.FC<NotificationBellProps> = ({ buttonClassName }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const overlayRef = useRef<OverlayPanel>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
   const { items, unreadCount } = useAppSelector((s) => s.notifications);
 
-  const handleOpen = (e: React.SyntheticEvent) => {
+  const handleOpen = () => {
     void dispatch(fetchNotifications());
-    overlayRef.current?.toggle(e);
+    setOpen((v) => !v);
   };
 
   const handleSelect = (notification: Notification) => {
@@ -58,7 +59,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ buttonClassN
       if (notification.type === "maintenance-due") {
         dispatch(selectVehicle(Number(notification.entityId)));
       }
-      overlayRef.current?.hide();
+      setOpen(false);
       void navigate(link);
     }
   };
@@ -66,6 +67,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ buttonClassN
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={handleOpen}
         className={
@@ -81,7 +83,14 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ buttonClassN
           </span>
         )}
       </button>
-      <OverlayPanel ref={overlayRef} className="w-80">
+      <Popover
+        nonModal
+        open={open}
+        onOpenChange={setOpen}
+        triggerRef={triggerRef}
+        aria-label="Notifications"
+        className="w-80"
+      >
         <div className="flex items-center justify-between mb-2">
           <span className="font-display text-sm uppercase tracking-wide text-content-muted">Notifications</span>
           {unreadCount > 0 && (
@@ -121,7 +130,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ buttonClassN
             ))}
           </ul>
         )}
-      </OverlayPanel>
+      </Popover>
     </>
   );
 };

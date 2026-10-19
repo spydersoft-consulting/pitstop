@@ -8,9 +8,9 @@ import { vehicleSliceReducer, type Vehicle } from "../../store/slices/vehicleSli
 import { fillUpSliceReducer, type FillUp } from "../../store/slices/fillUpSlice";
 import { reminderSliceReducer, type Reminder } from "../../store/slices/reminderSlice";
 
-// PrimeReact's Chart component pulls in chart.js, which doesn't render in jsdom.
+// The Chart wrapper uses chart.js, which doesn't render in jsdom.
 // Stub it so Dashboard's chart branches render without exploding.
-vi.mock("primereact/chart", () => ({
+vi.mock("../common/Chart", () => ({
   Chart: ({ type }: { type: string }) => <div data-testid={`chart-${type}`} />,
 }));
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card } from "primereact/card";
+import { Card } from "../ui/Card";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { updateFillUp } from "../../store/slices/fillUpSlice";
 import { FillUpForm, type FillUpFormValues } from "./FillUpForm";

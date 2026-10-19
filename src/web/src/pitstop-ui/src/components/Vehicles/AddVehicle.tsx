@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card } from "primereact/card";
+import { Card } from "../ui/Card";
 import { useAppDispatch } from "../../store/hooks";
 import { createVehicle } from "../../store/slices/vehicleSlice";
 import { VehicleForm } from "./VehicleForm";

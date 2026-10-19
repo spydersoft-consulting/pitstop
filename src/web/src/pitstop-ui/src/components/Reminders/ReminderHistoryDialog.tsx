@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Dialog } from "primereact/dialog";
-import { ProgressSpinner } from "primereact/progressspinner";
+import { Modal } from "../ui/Modal";
+import { Spinner } from "../ui/Spinner";
 import { remindersApi } from "../../api/remindersApi";
 import type { ReminderHistoryEntryDto } from "../../api/generated/types.gen";
 import type { Reminder } from "../../store/slices/reminderSlice";
@@ -40,7 +40,7 @@ const HistoryBody: React.FC<{ entries: ReminderHistoryEntryDto[] | null; failed:
   if (entries === null) {
     return (
       <div className="flex justify-center py-6">
-        <ProgressSpinner style={{ width: "32px", height: "32px" }} />
+        <Spinner size={32} />
       </div>
     );
   }
@@ -87,8 +87,8 @@ export const ReminderHistoryDialog: React.FC<Props> = ({ vehicleId, reminder, on
   }, [vehicleId, reminder.id]);
 
   return (
-    <Dialog visible onHide={onClose} header={`History: ${reminder.name ?? "reminder"}`} className="w-full max-w-lg">
+    <Modal onClose={onClose} header={`History: ${reminder.name ?? "reminder"}`} className="w-full max-w-lg">
       <HistoryBody entries={entries} failed={failed} />
-    </Dialog>
+    </Modal>
   );
 };

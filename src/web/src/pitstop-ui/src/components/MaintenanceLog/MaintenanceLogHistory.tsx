@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,13 +10,14 @@ import {
   faChevronUp,
   faFilter,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
-import { Card } from "primereact/card";
-import { Calendar } from "primereact/calendar";
-import { Dropdown } from "primereact/dropdown";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { Button } from "../ui/Button";
+import { CardActions } from "../layout/CardActions";
+import { Card } from "../ui/Card";
+import { DateRangeField } from "../ui/DateField";
+import { Select } from "../ui/Select";
+import { Column, DataTable } from "../ui/DataTable";
+import { ConfirmPopup } from "../ui/ConfirmPopup";
+import { confirmPopup } from "../ui/confirmPopupStore";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import { deleteMaintenanceLog } from "../../store/slices/maintenanceLogSlice";
 import type { MaintenanceLog } from "../../store/slices/maintenanceLogSlice";
@@ -88,44 +89,29 @@ const FiltersPanel: React.FC<FiltersProps> = ({
   <div className="space-y-4">
     <div>
       <p className="text-meta uppercase tracking-wide text-content-muted mb-2">Date range</p>
-      <Calendar
-        value={range ?? undefined}
-        onChange={(e) => {
-          const v: unknown = e.value;
-          if (Array.isArray(v)) onChange(v as Date[]);
-          else if (v instanceof Date) onChange([v]);
-          else onChange(null);
-        }}
-        selectionMode="range"
-        readOnlyInput
-        showIcon
-        placeholder="All time"
-        className="w-full"
-      />
-      {range?.[0] && <Button label="Clear" className="p-button-text p-button-sm mt-1 px-0" onClick={onClear} />}
+      <DateRangeField value={range} onChange={onChange} aria-label="Date range" />
+      {range?.[0] && <Button label="Clear" variant="text" size="sm" className="mt-1 px-0" onClick={onClear} />}
     </div>
 
     <div>
       <p className="text-meta uppercase tracking-wide text-content-muted mb-2">Service type</p>
-      <Dropdown
+      <Select
         value={serviceType}
         options={SERVICE_TYPE_OPTIONS}
         onChange={(e) => onServiceTypeChange(e.value)}
-        showClear
+        onClear={() => onServiceTypeChange(null)}
         placeholder="All types"
-        className="w-full"
       />
     </div>
 
     <div>
       <p className="text-meta uppercase tracking-wide text-content-muted mb-2">Performed by</p>
-      <Dropdown
+      <Select
         value={performedBy}
         options={PERFORMED_BY_OPTIONS}
         onChange={(e) => onPerformedByChange(e.value)}
-        showClear
+        onClear={() => onPerformedByChange(null)}
         placeholder="Anyone"
-        className="w-full"
       />
     </div>
 
@@ -213,20 +199,7 @@ const MobileMaintenanceLogCard: React.FC<MobileCardProps> = ({ row, expanded, on
               <span className="block">{row.notes}</span>
             </div>
           )}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              icon={<FontAwesomeIcon icon={faPencil} className="mr-1" />}
-              label="Edit"
-              className="p-button-text p-button-sm"
-              onClick={onEdit}
-            />
-            <Button
-              icon={<FontAwesomeIcon icon={faTrash} className="mr-1" />}
-              label="Delete"
-              className="p-button-text p-button-sm p-button-danger"
-              onClick={onDelete}
-            />
-          </div>
+          <CardActions onEdit={onEdit} onDelete={onDelete} />
         </div>
       )}
     </div>
@@ -240,7 +213,6 @@ export const MaintenanceLogHistory: React.FC = () => {
   const selectedVehicleId = useAppSelector((s) => s.vehicles.selectedVehicleId);
   const selectedVehicle = useSelectedVehicle();
   const vehicleLabel = selectedVehicle ? formatVehicleLabel(selectedVehicle) : undefined;
-  const toastRef = useRef<HTMLDivElement>(null);
 
   const [range, setRange] = useState<Date[] | null>(null);
   const [serviceType, setServiceType] = useState<string | null>(null);
@@ -274,8 +246,6 @@ export const MaintenanceLogHistory: React.FC = () => {
     confirmPopup({
       target: event.currentTarget as HTMLElement,
       message: "Delete this maintenance log?",
-      icon: "pi pi-exclamation-triangle",
-      acceptClassName: "p-button-danger p-button-sm",
       accept: () => {
         if (selectedVehicleId != null) {
           void dispatch(deleteMaintenanceLog({ vehicleId: selectedVehicleId, id: Number(row.id) }));
@@ -293,13 +263,17 @@ export const MaintenanceLogHistory: React.FC = () => {
     <div className="flex gap-2">
       <Button
         icon={<FontAwesomeIcon icon={faPencil} />}
-        className="p-button-text p-button-sm p-button-secondary"
+        variant="text"
+        size="sm"
+        severity="secondary"
         onClick={() => navigate(`/maintenance/${String(row.id)}/edit`)}
         aria-label="Edit maintenance log"
       />
       <Button
         icon={<FontAwesomeIcon icon={faTrash} />}
-        className="p-button-text p-button-sm p-button-danger"
+        variant="text"
+        size="sm"
+        severity="danger"
         onClick={(e) => handleDelete(e, row)}
         aria-label="Delete maintenance log"
       />
@@ -329,7 +303,7 @@ export const MaintenanceLogHistory: React.FC = () => {
             <Button
               label="Log Your First Maintenance"
               icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-              className="p-button-sm"
+              size="sm"
               onClick={() => navigate("/maintenance/new")}
             />
           </div>
@@ -339,7 +313,7 @@ export const MaintenanceLogHistory: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6" ref={toastRef}>
+    <div className="space-y-6">
       <ConfirmPopup />
       <PageHeader
         title="Maintenance History"
@@ -348,7 +322,7 @@ export const MaintenanceLogHistory: React.FC = () => {
           <Button
             label="Add"
             icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-            className="p-button-sm"
+            size="sm"
             onClick={() => navigate("/maintenance/new")}
           />
         }
@@ -411,7 +385,6 @@ export const MaintenanceLogHistory: React.FC = () => {
               rowsPerPageOptions={[10, 20, 50]}
               sortField="serviceDate"
               sortOrder={-1}
-              className="p-datatable-sm"
               emptyMessage="No maintenance logs match the current filter."
             >
               <Column field="serviceDate" header="Date" body={dateTemplate} sortable />

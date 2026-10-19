@@ -10,9 +10,10 @@ import {
   faClockRotateLeft,
   faPencil,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
-import { Card } from "primereact/card";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
+import { ConfirmPopup } from "../ui/ConfirmPopup";
+import { confirmPopup } from "../ui/confirmPopupStore";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import {
   completeReminder,
@@ -106,30 +107,37 @@ const ReminderCard: React.FC<CardProps> = ({ reminder, onComplete, onSnooze, onE
       <Button
         icon={<FontAwesomeIcon icon={faCheck} className="mr-1" />}
         label="Mark done"
-        className="p-button-sm"
+        size="sm"
         onClick={onComplete}
       />
       <Button
         icon={<FontAwesomeIcon icon={faClock} className="mr-1" />}
         label="Snooze"
-        className="p-button-text p-button-sm"
+        variant="text"
+        size="sm"
         onClick={onSnooze}
       />
       <Button
         icon={<FontAwesomeIcon icon={faClockRotateLeft} className="mr-1" />}
         label="History"
-        className="p-button-text p-button-sm p-button-secondary"
+        variant="text"
+        size="sm"
+        severity="secondary"
         onClick={onHistory}
       />
       <Button
         icon={<FontAwesomeIcon icon={faPencil} />}
-        className="p-button-text p-button-sm p-button-secondary"
+        variant="text"
+        size="sm"
+        severity="secondary"
         onClick={onEdit}
         aria-label={`Edit ${reminder.name ?? "reminder"}`}
       />
       <Button
         icon={<FontAwesomeIcon icon={faTrash} />}
-        className="p-button-text p-button-sm p-button-danger"
+        variant="text"
+        size="sm"
+        severity="danger"
         onClick={onDelete}
         aria-label={`Delete ${reminder.name ?? "reminder"}`}
       />
@@ -159,8 +167,6 @@ export const RemindersPage: React.FC = () => {
     confirmPopup({
       target: event.currentTarget as HTMLElement,
       message: "Delete this reminder?",
-      icon: "pi pi-exclamation-triangle",
-      acceptClassName: "p-button-danger p-button-sm",
       accept: () => {
         if (selectedVehicleId != null) {
           void dispatch(deleteReminder({ vehicleId: selectedVehicleId, id: Number(reminder.id) }));
@@ -173,7 +179,7 @@ export const RemindersPage: React.FC = () => {
     <Button
       label="Add common services"
       icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-      className="p-button-sm"
+      size="sm"
       onClick={() => setPickingTemplates(true)}
     />
   );
@@ -181,7 +187,8 @@ export const RemindersPage: React.FC = () => {
     <Button
       label="Add reminder"
       icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-      className="p-button-sm p-button-outlined"
+      size="sm"
+      variant="outlined"
       onClick={() => navigate("/reminders/new")}
     />
   );
