@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { NumberField } from "../ui/NumberField";
 import { InputText, Textarea } from "../ui/TextField";
-import { Calendar } from "primereact/calendar";
+import { DateField } from "../ui/DateField";
 import { Checkbox } from "../ui/Checkbox";
 import { Select } from "../ui/Select";
 import { Button } from "../ui/Button";
@@ -184,13 +184,7 @@ export const MaintenanceLogForm: React.FC<Props> = ({
           "Service Date *",
           "service-date",
           errors.serviceDate,
-          <Calendar
-            value={values.serviceDate}
-            onChange={(e) => set("serviceDate", e.value ?? null)}
-            showIcon
-            className="w-full"
-            inputClassName="w-full"
-          />,
+          <DateField value={values.serviceDate} onChange={(e) => set("serviceDate", e.value)} />,
         )}
         {field(
           "Odometer (mi) *",

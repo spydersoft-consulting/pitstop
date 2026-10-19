@@ -1,8 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
-import { AutoComplete, type AutoCompleteCompleteEvent } from "primereact/autocomplete";
 import { Button } from "../ui/Button";
+import { ComboBox } from "../ui/ComboBox";
 import { InputText } from "../ui/TextField";
 import { locationsApi } from "../../api/locationsApi";
 import type { LocationDto } from "../../api/generated/types.gen";
@@ -57,8 +57,8 @@ export const LocationPicker: React.FC<Props> = ({ value, onChange }) => {
     setEditing(value?.kind === "new");
   }, [value]);
 
-  const search = (event: AutoCompleteCompleteEvent) => {
-    const term = (event.query ?? "").trim();
+  const search = (rawTerm: string) => {
+    const term = rawTerm.trim();
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
@@ -111,7 +111,7 @@ export const LocationPicker: React.FC<Props> = ({ value, onChange }) => {
     if (isAddNew(item)) {
       return (
         <div className="flex items-center gap-2 text-primary font-medium">
-          <i className="pi pi-plus text-xs" />
+          <FontAwesomeIcon icon={faPlus} className="text-xs" />
           <span>{item.label}</span>
         </div>
       );
@@ -135,31 +135,25 @@ export const LocationPicker: React.FC<Props> = ({ value, onChange }) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2 items-start">
-        <AutoComplete
-          value={query}
-          suggestions={suggestions}
-          completeMethod={search}
-          field={ADD_NEW_TOKEN /* we render via template */}
-          itemTemplate={itemTemplate}
-          delay={0}
-          dropdown
-          forceSelection={false}
+        <ComboBox
+          inputValue={query}
+          items={suggestions}
+          getKey={(item) => (isAddNew(item) ? ADD_NEW_TOKEN : String(item.id))}
+          getText={(item) => (isAddNew(item) ? item.label : (item.name ?? ""))}
+          renderItem={itemTemplate}
+          showTrigger
           placeholder="Search or add a station"
-          inputClassName="w-full"
-          className="w-full"
-          onChange={(e) => {
-            const v = e.value;
-            if (typeof v === "string") {
-              setQuery(v);
-              // Typing while a selection is active means the user is searching again —
-              // clear the selection but keep the inline-new editor closed.
-              if (value !== null) {
-                onChange(null);
-                setEditing(false);
-              }
+          onSearch={search}
+          onInputChange={(v) => {
+            setQuery(v);
+            // Typing while a selection is active means the user is searching again —
+            // clear the selection but keep the inline-new editor closed.
+            if (value !== null) {
+              onChange(null);
+              setEditing(false);
             }
           }}
-          onSelect={(e) => handleSelect(e.value)}
+          onSelect={handleSelect}
         />
         {value !== null && (
           <Button

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "../ui/Button";
-import { Calendar } from "primereact/calendar";
+import { DateField } from "../ui/DateField";
 import { Modal } from "../ui/Modal";
 import type { Reminder } from "../../store/slices/reminderSlice";
 import { toDateOnlyString } from "./reminderFormat";
@@ -40,18 +40,10 @@ export const SnoozeReminderDialog: React.FC<Props> = ({ reminder, onClose, onSub
         </div>
       }
     >
-      <label htmlFor="snooze-until" className="block text-sm mb-1">
+      <label id="snooze-until-label" htmlFor="snooze-until" className="block text-sm mb-1">
         No notifications until
       </label>
-      <Calendar
-        inputId="snooze-until"
-        value={until}
-        minDate={new Date()}
-        onChange={(e) => setUntil(e.value ?? null)}
-        showIcon
-        className="w-full"
-        inputClassName="w-full"
-      />
+      <DateField inputId="snooze-until" value={until} minDate={new Date()} onChange={(e) => setUntil(e.value)} />
     </Modal>
   );
 };

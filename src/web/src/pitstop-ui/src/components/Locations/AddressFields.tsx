@@ -1,9 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
-import { AutoComplete, type AutoCompleteCompleteEvent } from "primereact/autocomplete";
 import { NumberField } from "../ui/NumberField";
 import { Button } from "../ui/Button";
+import { ComboBox } from "../ui/ComboBox";
 import { getAddressLookupProvider, type AddressSuggestion } from "../../services/addressLookup";
 
 export interface AddressFieldsValue {
@@ -65,8 +65,8 @@ export const AddressFields: React.FC<Props> = ({
     setAddressQuery((q) => (q === reflected ? q : reflected));
   }, [value.address]);
 
-  const searchAddress = (event: AutoCompleteCompleteEvent) => {
-    const term = (event.query ?? "").trim();
+  const searchAddress = (rawTerm: string) => {
+    const term = rawTerm.trim();
     if (addressDebounceRef.current) clearTimeout(addressDebounceRef.current);
     if (!term) {
       setAddressSuggestions([]);
@@ -120,24 +120,19 @@ export const AddressFields: React.FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <AutoComplete
+      <ComboBox
         inputId={addressInputId}
-        value={addressQuery}
-        suggestions={addressSuggestions}
-        completeMethod={searchAddress}
-        field="description"
-        delay={0}
+        inputValue={addressQuery}
+        items={addressSuggestions}
+        getKey={(s) => s.id}
+        getText={(s) => s.description}
+        onSearch={searchAddress}
         placeholder={addressPlaceholder}
-        inputClassName="w-full"
-        className="w-full"
-        onChange={(e) => {
-          const v = e.value;
-          if (typeof v === "string") {
-            setAddressQuery(v);
-            onChange({ ...value, address: v });
-          }
+        onInputChange={(v) => {
+          setAddressQuery(v);
+          onChange({ ...value, address: v });
         }}
-        onSelect={(e) => void handleSelectAddress(e.value as AddressSuggestion)}
+        onSelect={(s) => void handleSelectAddress(s)}
       />
       {addressLookupError && <span className="text-xs text-red-500">{addressLookupError}</span>}
       <div className="grid grid-cols-2 gap-2">

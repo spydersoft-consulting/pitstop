@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NumberField } from "../ui/NumberField";
 import { Textarea } from "../ui/TextField";
-import { Calendar } from "primereact/calendar";
+import { DateField } from "../ui/DateField";
 import { Checkbox } from "../ui/Checkbox";
 import { FormActions } from "../layout/FormActions";
 import { Select } from "../ui/Select";
@@ -136,15 +136,7 @@ export const FillUpForm: React.FC<Props> = ({
       {field(
         "Date *",
         errors.filledAt,
-        <Calendar
-          value={values.filledAt}
-          onChange={(e) => set("filledAt", e.value ?? null)}
-          showIcon
-          showTime
-          hourFormat="12"
-          className="w-full"
-          inputClassName="w-full"
-        />,
+        <DateField value={values.filledAt} onChange={(e) => set("filledAt", e.value)} showTime />,
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
