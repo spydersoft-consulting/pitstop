@@ -42,15 +42,15 @@ export function Select<T extends string | number>({
   disabled,
   className,
   "aria-label": ariaLabel,
-}: SelectProps<T>) {
+}: Readonly<SelectProps<T>>) {
   const selected = options.find((o) => o.value === value);
   const hasValue = value !== null && value !== undefined && selected !== undefined;
 
   return (
     <div className={["relative", className].filter(Boolean).join(" ")}>
       <AriaSelect
-        selectedKey={hasValue ? String(value) : null}
-        onSelectionChange={(key) => {
+        value={hasValue ? String(value) : null}
+        onChange={(key) => {
           const next = options.find((o) => String(o.value) === String(key));
           if (next) onChange({ value: next.value });
         }}

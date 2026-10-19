@@ -36,7 +36,7 @@ export const NumberField: React.FC<NumberFieldProps> = ({
   "aria-label": ariaLabel,
 }) => (
   <AriaNumberField
-    value={value ?? NaN}
+    value={value ?? Number.NaN}
     onChange={(next) => onValueChange({ value: Number.isNaN(next) ? null : next })}
     onBlur={onBlur}
     minValue={min}
