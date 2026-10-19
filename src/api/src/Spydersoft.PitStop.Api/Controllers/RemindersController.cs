@@ -9,13 +9,14 @@ using Microsoft.EntityFrameworkCore;
 namespace Spydersoft.PitStop.Api.Controllers;
 
 [ApiController]
+[Route("api/v1")]
 public class RemindersController(PitStopDbContext db, ReminderService reminderService) : PitStopControllerBase(db)
 {
     private const int MaxMiles = 1_000_000;
     private const int MaxIntervalMonths = 1_200;
     private const int MaxLeadDays = 3_650;
 
-    [HttpGet("api/v1/reminder-templates")]
+    [HttpGet("reminder-templates")]
     [Authorize(Policy = AuthorizationPolicies.Read)]
     public ActionResult<IReadOnlyList<ReminderTemplateDto>> GetTemplates() =>
         Ok(ReminderTemplates.All.Select(t => new ReminderTemplateDto
@@ -28,7 +29,7 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
             LeadDays = t.LeadDays,
         }).ToList());
 
-    [HttpGet("api/v1/vehicles/{vehicleId:int}/reminders")]
+    [HttpGet("vehicles/{vehicleId:int}/reminders")]
     [Authorize(Policy = AuthorizationPolicies.Read)]
     public async Task<ActionResult<List<ReminderDto>>> GetAll(int vehicleId, CancellationToken ct)
     {
@@ -49,7 +50,7 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
             .ToList());
     }
 
-    [HttpGet("api/v1/vehicles/{vehicleId:int}/reminders/{id:int}")]
+    [HttpGet("vehicles/{vehicleId:int}/reminders/{id:int}")]
     [Authorize(Policy = AuthorizationPolicies.Read)]
     public async Task<ActionResult<ReminderDto>> GetById(int vehicleId, int id, CancellationToken ct)
     {
@@ -61,7 +62,7 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
         return reminder is null ? NotFound() : Ok(await EvaluateOneAsync(vehicle, reminder, ct));
     }
 
-    [HttpGet("api/v1/vehicles/{vehicleId:int}/reminders/{id:int}/history")]
+    [HttpGet("vehicles/{vehicleId:int}/reminders/{id:int}/history")]
     [Authorize(Policy = AuthorizationPolicies.Read)]
     public async Task<ActionResult<List<ReminderHistoryEntryDto>>> GetHistory(int vehicleId, int id, CancellationToken ct)
     {
@@ -86,7 +87,7 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
         }).ToList());
     }
 
-    [HttpPost("api/v1/vehicles/{vehicleId:int}/reminders")]
+    [HttpPost("vehicles/{vehicleId:int}/reminders")]
     [Authorize(Policy = AuthorizationPolicies.Write)]
     public async Task<ActionResult<ReminderDto>> Create(int vehicleId, ReminderRequest request, CancellationToken ct)
     {
@@ -106,7 +107,7 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
         return CreatedAtAction(nameof(GetById), new { vehicleId, id = reminder.Id }, await EvaluateOneAsync(vehicle, reminder, ct));
     }
 
-    [HttpPost("api/v1/vehicles/{vehicleId:int}/reminders/from-templates")]
+    [HttpPost("vehicles/{vehicleId:int}/reminders/from-templates")]
     [Authorize(Policy = AuthorizationPolicies.Write)]
     public async Task<ActionResult<List<ReminderDto>>> CreateFromTemplates(
         int vehicleId, CreateRemindersFromTemplatesRequest request, CancellationToken ct)
@@ -142,7 +143,7 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
         return Ok(evaluated.Select(e => MapToDto(e.Reminder, e.Evaluation)).ToList());
     }
 
-    [HttpPut("api/v1/vehicles/{vehicleId:int}/reminders/{id:int}")]
+    [HttpPut("vehicles/{vehicleId:int}/reminders/{id:int}")]
     [Authorize(Policy = AuthorizationPolicies.Write)]
     public async Task<ActionResult<ReminderDto>> Update(int vehicleId, int id, ReminderRequest request, CancellationToken ct)
     {
@@ -164,7 +165,7 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
         return Ok(await EvaluateOneAsync(vehicle, reminder, ct));
     }
 
-    [HttpDelete("api/v1/vehicles/{vehicleId:int}/reminders/{id:int}")]
+    [HttpDelete("vehicles/{vehicleId:int}/reminders/{id:int}")]
     [Authorize(Policy = AuthorizationPolicies.Write)]
     public async Task<IActionResult> Delete(int vehicleId, int id, CancellationToken ct)
     {
@@ -181,7 +182,7 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
         return NoContent();
     }
 
-    [HttpPost("api/v1/vehicles/{vehicleId:int}/reminders/{id:int}/complete")]
+    [HttpPost("vehicles/{vehicleId:int}/reminders/{id:int}/complete")]
     [Authorize(Policy = AuthorizationPolicies.Write)]
     public async Task<ActionResult<ReminderDto>> Complete(int vehicleId, int id, CompleteReminderRequest request, CancellationToken ct)
     {
@@ -222,7 +223,7 @@ public class RemindersController(PitStopDbContext db, ReminderService reminderSe
         return Ok(await EvaluateOneAsync(vehicle, reminder, ct));
     }
 
-    [HttpPost("api/v1/vehicles/{vehicleId:int}/reminders/{id:int}/snooze")]
+    [HttpPost("vehicles/{vehicleId:int}/reminders/{id:int}/snooze")]
     [Authorize(Policy = AuthorizationPolicies.Write)]
     public async Task<ActionResult<ReminderDto>> Snooze(int vehicleId, int id, SnoozeReminderRequest request, CancellationToken ct)
     {

@@ -44,7 +44,7 @@ export const AuthContext = React.createContext<IAuthContext>({
   isAuthenticated: false,
   login: () => void 0,
   logout: () => void 0,
-  refreshAuth: async () => void 0,
+  refreshAuth: () => Promise.resolve(),
 });
 
 export const useAuth = () => React.useContext(AuthContext);

@@ -22,7 +22,7 @@ export const AddFillUp: React.FC = () => {
     setError(null);
     try {
       await dispatch(createFillUp({ vehicleId: selectedVehicleId, body: values })).unwrap();
-      navigate("/fill-ups");
+      void navigate("/fill-ups");
     } catch {
       setError("Failed to save fill-up. Please try again.");
     } finally {

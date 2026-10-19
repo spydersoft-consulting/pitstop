@@ -49,7 +49,7 @@ export const EditVehicle: React.FC = () => {
     setError(null);
     try {
       await dispatch(updateVehicle({ id: Number(id), body: values })).unwrap();
-      navigate("/vehicles");
+      void navigate("/vehicles");
     } catch {
       setError("Failed to save changes. Please try again.");
     } finally {

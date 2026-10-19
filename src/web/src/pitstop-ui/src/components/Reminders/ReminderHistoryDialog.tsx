@@ -33,6 +33,40 @@ const Outcome: React.FC<{ entry: ReminderHistoryEntryDto }> = ({ entry }) => {
   );
 };
 
+const HistoryBody: React.FC<{ entries: ReminderHistoryEntryDto[] | null; failed: boolean }> = ({ entries, failed }) => {
+  if (failed) {
+    return <p className="text-danger">Couldn't load the history. Please try again.</p>;
+  }
+  if (entries === null) {
+    return (
+      <div className="flex justify-center py-6">
+        <ProgressSpinner style={{ width: "32px", height: "32px" }} />
+      </div>
+    );
+  }
+  if (entries.length === 0) {
+    return <p className="text-content-muted">No matching services have been logged yet.</p>;
+  }
+  return (
+    <>
+      <ul className="divide-y divide-border list-none p-0 m-0">
+        {entries.map((entry) => (
+          <li key={entry.maintenanceLogId} className="py-3 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-medium">{fmtDate(entry.serviceDate)}</p>
+              <p className="text-sm text-content-muted font-numeric">{fmtMiles(entry.odometer)}</p>
+            </div>
+            <Outcome entry={entry} />
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-content-muted mt-3">
+        Measured against this reminder's current interval, from the service before each one.
+      </p>
+    </>
+  );
+};
+
 export const ReminderHistoryDialog: React.FC<Props> = ({ vehicleId, reminder, onClose }) => {
   const [entries, setEntries] = useState<ReminderHistoryEntryDto[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -54,32 +88,7 @@ export const ReminderHistoryDialog: React.FC<Props> = ({ vehicleId, reminder, on
 
   return (
     <Dialog visible onHide={onClose} header={`History: ${reminder.name ?? "reminder"}`} className="w-full max-w-lg">
-      {failed ? (
-        <p className="text-danger">Couldn't load the history. Please try again.</p>
-      ) : entries === null ? (
-        <div className="flex justify-center py-6">
-          <ProgressSpinner style={{ width: "32px", height: "32px" }} />
-        </div>
-      ) : entries.length === 0 ? (
-        <p className="text-content-muted">No matching services have been logged yet.</p>
-      ) : (
-        <>
-          <ul className="divide-y divide-border list-none p-0 m-0">
-            {entries.map((entry) => (
-              <li key={entry.maintenanceLogId} className="py-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-medium">{fmtDate(entry.serviceDate)}</p>
-                  <p className="text-sm text-content-muted font-numeric">{fmtMiles(entry.odometer)}</p>
-                </div>
-                <Outcome entry={entry} />
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-content-muted mt-3">
-            Measured against this reminder's current interval, from the service before each one.
-          </p>
-        </>
-      )}
+      <HistoryBody entries={entries} failed={failed} />
     </Dialog>
   );
 };

@@ -70,7 +70,7 @@ export const EditMaintenanceLog: React.FC = () => {
           body: values,
         }),
       ).unwrap();
-      navigate("/maintenance");
+      void navigate("/maintenance");
     } catch {
       setError("Failed to update maintenance log. Please try again.");
     } finally {

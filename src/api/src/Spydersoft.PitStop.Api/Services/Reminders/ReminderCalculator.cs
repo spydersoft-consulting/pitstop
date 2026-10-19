@@ -110,14 +110,9 @@ public static class ReminderCalculator
         var overdue = (dueOdometer.HasValue && estimate.Odometer >= dueOdometer)
             || (dueDate.HasValue && today >= dueDate);
 
-        var dueSoon = (dueOdometer.HasValue && reminder.LeadMiles is > 0 && estimate.Odometer >= dueOdometer - reminder.LeadMiles)
-            || (dueDate.HasValue && reminder.LeadDays is > 0 && today >= dueDate.Value.AddDays(-reminder.LeadDays.Value));
+        var dueSoon = IsDueSoon(reminder, estimate, today, dueOdometer, dueDate);
 
-        var status = reminder.SnoozedUntil.HasValue && reminder.SnoozedUntil.Value >= today
-            ? ReminderStatus.Snoozed
-            : overdue ? ReminderStatus.Overdue
-            : dueSoon ? ReminderStatus.DueSoon
-            : ReminderStatus.Ok;
+        var status = ResolveStatus(reminder.SnoozedUntil.HasValue && reminder.SnoozedUntil.Value >= today, overdue, dueSoon);
 
         DateOnly? projected = null;
         if (dueOdometer.HasValue && estimate.AverageDailyMiles > 0)
@@ -173,7 +168,34 @@ public static class ReminderCalculator
         return entries;
     }
 
-    private static decimal? AverageDailyMiles(IReadOnlyList<OdometerSample> ordered)
+    private static bool IsDueSoon(
+        MaintenanceReminder reminder,
+        OdometerEstimate estimate,
+        DateOnly today,
+        decimal? dueOdometer,
+        DateOnly? dueDate)
+    {
+        var milesSoon = dueOdometer.HasValue && reminder.LeadMiles is > 0 && estimate.Odometer >= dueOdometer - reminder.LeadMiles;
+        var daysSoon = dueDate.HasValue && reminder.LeadDays is > 0 && today >= dueDate.Value.AddDays(-reminder.LeadDays.Value);
+        return milesSoon || daysSoon;
+    }
+
+    private static ReminderStatus ResolveStatus(bool snoozed, bool overdue, bool dueSoon)
+    {
+        if (snoozed)
+        {
+            return ReminderStatus.Snoozed;
+        }
+
+        if (overdue)
+        {
+            return ReminderStatus.Overdue;
+        }
+
+        return dueSoon ? ReminderStatus.DueSoon : ReminderStatus.Ok;
+    }
+
+    private static decimal? AverageDailyMiles(List<OdometerSample> ordered)
     {
         if (ordered.Count < 2)
         {

@@ -83,11 +83,11 @@ builder.Services.AddSpydersoftFileStore(builder.Configuration);
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<INhtsaRecallClient, NhtsaRecallClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Nhtsa:BaseUrl"] ?? "https://api.nhtsa.gov/");
+    client.BaseAddress = new Uri(builder.Configuration["Nhtsa:BaseUrl"]!);
 }).AddNhtsaResilienceHandler();
 builder.Services.AddHttpClient<IVinDecoderClient, VpicVinDecoderClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Nhtsa:VpicBaseUrl"] ?? "https://vpic.nhtsa.dot.gov/api/");
+    client.BaseAddress = new Uri(builder.Configuration["Nhtsa:VpicBaseUrl"]!);
 }).AddNhtsaResilienceHandler();
 
 // Spydersoft.Notification.Client registers INotificationClient/IDeviceClient with no auth of its
