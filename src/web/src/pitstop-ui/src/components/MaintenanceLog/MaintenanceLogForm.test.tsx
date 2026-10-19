@@ -1,3 +1,4 @@
+import { selectOption } from "../../test-utils/selectOption";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
@@ -205,10 +206,11 @@ describe("MaintenanceLogForm", () => {
     });
     const row = screen.getByTestId("service-item-0");
 
-    await user.click(
-      within(screen.getByTestId("service-type-0")).getAllByText("Brake Pads")[0].closest(".p-dropdown")!,
+    await selectOption(
+      user,
+      within(screen.getByTestId("service-type-0")).getAllByText("Brake Pads")[0].closest("button")!,
+      "Coolant",
     );
-    await user.click(document.querySelector<HTMLElement>('li[aria-label="Coolant"]')!);
     await user.type(within(row).getByPlaceholderText("Optional description"), "  Flush and fill ");
     await user.type(within(row).getByPlaceholderText("e.g. 45.00"), "40");
     await user.type(within(row).getByPlaceholderText("e.g. 60.00"), "25");
@@ -257,8 +259,8 @@ describe("MaintenanceLogForm", () => {
     const user = userEvent.setup();
     const { onSubmit } = renderForm({ initialValues: { ...filled, notes: "" } });
 
-    await user.click(screen.getByTestId("performed-by").querySelector(".p-dropdown")!);
-    await user.click(document.querySelector<HTMLElement>('li[aria-label="Self"]')!);
+    await selectOption(user, screen.getByTestId("performed-by").querySelector("button")!, "Self");
+
     await user.type(screen.getByPlaceholderText("Optional notes"), "  Checked tires ");
     await user.click(screen.getByRole("button", { name: /add maintenance log/i }));
 

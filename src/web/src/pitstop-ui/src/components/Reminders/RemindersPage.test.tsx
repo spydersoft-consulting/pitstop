@@ -1,3 +1,4 @@
+import { selectOption } from "../../test-utils/selectOption";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -163,8 +164,8 @@ describe("RemindersPage", () => {
 
     await user.click(screen.getByRole("button", { name: /mark done/i }));
     const dialog = await screen.findByRole("dialog");
-    await user.click(dialog.querySelector(".p-dropdown")!);
-    await user.click(document.querySelector<HTMLElement>('li[aria-label="Shop"]')!);
+    await selectOption(user, dialog.querySelector("#complete-performed-by")!, "Shop");
+
     await user.click(within(dialog).getByRole("button", { name: /^mark done$/i }));
 
     await waitFor(() => expect(remindersApi.complete).toHaveBeenCalled());

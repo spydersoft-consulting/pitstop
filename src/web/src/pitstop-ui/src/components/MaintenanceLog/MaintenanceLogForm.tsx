@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { InputNumber } from "primereact/inputnumber";
+import { NumberField } from "../ui/NumberField";
 import { InputText, Textarea } from "../ui/TextField";
 import { Calendar } from "primereact/calendar";
 import { Checkbox } from "../ui/Checkbox";
-import { Dropdown } from "primereact/dropdown";
+import { Select } from "../ui/Select";
 import { Button } from "../ui/Button";
 import { FormActions } from "../layout/FormActions";
 import type {
@@ -196,13 +196,12 @@ export const MaintenanceLogForm: React.FC<Props> = ({
           "Odometer (mi) *",
           "odometer-reading",
           errors.odometerReading,
-          <InputNumber
+          <NumberField
             value={values.odometerReading}
             onValueChange={(e) => set("odometerReading", e.value ?? null)}
             placeholder="e.g. 45230"
             useGrouping
-            className={errors.odometerReading ? "p-invalid w-full" : "w-full"}
-            inputClassName="w-full"
+            invalid={!!errors.odometerReading}
           />,
         )}
       </div>
@@ -211,11 +210,10 @@ export const MaintenanceLogForm: React.FC<Props> = ({
         "Performed By",
         "performed-by",
         undefined,
-        <Dropdown
+        <Select
           value={values.performedBy}
           options={PERFORMED_BY_OPTIONS}
           onChange={(e) => set("performedBy", e.value)}
-          className="w-full"
         />,
       )}
 
@@ -241,11 +239,10 @@ export const MaintenanceLogForm: React.FC<Props> = ({
                 "Service Type",
                 `service-type-${index}`,
                 undefined,
-                <Dropdown
+                <Select
                   value={item.serviceType}
                   options={SERVICE_TYPE_OPTIONS}
                   onChange={(e) => setItem(index, "serviceType", e.value)}
-                  className="w-full"
                 />,
               )}
               {field(
@@ -267,42 +264,36 @@ export const MaintenanceLogForm: React.FC<Props> = ({
                 "Parts Cost",
                 `parts-cost-${index}`,
                 undefined,
-                <InputNumber
+                <NumberField
                   value={item.partsCost}
                   onValueChange={(e) => setItem(index, "partsCost", e.value ?? null)}
                   placeholder="e.g. 45.00"
                   mode="currency"
                   currency="USD"
-                  className="w-full"
-                  inputClassName="w-full"
                 />,
               )}
               {field(
                 "Labor Cost",
                 `labor-cost-${index}`,
                 undefined,
-                <InputNumber
+                <NumberField
                   value={item.laborCost}
                   onValueChange={(e) => setItem(index, "laborCost", e.value ?? null)}
                   placeholder="e.g. 60.00"
                   mode="currency"
                   currency="USD"
-                  className="w-full"
-                  inputClassName="w-full"
                 />,
               )}
               {field(
                 "Total Cost",
                 `total-cost-${index}`,
                 undefined,
-                <InputNumber
+                <NumberField
                   value={item.totalCost}
                   onValueChange={(e) => setItem(index, "totalCost", e.value ?? null)}
                   placeholder="Blank = parts + labor"
                   mode="currency"
                   currency="USD"
-                  className="w-full"
-                  inputClassName="w-full"
                 />,
               )}
             </div>
