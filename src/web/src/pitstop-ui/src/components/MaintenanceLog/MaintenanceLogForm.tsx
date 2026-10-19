@@ -9,6 +9,7 @@ import { Calendar } from "primereact/calendar";
 import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "../ui/Button";
+import { FormActions } from "../layout/FormActions";
 import type {
   CreateMaintenanceLogRequest,
   MaintenanceLogItemRequest,
@@ -366,10 +367,11 @@ export const MaintenanceLogForm: React.FC<Props> = ({
         />,
       )}
 
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" label={isEdit ? "Save Changes" : "Add Maintenance Log"} loading={submitting} size="sm" />
-        <Button type="button" label="Cancel" size="sm" variant="outlined" onClick={() => navigate("/maintenance")} />
-      </div>
+      <FormActions
+        submitLabel={isEdit ? "Save Changes" : "Add Maintenance Log"}
+        submitting={submitting}
+        onCancel={() => navigate("/maintenance")}
+      />
     </form>
   );
 };

@@ -11,6 +11,7 @@ import {
   faFilter,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/Button";
+import { CardActions } from "../layout/CardActions";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
@@ -145,23 +146,7 @@ const MobileFillUpCard: React.FC<MobileCardProps> = ({ row, expanded, onToggle, 
               <span className="block">{row.notes}</span>
             </div>
           )}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              icon={<FontAwesomeIcon icon={faPencil} className="mr-1" />}
-              label="Edit"
-              variant="text"
-              size="sm"
-              onClick={onEdit}
-            />
-            <Button
-              icon={<FontAwesomeIcon icon={faTrash} className="mr-1" />}
-              label="Delete"
-              variant="text"
-              size="sm"
-              severity="danger"
-              onClick={onDelete}
-            />
-          </div>
+          <CardActions onEdit={onEdit} onDelete={onDelete} />
         </div>
       )}
     </div>
