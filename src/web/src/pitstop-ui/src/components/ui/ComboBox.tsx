@@ -40,14 +40,14 @@ export function ComboBox<T>({
   showTrigger,
   className,
   "aria-label": ariaLabel,
-}: ComboBoxProps<T>) {
+}: Readonly<ComboBoxProps<T>>) {
   const selectingRef = useRef(false);
 
   return (
     <AriaComboBox
       items={items}
       inputValue={inputValue}
-      selectedKey={null}
+      value={null}
       allowsCustomValue
       allowsEmptyCollection
       menuTrigger="input"
@@ -61,7 +61,7 @@ export function ComboBox<T>({
         onInputChange(next);
         onSearch?.(next);
       }}
-      onSelectionChange={(key) => {
+      onChange={(key) => {
         if (key === null) return;
         const item = items.find((i) => getKey(i) === String(key));
         if (!item) return;
