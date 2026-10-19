@@ -1,4 +1,4 @@
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using Microsoft.Extensions.Options;
 
 namespace Spydersoft.PitStop.Api.Services.Notification;
