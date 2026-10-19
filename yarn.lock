@@ -727,16 +727,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@microsoft/signalr@npm:^8.0.7":
-  version: 8.0.29
-  resolution: "@microsoft/signalr@npm:8.0.29"
+"@microsoft/signalr@npm:^10.0.11":
+  version: 10.0.11
+  resolution: "@microsoft/signalr@npm:10.0.11"
   dependencies:
     abort-controller: "npm:^3.0.0"
     eventsource: "npm:^2.0.2"
     fetch-cookie: "npm:^2.0.3"
     node-fetch: "npm:^2.6.7"
     ws: "npm:^7.5.10"
-  checksum: 10c0/23e598977882ee5b24a67ae1815dc5c1a2676e2c975da01caa153b61c80eff9d0ce8ac7f68e0830d933a3be41dff549305673c4c2cad959686ad3dd7199ca4db
+  checksum: 10c0/9b0c54b61d850dc5e4bbd2526b7f07434088ef89629d19d78e43f95c1aa6e379d377a0765078261091bbcdb23f54b7c700958f20c5496133ed79f84402f7721a
   languageName: node
   linkType: hard
 
@@ -3943,7 +3943,7 @@ __metadata:
     "@fortawesome/react-fontawesome": "npm:^3.5.0"
     "@hey-api/client-axios": "npm:^0.9.1"
     "@hey-api/openapi-ts": "npm:^0.97.1"
-    "@microsoft/signalr": "npm:^8.0.7"
+    "@microsoft/signalr": "npm:^10.0.11"
     "@reduxjs/toolkit": "npm:^2.13.0"
     "@tailwindcss/forms": "npm:^0.5.11"
     "@tailwindcss/postcss": "npm:^4.3.3"
