@@ -51,6 +51,13 @@ interface DataTableProps<T> {
 const getField = (row: unknown, path: string): unknown =>
   path.split(".").reduce<unknown>((acc, key) => (acc == null ? undefined : (acc as Record<string, unknown>)[key]), row);
 
+const toText = (value: unknown): string => {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (value instanceof Date) return value.toISOString();
+  return JSON.stringify(value) ?? "";
+};
+
 const compareValues = (a: unknown, b: unknown): number => {
   if (a == null && b == null) return 0;
   if (a == null) return 1;
@@ -58,14 +65,26 @@ const compareValues = (a: unknown, b: unknown): number => {
   const na = typeof a === "number" ? a : Number(a);
   const nb = typeof b === "number" ? b : Number(b);
   if (Number.isFinite(na) && Number.isFinite(nb)) return na - nb;
-  return String(a).localeCompare(String(b));
+  return toText(a).localeCompare(toText(b));
+};
+
+function renderCell<T>(column: ColumnProps<T>, row: T): React.ReactNode {
+  if (column.body) return column.body(row);
+  return column.field ? (getField(row, column.field) as React.ReactNode) : null;
+}
+
+const rowKey = (row: unknown, index: number): string | number => {
+  const id = getField(row, "id");
+  return typeof id === "string" || typeof id === "number" ? id : index;
 };
 
 const colId = (column: ColumnProps<unknown>, index: number) => column.field ?? `col-${index}`;
 
+const SORT_ICONS = { ascending: faSortUp, descending: faSortDown } as const;
+
 const SortIcon: React.FC<{ direction?: "ascending" | "descending" }> = ({ direction }) => (
   <FontAwesomeIcon
-    icon={direction === "ascending" ? faSortUp : direction === "descending" ? faSortDown : faSort}
+    icon={direction ? SORT_ICONS[direction] : faSort}
     className={direction ? "text-primary" : "text-content-muted"}
     aria-hidden
   />
@@ -83,7 +102,7 @@ export function DataTable<T>({
   stripedRows,
   "aria-label": ariaLabel = "Data table",
   children,
-}: DataTableProps<T>) {
+}: Readonly<DataTableProps<T>>) {
   const columns = Children.toArray(children)
     .filter(isValidElement)
     .map((el) => el.props as ColumnProps<T>);
@@ -141,8 +160,8 @@ export function DataTable<T>({
           >
             {visible.map((row, rowIndex) => (
               <Row
-                key={rowIndex}
-                id={rowIndex}
+                key={rowKey(row, rowIndex)}
+                id={rowKey(row, rowIndex)}
                 columns={columns}
                 className={stripedRows && rowIndex % 2 === 1 ? "bg-surface-muted/60" : ""}
               >
@@ -152,11 +171,7 @@ export function DataTable<T>({
                     style={column.bodyStyle}
                     className="border-b border-border px-3 py-2 outline-none"
                   >
-                    {column.body
-                      ? column.body(row)
-                      : column.field
-                        ? (getField(row, column.field) as React.ReactNode)
-                        : null}
+                    {renderCell(column, row)}
                   </Cell>
                 ))}
               </Row>
