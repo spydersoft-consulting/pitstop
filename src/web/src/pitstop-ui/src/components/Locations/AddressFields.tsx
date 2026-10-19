@@ -1,7 +1,9 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
 import { AutoComplete, type AutoCompleteCompleteEvent } from "primereact/autocomplete";
 import { InputNumber } from "primereact/inputnumber";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { getAddressLookupProvider, type AddressSuggestion } from "../../services/addressLookup";
 
 export interface AddressFieldsValue {
@@ -161,10 +163,10 @@ export const AddressFields: React.FC<Props> = ({
       <div className="flex items-center gap-2">
         <Button
           type="button"
-          icon="pi pi-map-marker"
+          icon={<FontAwesomeIcon icon={faLocationDot} />}
           label="Use current location"
-          size="small"
-          outlined
+          size="sm"
+          variant="outlined"
           loading={geoStatus.kind === "fetching"}
           onClick={useBrowserLocation}
         />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { Calendar } from "primereact/calendar";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
@@ -29,10 +29,10 @@ export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onS
       className="w-full max-w-md"
       footer={
         <div className="flex justify-end gap-2">
-          <Button label="Cancel" className="p-button-text p-button-sm" onClick={onClose} />
+          <Button label="Cancel" variant="text" size="sm" onClick={onClose} />
           <Button
             label="Mark done"
-            className="p-button-sm"
+            size="sm"
             disabled={!valid}
             onClick={() => onSubmit({ date: toDateOnlyString(date!), odometer: odometer!, performedBy })}
           />

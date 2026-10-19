@@ -1,7 +1,9 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
 import { AutoComplete, type AutoCompleteCompleteEvent } from "primereact/autocomplete";
 import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { locationsApi } from "../../api/locationsApi";
 import type { LocationDto } from "../../api/generated/types.gen";
 import { AddressFields } from "./AddressFields";
@@ -162,9 +164,9 @@ export const LocationPicker: React.FC<Props> = ({ value, onChange }) => {
         {value !== null && (
           <Button
             type="button"
-            icon="pi pi-times"
+            icon={<FontAwesomeIcon icon={faXmark} />}
             severity="secondary"
-            outlined
+            variant="outlined"
             aria-label="Clear location"
             onClick={handleClear}
           />

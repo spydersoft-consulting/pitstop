@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { Checkbox } from "primereact/checkbox";
 import { Dialog } from "primereact/dialog";
 import type { ReminderTemplate } from "../../store/slices/reminderSlice";
@@ -32,10 +32,10 @@ export const TemplatePickerDialog: React.FC<Props> = ({ templates, onClose, onSu
       className="w-full max-w-lg"
       footer={
         <div className="flex justify-end gap-2">
-          <Button label="Cancel" className="p-button-text p-button-sm" onClick={onClose} />
+          <Button label="Cancel" variant="text" size="sm" onClick={onClose} />
           <Button
             label={selected.length > 0 ? `Add ${String(selected.length)}` : "Add"}
-            className="p-button-sm"
+            size="sm"
             disabled={selected.length === 0}
             onClick={() => onSubmit(selected)}
           />

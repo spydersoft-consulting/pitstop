@@ -10,7 +10,7 @@ import {
   faChevronUp,
   faFilter,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { Card } from "primereact/card";
 import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
@@ -102,7 +102,7 @@ const FiltersPanel: React.FC<FiltersProps> = ({
         placeholder="All time"
         className="w-full"
       />
-      {range?.[0] && <Button label="Clear" className="p-button-text p-button-sm mt-1 px-0" onClick={onClear} />}
+      {range?.[0] && <Button label="Clear" variant="text" size="sm" className="mt-1 px-0" onClick={onClear} />}
     </div>
 
     <div>
@@ -217,13 +217,16 @@ const MobileMaintenanceLogCard: React.FC<MobileCardProps> = ({ row, expanded, on
             <Button
               icon={<FontAwesomeIcon icon={faPencil} className="mr-1" />}
               label="Edit"
-              className="p-button-text p-button-sm"
+              variant="text"
+              size="sm"
               onClick={onEdit}
             />
             <Button
               icon={<FontAwesomeIcon icon={faTrash} className="mr-1" />}
               label="Delete"
-              className="p-button-text p-button-sm p-button-danger"
+              variant="text"
+              size="sm"
+              severity="danger"
               onClick={onDelete}
             />
           </div>
@@ -293,13 +296,17 @@ export const MaintenanceLogHistory: React.FC = () => {
     <div className="flex gap-2">
       <Button
         icon={<FontAwesomeIcon icon={faPencil} />}
-        className="p-button-text p-button-sm p-button-secondary"
+        variant="text"
+        size="sm"
+        severity="secondary"
         onClick={() => navigate(`/maintenance/${String(row.id)}/edit`)}
         aria-label="Edit maintenance log"
       />
       <Button
         icon={<FontAwesomeIcon icon={faTrash} />}
-        className="p-button-text p-button-sm p-button-danger"
+        variant="text"
+        size="sm"
+        severity="danger"
         onClick={(e) => handleDelete(e, row)}
         aria-label="Delete maintenance log"
       />
@@ -329,7 +336,7 @@ export const MaintenanceLogHistory: React.FC = () => {
             <Button
               label="Log Your First Maintenance"
               icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-              className="p-button-sm"
+              size="sm"
               onClick={() => navigate("/maintenance/new")}
             />
           </div>
@@ -348,7 +355,7 @@ export const MaintenanceLogHistory: React.FC = () => {
           <Button
             label="Add"
             icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
-            className="p-button-sm"
+            size="sm"
             onClick={() => navigate("/maintenance/new")}
           />
         }

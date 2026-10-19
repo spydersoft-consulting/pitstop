@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { Calendar } from "primereact/calendar";
 import { Dialog } from "primereact/dialog";
 import type { Reminder } from "../../store/slices/reminderSlice";
@@ -29,12 +29,12 @@ export const SnoozeReminderDialog: React.FC<Props> = ({ reminder, onClose, onSub
       footer={
         <div className="flex justify-end gap-2">
           {reminder.snoozedUntil && (
-            <Button label="Clear snooze" className="p-button-text p-button-sm" onClick={() => onSubmit(null)} />
+            <Button label="Clear snooze" variant="text" size="sm" onClick={() => onSubmit(null)} />
           )}
-          <Button label="Cancel" className="p-button-text p-button-sm" onClick={onClose} />
+          <Button label="Cancel" variant="text" size="sm" onClick={onClose} />
           <Button
             label="Snooze"
-            className="p-button-sm"
+            size="sm"
             disabled={until === null}
             onClick={() => onSubmit(toDateOnlyString(until!))}
           />

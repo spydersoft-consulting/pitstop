@@ -4,7 +4,7 @@ import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
 import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import type { CreateVehicleRequest, UpdateVehicleRequest } from "../../api/generated/types.gen";
 import { US_STATE_OPTIONS } from "./vehicleOptions";
 
@@ -255,18 +255,8 @@ export const VehicleForm: React.FC<Props> = ({
       )}
 
       <div className="flex gap-3 pt-2">
-        <Button
-          type="submit"
-          label={isEdit ? "Save Changes" : "Add Vehicle"}
-          loading={submitting}
-          className="p-button-sm"
-        />
-        <Button
-          type="button"
-          label="Cancel"
-          className="p-button-sm p-button-outlined"
-          onClick={() => navigate("/vehicles")}
-        />
+        <Button type="submit" label={isEdit ? "Save Changes" : "Add Vehicle"} loading={submitting} size="sm" />
+        <Button type="button" label="Cancel" size="sm" variant="outlined" onClick={() => navigate("/vehicles")} />
       </div>
     </form>
   );

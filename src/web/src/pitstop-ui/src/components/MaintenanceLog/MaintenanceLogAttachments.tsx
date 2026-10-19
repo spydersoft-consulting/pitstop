@@ -1,6 +1,8 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { FileUpload, type FileUploadHandlerEvent } from "primereact/fileupload";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { deleteMaintenanceAttachment, uploadMaintenanceAttachment } from "../../store/slices/maintenanceLogSlice";
@@ -74,16 +76,19 @@ export const MaintenanceLogAttachments: React.FC<Props> = ({ vehicleId, maintena
               <div className="flex gap-1 shrink-0">
                 <Button
                   type="button"
-                  icon="pi pi-eye"
-                  className="p-button-sm p-button-text"
+                  icon={<FontAwesomeIcon icon={faEye} />}
+                  size="sm"
+                  variant="text"
                   loading={viewingId === Number(a.id)}
                   onClick={() => handleView(Number(a.id))}
                   aria-label={`View ${a.fileName}`}
                 />
                 <Button
                   type="button"
-                  icon="pi pi-trash"
-                  className="p-button-sm p-button-text p-button-danger"
+                  icon={<FontAwesomeIcon icon={faTrash} />}
+                  size="sm"
+                  variant="text"
+                  severity="danger"
                   onClick={(e) => handleDelete(e, Number(a.id))}
                   aria-label={`Delete ${a.fileName}`}
                 />

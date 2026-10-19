@@ -10,7 +10,7 @@ import {
   faRoad,
   faChartLine,
 } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { Card } from "primereact/card";
 import { Chart } from "../common/Chart";
 import { Dropdown } from "primereact/dropdown";
@@ -133,7 +133,7 @@ const RecentFillUpsCard: React.FC<RecentFillUpsCardProps> = ({ recentList, onAdd
       <div className="text-center py-8 text-content-muted">
         <FontAwesomeIcon icon={faGasPump} className="text-3xl mb-3" />
         <p>No fill-ups recorded yet.</p>
-        <Button label="Add your first fill-up" className="p-button-text mt-2" onClick={onAddFillUp} />
+        <Button label="Add your first fill-up" variant="text" className="mt-2" onClick={onAddFillUp} />
       </div>
     ) : (
       <ul className="divide-y divide-border">

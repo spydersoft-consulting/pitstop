@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
-import { Button } from "primereact/button";
+import { Button } from "../ui/Button";
 import { Card } from "primereact/card";
 import type { Reminder } from "../../store/slices/reminderSlice";
 import { STATUS_CLASSES, STATUS_LABELS, fmtDate, fmtMiles, num } from "./reminderFormat";
@@ -46,7 +46,7 @@ export const UpcomingMaintenanceCard: React.FC<Props> = ({ reminders, onViewAll 
         </ul>
       )}
       <div className="flex justify-end pt-2">
-        <Button label="View all reminders" className="p-button-text p-button-sm" onClick={onViewAll} />
+        <Button label="View all reminders" variant="text" size="sm" onClick={onViewAll} />
       </div>
     </Card>
   );
