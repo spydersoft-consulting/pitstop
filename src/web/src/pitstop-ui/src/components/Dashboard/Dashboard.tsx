@@ -20,6 +20,7 @@ import { selectVehicle, type Vehicle } from "../../store/slices/vehicleSlice";
 import type { FillUp } from "../../store/slices/fillUpSlice";
 import { PageHeader } from "../layout/PageHeader";
 import { KpiTile } from "../layout/KpiTile";
+import { UpcomingMaintenanceCard } from "../Reminders/UpcomingMaintenanceCard";
 
 const num = (v: number | string | null | undefined): number | null => {
   if (v === null || v === undefined) return null;
@@ -215,6 +216,7 @@ export const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
   const { vehicles, selectedVehicleId, loading } = useAppSelector((s) => s.vehicles);
   const { recentFillUps } = useAppSelector((s) => s.fillUps);
+  const reminders = useAppSelector((s) => s.reminders.reminders);
 
   const selectedVehicle = vehicles.find((v: Vehicle | null | undefined) => v?.id === selectedVehicleId);
 
@@ -295,6 +297,10 @@ export const Dashboard: React.FC = () => {
         <MpgTrendCard mpgChartData={mpgChartData} />
         <RecentFillUpsCard recentList={recentList} onAddFillUp={() => navigate("/fill-ups/new")} />
       </div>
+
+      {reminders.length > 0 && (
+        <UpcomingMaintenanceCard reminders={reminders} onViewAll={() => navigate("/reminders")} />
+      )}
 
       <SpendCard spendChartData={spendChartData} />
     </div>

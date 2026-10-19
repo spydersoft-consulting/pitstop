@@ -6,6 +6,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 import { NotificationBell } from "./NotificationBell";
 import { notificationSliceReducer, type Notification } from "../../store/slices/notificationSlice";
+import { vehicleSliceReducer } from "../../store/slices/vehicleSlice";
 
 vi.mock("../../api/notificationApi", () => ({
   notificationApi: {
@@ -46,7 +47,7 @@ const n = (id: string, overrides: Partial<Notification> = {}): Notification =>
 
 function renderBell(items: Notification[] = [], unreadCount = 0) {
   const store = configureStore({
-    reducer: { notifications: notificationSliceReducer },
+    reducer: { notifications: notificationSliceReducer, vehicles: vehicleSliceReducer },
     preloadedState: { notifications: { items, unreadCount, loading: false } },
   });
   return {
@@ -172,5 +173,20 @@ describe("NotificationBell", () => {
     await user.click(await screen.findByText("Fill-up reminder"));
 
     expect(mockNavigate).toHaveBeenCalledWith("/vehicles/42/edit");
+  });
+
+  it("selects the vehicle and opens the reminders page for a maintenance-due notification", async () => {
+    const user = userEvent.setup();
+    vi.mocked(notificationApi.markRead).mockResolvedValue(n("1", { isRead: true }));
+    vi.mocked(notificationApi.list).mockResolvedValueOnce([
+      n("1", { subject: "Oil change is overdue", type: "maintenance-due", entityType: "Vehicle", entityId: "42" }),
+    ]);
+    const { store } = renderBell([], 1);
+
+    await user.click(screen.getByRole("button", { name: /notifications/i }));
+    await user.click(await screen.findByText("Oil change is overdue"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/reminders");
+    expect(store.getState().vehicles.selectedVehicleId).toBe(42);
   });
 });

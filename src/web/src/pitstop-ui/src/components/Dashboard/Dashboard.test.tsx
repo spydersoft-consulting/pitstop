@@ -6,6 +6,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { Dashboard } from "./Dashboard";
 import { vehicleSliceReducer, type Vehicle } from "../../store/slices/vehicleSlice";
 import { fillUpSliceReducer, type FillUp } from "../../store/slices/fillUpSlice";
+import { reminderSliceReducer, type Reminder } from "../../store/slices/reminderSlice";
 
 // PrimeReact's Chart component pulls in chart.js, which doesn't render in jsdom.
 // Stub it so Dashboard's chart branches render without exploding.
@@ -18,11 +19,12 @@ interface StateOverrides {
   selectedVehicleId?: number | null;
   recentFillUps?: FillUp[];
   vehiclesLoading?: boolean;
+  reminders?: Reminder[];
 }
 
 function renderDashboard(overrides: StateOverrides = {}) {
   const store = configureStore({
-    reducer: { vehicles: vehicleSliceReducer, fillUps: fillUpSliceReducer },
+    reducer: { vehicles: vehicleSliceReducer, fillUps: fillUpSliceReducer, reminders: reminderSliceReducer },
     preloadedState: {
       vehicles: {
         vehicles: overrides.vehicles ?? [],
@@ -33,6 +35,7 @@ function renderDashboard(overrides: StateOverrides = {}) {
         recentFillUps: overrides.recentFillUps ?? [],
         loading: false,
       },
+      reminders: { reminders: overrides.reminders ?? [], templates: [], loading: false },
     },
   });
   return render(
@@ -136,5 +139,38 @@ describe("Dashboard", () => {
       ],
     });
     expect(screen.getByTestId("chart-line")).toBeInTheDocument();
+  });
+
+  it("lists overdue and due-soon reminders in the upcoming maintenance card", () => {
+    renderDashboard({
+      vehicles: [sampleVehicle],
+      selectedVehicleId: 1,
+      reminders: [
+        { id: 1, name: "Oil change", status: "Overdue", nextDueOdometer: 45000 },
+        { id: 2, name: "Tire rotation", status: "DueSoon", nextDueDate: "2026-07-01" },
+        { id: 3, name: "Brake fluid", status: "Ok" },
+      ],
+    });
+
+    expect(screen.getByText("Upcoming Maintenance")).toBeInTheDocument();
+    expect(screen.getByText("Oil change")).toBeInTheDocument();
+    expect(screen.getByText("Tire rotation")).toBeInTheDocument();
+    expect(screen.queryByText("Brake fluid")).not.toBeInTheDocument();
+  });
+
+  it("says nothing is due when every reminder is on track", () => {
+    renderDashboard({
+      vehicles: [sampleVehicle],
+      selectedVehicleId: 1,
+      reminders: [{ id: 3, name: "Brake fluid", status: "Ok" }],
+    });
+
+    expect(screen.getByText(/nothing due soon/i)).toBeInTheDocument();
+  });
+
+  it("omits the upcoming maintenance card when there are no reminders", () => {
+    renderDashboard({ vehicles: [sampleVehicle], selectedVehicleId: 1 });
+
+    expect(screen.queryByText("Upcoming Maintenance")).not.toBeInTheDocument();
   });
 });
