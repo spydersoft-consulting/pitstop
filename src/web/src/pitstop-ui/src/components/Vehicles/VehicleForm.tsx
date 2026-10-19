@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NumberField } from "../ui/NumberField";
-import { Calendar } from "primereact/calendar";
 import { FormActions } from "../layout/FormActions";
+import { DateField } from "../ui/DateField";
 import { Select } from "../ui/Select";
 import { InputText } from "../ui/TextField";
 import type { CreateVehicleRequest, UpdateVehicleRequest } from "../../api/generated/types.gen";
@@ -239,14 +239,7 @@ export const VehicleForm: React.FC<Props> = ({
           {field(
             "Start Date",
             undefined,
-            <Calendar
-              value={values.startDate}
-              onChange={(e) => set("startDate", e.value ?? null)}
-              placeholder="Select date"
-              showIcon
-              className="w-full"
-              inputClassName="w-full"
-            />,
+            <DateField value={values.startDate} onChange={(e) => set("startDate", e.value)} />,
           )}
         </div>
       )}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "../ui/Button";
-import { Calendar } from "primereact/calendar";
+import { DateField } from "../ui/DateField";
 import { Modal } from "../ui/Modal";
 import { Select } from "../ui/Select";
 import { NumberField } from "../ui/NumberField";
@@ -40,17 +40,10 @@ export const CompleteReminderDialog: React.FC<Props> = ({ reminder, onClose, onS
     >
       <div className="space-y-3">
         <div>
-          <label htmlFor="complete-date" className="block text-sm mb-1">
+          <label id="complete-date-label" htmlFor="complete-date" className="block text-sm mb-1">
             Date done
           </label>
-          <Calendar
-            inputId="complete-date"
-            value={date}
-            onChange={(e) => setDate(e.value ?? null)}
-            showIcon
-            className="w-full"
-            inputClassName="w-full"
-          />
+          <DateField inputId="complete-date" value={date} onChange={(e) => setDate(e.value)} />
         </div>
         <div>
           <label id="complete-odometer-label" htmlFor="complete-odometer" className="block text-sm mb-1">

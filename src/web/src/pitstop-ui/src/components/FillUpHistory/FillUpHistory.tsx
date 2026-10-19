@@ -13,7 +13,7 @@ import {
 import { Button } from "../ui/Button";
 import { CardActions } from "../layout/CardActions";
 import { Card } from "../ui/Card";
-import { Calendar } from "primereact/calendar";
+import { DateRangeField } from "../ui/DateField";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { ConfirmPopup } from "../ui/ConfirmPopup";
@@ -43,20 +43,7 @@ const FiltersPanel: React.FC<FiltersProps> = ({ range, onChange, onClear, totals
   <div className="space-y-4">
     <div>
       <p className="text-meta uppercase tracking-wide text-content-muted mb-2">Date range</p>
-      <Calendar
-        value={range ?? undefined}
-        onChange={(e) => {
-          const v: unknown = e.value;
-          if (Array.isArray(v)) onChange(v as Date[]);
-          else if (v instanceof Date) onChange([v]);
-          else onChange(null);
-        }}
-        selectionMode="range"
-        readOnlyInput
-        showIcon
-        placeholder="All time"
-        className="w-full"
-      />
+      <DateRangeField value={range} onChange={onChange} aria-label="Date range" />
       {range?.[0] && <Button label="Clear" variant="text" size="sm" className="mt-1 px-0" onClick={onClear} />}
     </div>
 

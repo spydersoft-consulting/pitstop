@@ -3686,6 +3686,7 @@ __metadata:
     "@fortawesome/react-fontawesome": "npm:^3.5.0"
     "@hey-api/client-axios": "npm:^0.9.1"
     "@hey-api/openapi-ts": "npm:^0.97.1"
+    "@internationalized/date": "npm:^3.12.4"
     "@microsoft/signalr": "npm:^10.0.11"
     "@reduxjs/toolkit": "npm:^2.13.0"
     "@tailwindcss/forms": "npm:^0.5.11"
