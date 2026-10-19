@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FormActions } from "../layout/FormActions";
-import { Checkbox } from "primereact/checkbox";
+import { InputText } from "../ui/TextField";
+import { Checkbox } from "../ui/Checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
-import { InputText } from "primereact/inputtext";
 import type { ReminderRequest } from "../../api/generated/types.gen";
 import type { ReminderTemplate } from "../../store/slices/reminderSlice";
 import { SERVICE_TYPE_OPTIONS } from "../MaintenanceLog/maintenanceLogOptions";
@@ -179,11 +179,7 @@ export const ReminderForm: React.FC<Props> = ({
       </div>
 
       <div className="flex items-center gap-2">
-        <Checkbox
-          inputId="reminder-active"
-          checked={values.isActive}
-          onChange={(e) => set("isActive", e.checked ?? false)}
-        />
+        <Checkbox inputId="reminder-active" checked={values.isActive} onChange={(e) => set("isActive", e.checked)} />
         <label htmlFor="reminder-active" className="text-sm">
           Send notifications for this reminder
         </label>

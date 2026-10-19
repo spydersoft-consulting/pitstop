@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/Button";
-import { Card } from "primereact/card";
+import { Card } from "../ui/Card";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updateVehicle } from "../../store/slices/vehicleSlice";
 import { VehicleForm, type VehicleFormValues } from "./VehicleForm";

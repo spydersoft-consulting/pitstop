@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
 import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import { FormActions } from "../layout/FormActions";
+import { InputText } from "../ui/TextField";
 import type { CreateVehicleRequest, UpdateVehicleRequest } from "../../api/generated/types.gen";
 import { US_STATE_OPTIONS } from "./vehicleOptions";
 
@@ -124,7 +124,8 @@ export const VehicleForm: React.FC<Props> = ({
           value={values.name}
           onChange={(e) => set("name", e.target.value)}
           placeholder="e.g. My Daily Driver"
-          className={errors.name ? "p-invalid w-full" : "w-full"}
+          invalid={!!errors.name}
+          className="w-full"
         />,
       )}
 
@@ -136,7 +137,8 @@ export const VehicleForm: React.FC<Props> = ({
             value={values.make}
             onChange={(e) => set("make", e.target.value)}
             placeholder="e.g. Honda"
-            className={errors.make ? "p-invalid w-full" : "w-full"}
+            invalid={!!errors.make}
+            className="w-full"
           />,
         )}
         {field(
@@ -146,7 +148,8 @@ export const VehicleForm: React.FC<Props> = ({
             value={values.model}
             onChange={(e) => set("model", e.target.value)}
             placeholder="e.g. Accord"
-            className={errors.model ? "p-invalid w-full" : "w-full"}
+            invalid={!!errors.model}
+            className="w-full"
           />,
         )}
       </div>
@@ -220,7 +223,8 @@ export const VehicleForm: React.FC<Props> = ({
             onChange={(e) => set("vin", e.target.value)}
             placeholder="e.g. 1HGCM82633A123456"
             maxLength={17}
-            className={errors.vin ? "p-invalid w-full" : "w-full"}
+            invalid={!!errors.vin}
+            className="w-full"
           />,
         )}
       </div>

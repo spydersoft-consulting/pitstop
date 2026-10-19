@@ -11,7 +11,7 @@ import {
   faPencil,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/Button";
-import { Card } from "primereact/card";
+import { Card } from "../ui/Card";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { useAppDispatch, useAppSelector, useSelectedVehicle } from "../../store/hooks";
 import {

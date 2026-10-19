@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "../ui/Button";
-import { Checkbox } from "primereact/checkbox";
+import { Checkbox } from "../ui/Checkbox";
 import { Dialog } from "primereact/dialog";
 import type { ReminderTemplate } from "../../store/slices/reminderSlice";
 

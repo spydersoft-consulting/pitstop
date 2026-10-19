@@ -11,10 +11,10 @@ import {
   faChartLine,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/Button";
-import { Card } from "primereact/card";
+import { Card } from "../ui/Card";
 import { Chart } from "../common/Chart";
 import { Dropdown } from "primereact/dropdown";
-import { ProgressSpinner } from "primereact/progressspinner";
+import { Spinner } from "../ui/Spinner";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { selectVehicle, type Vehicle } from "../../store/slices/vehicleSlice";
 import type { FillUp } from "../../store/slices/fillUpSlice";
@@ -247,7 +247,7 @@ export const Dashboard: React.FC = () => {
       return (
         <div className="space-y-6">
           <div className="flex justify-center py-16">
-            <ProgressSpinner />
+            <Spinner />
           </div>
         </div>
       );

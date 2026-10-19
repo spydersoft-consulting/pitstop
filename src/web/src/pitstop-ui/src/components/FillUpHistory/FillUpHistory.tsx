@@ -12,7 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/Button";
 import { CardActions } from "../layout/CardActions";
-import { Card } from "primereact/card";
+import { Card } from "../ui/Card";
 import { Calendar } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
