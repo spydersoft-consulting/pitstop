@@ -3,6 +3,7 @@ using Spydersoft.PitStop.Api.Jobs;
 using Spydersoft.PitStop.Api.Services;
 using Spydersoft.PitStop.Api.Services.Nhtsa;
 using Spydersoft.PitStop.Api.Services.Notification;
+using Spydersoft.PitStop.Api.Services.Reminders;
 using Spydersoft.PitStop.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -101,6 +102,8 @@ builder.Services.AddHttpClient<INotificationClient, NotificationHttpClient>()
 builder.Services.AddOptions<RecallCheckOptions>().Bind(builder.Configuration.GetSection("RecallCheck"));
 builder.Services.AddScoped<RecallCheckRunner>();
 builder.Services.AddHostedService<RecallCheckJob>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<ReminderService>();
 
 var app = builder.Build();
 
