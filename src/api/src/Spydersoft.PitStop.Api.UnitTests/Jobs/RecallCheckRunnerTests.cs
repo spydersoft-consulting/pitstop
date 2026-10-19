@@ -144,7 +144,7 @@ public class RecallCheckRunnerTests
         AddVehicle();
         _vinDecoder.FailWith = new HttpRequestException("boom");
 
-        Assert.DoesNotThrowAsync(async () => await _runner.RunAsync());
+        await Assert.ThatAsync(() => _runner.RunAsync(), Throws.Nothing);
         Assert.That(_notificationClient.CreatedRequests, Is.Empty);
     }
 
@@ -154,7 +154,7 @@ public class RecallCheckRunnerTests
         AddVehicle();
         _recallClient.FailWith = new HttpRequestException("boom");
 
-        Assert.DoesNotThrowAsync(async () => await _runner.RunAsync());
+        await Assert.ThatAsync(() => _runner.RunAsync(), Throws.Nothing);
         Assert.That(_notificationClient.CreatedRequests, Is.Empty);
     }
 

@@ -60,7 +60,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ buttonClassN
         dispatch(selectVehicle(Number(notification.entityId)));
       }
       setOpen(false);
-      navigate(link);
+      void navigate(link);
     }
   };
 

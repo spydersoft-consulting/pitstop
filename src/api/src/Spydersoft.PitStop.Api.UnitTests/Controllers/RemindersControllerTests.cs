@@ -13,6 +13,9 @@ namespace Spydersoft.PitStop.Api.UnitTests.Controllers;
 [TestFixture]
 public class RemindersControllerTests
 {
+    private static readonly string[] ExpectedNames = ["Oil", "Battery"];
+    private static readonly string[] ExpectedServiceTypes = ["OilChange", "TireRotation"];
+
     private const string TestUserId = TestDataHelpers.TestUserId;
 
     private PitStopDbContext _db = null!;
@@ -149,7 +152,7 @@ public class RemindersControllerTests
         var result = await _controller.GetAll(vehicle.Id, CancellationToken.None);
 
         var list = Value(result);
-        Assert.That(list.Select(r => r.Name), Is.EqualTo(new[] { "Oil", "Battery" }));
+        Assert.That(list.Select(r => r.Name), Is.EqualTo(ExpectedNames));
         Assert.That(list[0].Status, Is.EqualTo("Overdue"));
     }
 
@@ -348,7 +351,7 @@ public class RemindersControllerTests
             vehicle.Id, new CreateRemindersFromTemplatesRequest { ServiceTypes = ["OilChange", "TireRotation"] }, CancellationToken.None);
 
         var list = Value(result);
-        Assert.That(list.Select(r => r.ServiceType), Is.EquivalentTo(new[] { "OilChange", "TireRotation" }));
+        Assert.That(list.Select(r => r.ServiceType), Is.EquivalentTo(ExpectedServiceTypes));
         Assert.That(list, Has.All.Property("Source").EqualTo("Template"));
     }
 

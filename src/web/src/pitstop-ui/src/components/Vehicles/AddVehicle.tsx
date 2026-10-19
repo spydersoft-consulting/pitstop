@@ -18,7 +18,7 @@ export const AddVehicle: React.FC = () => {
     setError(null);
     try {
       await dispatch(createVehicle(values as CreateVehicleRequest)).unwrap();
-      navigate("/vehicles");
+      void navigate("/vehicles");
     } catch {
       setError("Failed to add vehicle. Please try again.");
     } finally {

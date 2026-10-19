@@ -52,7 +52,7 @@ export const EditFillUp: React.FC = () => {
     setError(null);
     try {
       await dispatch(updateFillUp({ vehicleId: selectedVehicleId, id: Number(fillUp.id), body: values })).unwrap();
-      navigate("/fill-ups");
+      void navigate("/fill-ups");
     } catch {
       setError("Failed to update fill-up. Please try again.");
     } finally {

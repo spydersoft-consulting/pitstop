@@ -7,6 +7,8 @@ namespace Spydersoft.PitStop.Api.UnitTests.Services.Reminders;
 [TestFixture]
 public class ReminderCalculatorTests
 {
+    private static readonly int[] ExpectedLogIds = [1, 2, 3];
+
     private static readonly DateOnly Today = new(2026, 6, 1);
 
     private static MaintenanceReminder Reminder(
@@ -279,7 +281,7 @@ public class ReminderCalculatorTests
             Reminder(miles: 5000),
             [Done(3, "2026-09-01", 22000), Done(1, "2026-01-10", 12000), Done(2, "2026-05-01", 17000)]);
 
-        Assert.That(history.Select(h => h.LogId), Is.EqualTo(new[] { 1, 2, 3 }));
+        Assert.That(history.Select(h => h.LogId), Is.EqualTo(ExpectedLogIds));
         Assert.That(history[2].DueOdometer, Is.EqualTo(22000));
         Assert.That(history[2].WasLate, Is.False);
     }

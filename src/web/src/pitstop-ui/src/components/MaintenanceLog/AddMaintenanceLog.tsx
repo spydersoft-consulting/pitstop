@@ -22,7 +22,7 @@ export const AddMaintenanceLog: React.FC = () => {
     setError(null);
     try {
       await dispatch(createMaintenanceLog({ vehicleId: selectedVehicleId, body: values })).unwrap();
-      navigate("/maintenance");
+      void navigate("/maintenance");
     } catch {
       setError("Failed to save maintenance log. Please try again.");
     } finally {
