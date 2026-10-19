@@ -3971,7 +3971,7 @@ __metadata:
     leaflet: "npm:^1.9.4"
     postcss: "npm:^8.5.31"
     prettier: "npm:^3.9.10"
-    primeicons: "npm:^7.0.0"
+    primeicons: "npm:^8.0.2"
     primereact: "npm:^10.9.8"
     react: "npm:19.3.1"
     react-dom: "npm:19.3.1"
@@ -4091,10 +4091,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"primeicons@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "primeicons@npm:7.0.0"
-  checksum: 10c0/a7f6344d6db49e785d2040b35f8cae761d15bb8f8ee70ade8981d45438245414e913fe7235921122aade2b0a11a032c98b44dc527be2da11aa791ff145099c06
+"primeicons@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "primeicons@npm:8.0.2"
+  checksum: 10c0/6a11b16368b07a5e487fa0b0272ab9c33c2ad75eb80669ab7f2584c333fe65aeb70e75f3f9069398a0ba86eaa3246a9a3954607570bc267907c1d5abe986964a
   languageName: node
   linkType: hard
 
