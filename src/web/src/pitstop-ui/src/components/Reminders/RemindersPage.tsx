@@ -180,6 +180,7 @@ export const RemindersPage: React.FC = () => {
       label="Add common services"
       icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
       size="sm"
+      className="w-full sm:w-auto"
       onClick={() => setPickingTemplates(true)}
     />
   );
@@ -189,6 +190,7 @@ export const RemindersPage: React.FC = () => {
       icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
       size="sm"
       variant="outlined"
+      className="w-full sm:w-auto"
       onClick={() => navigate("/reminders/new")}
     />
   );
@@ -200,10 +202,10 @@ export const RemindersPage: React.FC = () => {
         title="Maintenance Reminders"
         subtitle={vehicleLabel}
         actions={
-          <>
+          <div className={reminders.length === 0 ? "hidden sm:contents" : "contents"}>
             {addReminderButton}
             {addTemplatesButton}
-          </>
+          </div>
         }
       />
 
@@ -212,7 +214,7 @@ export const RemindersPage: React.FC = () => {
           <div className="text-center py-12 text-content-muted">
             <FontAwesomeIcon icon={faBellConcierge} className="text-4xl mb-3" />
             <p className="text-lg mb-4">No maintenance reminders yet.</p>
-            <div className="flex justify-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
               {addReminderButton}
               {addTemplatesButton}
             </div>

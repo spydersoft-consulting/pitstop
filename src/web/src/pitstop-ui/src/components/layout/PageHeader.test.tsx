@@ -15,12 +15,7 @@ describe("PageHeader", () => {
   });
 
   it("renders actions when provided", () => {
-    render(
-      <PageHeader
-        title="Fill-Ups"
-        actions={<button type="button">Add</button>}
-      />,
-    );
+    render(<PageHeader title="Fill-Ups" actions={<button type="button">Add</button>} />);
     expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument();
   });
 
@@ -28,5 +23,18 @@ describe("PageHeader", () => {
     render(<PageHeader actions={<span data-testid="only-actions">actions</span>} />);
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
     expect(screen.getByTestId("only-actions")).toBeInTheDocument();
+  });
+
+  it("stacks the subtitle above wrapping actions on narrow screens", () => {
+    render(
+      <PageHeader
+        title="Reminders"
+        subtitle="2025 Ford Bronco — OJ · Big Bend Sasquatch"
+        actions={<button type="button">Add</button>}
+      />,
+    );
+    const header = screen.getByRole("banner", { hidden: true });
+    expect(header).toHaveClass("flex-col", "sm:flex-row");
+    expect(screen.getByRole("button", { name: "Add", hidden: true }).parentElement).toHaveClass("flex-wrap");
   });
 });
